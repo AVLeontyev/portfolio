@@ -1,0 +1,195 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Assignment
+{
+    public partial class Client<T>
+    {
+        public class WatchItem
+        {
+            public T _key;
+            public System.Threading.Timer _timer;
+            public DateTime _stamp;
+            public TimeSpan _due;
+
+            private WatchItem ()
+            {
+                _stamp = DateTime.MinValue;
+            }
+
+            public WatchItem (System.Threading.TimerCallback fTimer_Tick
+                , T key
+                , TimeSpan due)
+                    : this ()
+            {
+                _key = key;
+                _due = due;
+                _timer = new System.Threading.Timer (fTimer_Tick, key, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            }
+
+            public WatchItem (System.Threading.TimerCallback fTimer_Tick, T key)
+                : this (fTimer_Tick, key, TimeSpan.FromMilliseconds (StatisticCommon.Constants.TIMER_SERVICE_MIN_INTERVAL))
+            {
+            }
+
+            public void Start ()
+            {
+                _stamp = DateTime.Now;
+                _timer.Change (_due, _due);
+            }
+
+            public void Stop ()
+            {
+                _timer.Change (System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                _stamp = DateTime.MinValue;
+            }
+
+            public bool IsEmpty
+            {
+                get
+                {
+                    return Equals (_timer, null) == false;
+                }
+            }
+
+            //public static WatchItem Empty
+            //{
+            //    get
+            //    {
+            //        return 
+            //    }
+            //}
+        }
+
+        // Класс для описания объекта проверки активности других объектов
+        //  для подтверждения активности отслеживаемые объекты вызывают 'Leave'
+        //  при отсутствии подтверждения активности инициируется сигнал 'Alarm'
+        public class Watcher : List<WatchItem>, IDisposable
+        {
+
+            /// <summary>
+            /// Коэффициент-множитель для переданного в качестве аргумента значения
+            /// </summary>
+            public const uint Multi = 2;
+            /// <summary>
+            /// Событие, сигнализирующее об отсутствии активности
+            /// </summary>
+            public event Action<T> Alarm;
+
+            private TimeSpan _due;
+            /// <summary>
+            /// Конструктор - основной (без аргументов)
+            ///  , для запрета создания экземпляра без назначения интервала проверки
+            /// </summary>
+            public Watcher ()
+                : this (TimeSpan.FromMilliseconds (StatisticCommon.Constants.TIMER_SERVICE_MIN_INTERVAL))
+            {
+            }
+
+            /// <summary>
+            /// Конструктор - дополнительный (с аргументом)
+            /// </summary>
+            /// <param name="due">Интервал таймера</param>
+            public Watcher (TimeSpan due)
+                : base ()
+            {
+                _due = due;
+            }
+
+            public void Add (T key)
+            {
+                Add (key
+                    , _due);
+            }
+
+            public void Add (T key, TimeSpan due)
+            {
+                Add (new WatchItem (timer_Tick
+                    , key
+                    , due.Add (due))); // умножаем на 2 (в ~ с Multi)
+            }
+
+            public void Start ()
+            {
+                ForEach (item => item.Start ());
+            }
+
+            public void Start (T key)
+            {
+                getItem (key)?.Start ();
+            }
+
+            public void Stop ()
+            {
+                ForEach (item => item.Stop ());
+            }
+
+            public void Stop (T key)
+            {
+                getItem (key)?.Stop();
+            }
+
+            public void Leave (T key)
+            {
+                leave (key, false);
+            }
+
+            public bool ContainsKey (T key)
+            {
+                return (from item in this where item._key.Equals (key) == true select item).Count () == 1;
+            }
+
+            /// <summary>
+            /// Подтвердить активность(из-вне) - проверить/подтвердить активность(изнутри)
+            /// </summary>
+            /// <param name="bInner">Признак проверки: из-вне, изнутри</param>
+            private void leave (T key, bool bInner)
+            {
+                WatchItem item;
+
+                item = getItem(key);
+
+                if ((Equals (item, null) == false)
+                    && (true))
+                    if ((item._stamp - DateTime.MinValue).TotalSeconds > 0) {
+                    // Инициировать сигнал предупреждения только при собственной проверке
+                        if (bInner == true)
+                        // проверка активности
+                            if (((item._stamp - DateTime.Now) + _due.Add (_due)).TotalSeconds < 0)
+                            // отсутствие активности
+                                Alarm?.Invoke (key);
+                            else
+                            // активность в пределах установленных границ
+                            itssAUX.PrintActionMessage ($"Client.Watcher<...>::leave (key={key.ToString ()}) - предыдущая активность <{item._stamp.ToString("HH:mm:ss")}>, остаток {(int)((item._stamp - DateTime.Now) + _due.Add (_due)).TotalSeconds} сек...", false);
+                        else
+                        // активность подтверждена
+                            item._stamp = DateTime.Now;
+                    } else
+                        ;
+                else
+                    itssAUX.PrintErrorMessage($"Client.Watcher<...>::leave (key={key.ToString()}, IsInner={bInner}) - элемент не найден...");
+            }
+
+            /// <summary>
+            /// Метод обратного вызова для таймера
+            /// </summary>
+            /// <param name="obj">Аргумент для метода обратного вызова</param>
+            private void timer_Tick (object obj)
+            {
+                leave ((T)obj, true);
+            }
+
+            private WatchItem getItem (T key)
+            {
+                return (from item in this where item._key.Equals(key) == true select item).FirstOrDefault();
+            }
+
+            public void Dispose ()
+            {
+            }
+        }
+    }
+}

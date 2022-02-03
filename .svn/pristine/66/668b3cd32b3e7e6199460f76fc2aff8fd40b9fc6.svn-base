@@ -1,0 +1,167 @@
+﻿using ASUTP;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Reflection;
+using System.ServiceModel;
+using System.ServiceModel.Configuration;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
+using System.ServiceProcess;
+using System.Text;
+
+namespace Assignment
+{
+    public interface IDeployment
+    {
+        void Start (object obj = null);
+
+        void Stop ();
+
+        event Action Stoped;
+
+        CommunicationState State { get; }
+
+        Deployment.ERROR Error { get; }
+
+        string GetContractName (ServiceHost host);
+    }
+
+    public abstract partial class Deployment : IDeployment
+    {
+        protected const int MSEC_WAIT_CREATE_WORKER = 1000;
+
+        public enum ERROR { Close = -6, Open = -5, Service = -4, Contract = -3, Client = -2, Unknown = -1, Ok, }
+
+        /// <summary>
+        /// Служба ОС
+        /// </summary>
+        public class Service
+        {
+            /// <summary>
+            /// Ссылка на контейнер, содержащий развертываемую службу
+            /// </summary>
+            public ServiceHost Host { private set; get; }
+            /// <summary>
+            /// Тип развертываемой службы
+            /// </summary>
+            public Type Type;
+            /// <summary>
+            /// Конфигурация развертываемой службы
+            /// </summary>
+            public ConfigurationElement SSE;
+            /// <summary>
+            /// Конфигурация канала связи развертываемой службы
+            /// </summary>
+            public ChannelEndpointElement CEPE;
+            /// <summary>
+            /// Ошибка при развертывании службы
+            /// </summary>
+            public ERROR Error;
+
+            /// <summary>
+            /// Создать объект для развертывания службы
+            /// </summary>
+            public void Create ()
+            {
+                try {
+                    Host = new Assignment.ServiceHost (Type);
+                } catch (Exception e) {
+                    itssAUX.PrintErrorMessage (e.Message);
+                }
+            }
+        }
+
+        ///// <summary>
+        ///// Секция в файле конфигурации развертываемой службы
+        ///// </summary>
+        //protected ConfigurationSection __serviceSettingsSection;
+
+        protected Type _typeNameEndPoint;
+
+        /// <summary>
+        /// Список развертываемых служб
+        /// </summary>
+        protected List<Service> _services;
+
+        public event Action Stoped;
+
+        public CommunicationState State { private set; get; }
+
+        /// <summary>
+        /// Ошибка совокупная при развертывании служб
+        /// </summary>
+        public ERROR Error { get; protected set; }
+
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly ().CodeBase;
+                UriBuilder uri = new UriBuilder (codeBase);
+                string path = Uri.UnescapeDataString (uri.Path);
+                return System.IO.Path.GetDirectoryName (path);
+            }
+        }
+
+        /// <summary>
+        /// Конструктор - основной (без аргументов)
+        /// </summary>
+        public Deployment (Func<Tuple<CommunicationState, ERROR, IEnumerable<Service>>> fLoadAssemblies, MODE mode, Type typeNameEndPoint)
+        {
+            Tuple<CommunicationState, ERROR, IEnumerable <Service>> loadAssembliesRes;
+
+            _typeNameEndPoint = typeNameEndPoint;
+
+            loadAssembliesRes = fLoadAssemblies ();
+            State = loadAssembliesRes.Item1;
+            Error = loadAssembliesRes.Item2;
+            _services = loadAssembliesRes.Item3.ToList();
+        }
+
+        //!!! важно обратиться к списку типов в сборках, чтобы за(под)грузить все зависимые сборки
+        // , иначе не будут найдены контракты, сборки служб
+        public static IEnumerable<Assembly> FetchAssemblies ()
+        {
+            int countAssemblieTypes = -1;
+
+            while (countAssemblieTypes != (from ass in AppDomain.CurrentDomain.GetAssemblies () select (from type in ass.GetTypes() select type)).Count())
+                countAssemblieTypes = (from ass in AppDomain.CurrentDomain.GetAssemblies () select ass).Count ();
+
+            // получить все сборки
+            return AppDomain.CurrentDomain.GetAssemblies ().ToList ();
+        }
+
+        public virtual void Start (object obj = null)
+        {
+            State = Error == ERROR.Ok ? CommunicationState.Opened
+                : CommunicationState.Faulted;
+        }
+
+        public virtual void Stop ()
+        {
+            State = Error == ERROR.Ok ? CommunicationState.Closed
+                : CommunicationState.Faulted;
+
+            Stoped?.Invoke ();
+        }
+
+        public ConfigurationElement GetSSE (ServiceDescription desc)
+        {
+            ConfigurationElement sseRes;
+            IEnumerable<Service> servicesByCriteria;
+
+            servicesByCriteria = from service in _services where service.Host.Description == desc select service;
+
+            if (servicesByCriteria.Count () == 1)
+                sseRes = servicesByCriteria.ElementAt (0).SSE;
+            else
+                sseRes = null;
+
+            return sseRes;
+        }
+
+        public abstract string GetContractName (ServiceHost desc);
+    }
+}

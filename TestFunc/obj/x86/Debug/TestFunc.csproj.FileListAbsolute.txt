@@ -1,0 +1,15 @@
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\TestFunc.exe.config
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\TestFunc.exe
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\TestFunc.pdb
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\HClassLibrary.dll
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\StatisticCommon.dll
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\Microsoft.Office.Interop.Excel.dll
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\ZedGraph.dll
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\MySql.Data.dll
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\stdole.dll
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\StatisticCommon.pdb
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\HClassLibrary.pdb
+D:\My Project's\C.Net\Statistic\TestFunc\bin\Debug\HClassLibrary.xml
+D:\My Project's\C.Net\Statistic\TestFunc\obj\x86\Debug\TestFunc.exe
+D:\My Project's\C.Net\Statistic\TestFunc\obj\x86\Debug\TestFunc.pdb
+D:\My Project's\C.Net\Statistic\TestFunc\obj\x86\Debug\TestFunc.csprojResolveAssemblyReference.cache

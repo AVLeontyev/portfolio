@@ -1,0 +1,52 @@
+﻿using StatisticCommon.Contract;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Dispatcher;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace StatisticCommon.Communication
+{
+    /// <summary>
+    /// Позволяет сообщить развертывающему приложению(консоли, службе ОС) о создании объекта
+    ///  , обслуживающего вызовы клиента
+    ///   ; более того - сохранить сам объект сервиса, его контекст вызовов методов и т.д.
+    ///   ; в целом позволяет на стороне развертывающего приложения вызывать методы отдельного объекта сервиса, сколько бы их не было создано клиентами
+    /// </summary>
+    public interface IHost
+    {
+        void Interrupt (int code);
+
+        void Report(string sessionId, IdPseudoDelegate idAction, params object[]args);
+
+        /// <summary>
+        /// Оповещение о созданании объекта сервиса
+        /// </summary>
+        /// <param name="client">Информация о клиенте, в т.ч. объекте сервиса, обеспечивающего выполнение методов</param>
+        void Register (Client client);
+
+        /// <summary>
+        /// Оповещение о созданании объекта сервиса
+        /// </summary>
+        /// <param name="guid">Идентификатор сессии для объекта сервиса</param>
+        void UnRegister (string guid);
+    }
+
+    /// <summary>
+    /// Информация о клиенте сервиса
+    /// </summary>
+    public struct Client
+    {
+        /// <summary>
+        /// Объект сервиса, обеспечивающего выполнение методов 
+        /// </summary>
+        public Contract.IService _service;
+
+        /// <summary>
+        /// Контекст выполнения
+        /// </summary>
+        public OperationContext _operationContext;
+    }
+}

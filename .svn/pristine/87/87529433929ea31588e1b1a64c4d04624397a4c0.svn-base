@@ -1,0 +1,150 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Text;
+using STrans.Service.ModesCentre;
+using StatisticCommon;
+using StatisticTrans;
+using ASUTP;
+using StatisticTransModes;
+using ASUTP.Database;
+using StatisticTrans.Contract.ModesCentre;
+using StatisticTrans.Contract;
+using ASUTP.Core;
+using System.Threading.Tasks;
+using System.Reflection;
+using System.ComponentModel;
+using System.ServiceModel.Dispatcher;
+using StatisticCommon.Communication;
+using StatisticCommon.Contract;
+
+namespace STrans.Service
+{
+    public abstract class Service : StatisticCommon.Service
+    {
+        public Service ()
+            : base()
+        {
+        }
+
+        protected override void create (bool bForced)
+        {
+            bool bCreate = bForced;
+
+            if (bCreate == false)
+                bCreate = Equals (_arrayAdmin, null);
+            else
+                ;
+
+            if (bCreate == true)
+                _arrayAdmin = new HAdmin [(int)StatisticTrans.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+            else
+                ;
+        }
+
+        protected StatisticTrans.CONN_SETT_TYPE CurrentIndex { get; set; }
+        protected HAdmin[] _arrayAdmin;
+
+        public override void Start ()
+        {
+            //??? разместить за выполнением действий в цикле
+            base.Start ();
+
+            for (StatisticTrans.CONN_SETT_TYPE i = (StatisticTrans.CONN_SETT_TYPE)0; i < StatisticTrans.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                _arrayAdmin [(int)i]?.Start ();
+        }
+
+        public override void Stop ()
+        {
+            //Action delegateStop = async delegate () {
+            //    await Task.Factory.StartNew (() => {
+                    for (StatisticTrans.CONN_SETT_TYPE i = (StatisticTrans.CONN_SETT_TYPE)0;
+                        (i < StatisticTrans.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) && (Equals (_arrayAdmin == null) == false);
+                        i++) {
+                        if (!(_arrayAdmin [(int)i] == null)) {
+                            _arrayAdmin [(int)i]?.Stop ();
+                            _arrayAdmin [(int)i] = null;
+                        } else
+                            ;
+                    }
+            //    });
+
+                base.Stop ();
+            //};
+
+            //delegateStop ();
+
+            ////Task.Factory.StartNew(() => );
+        }
+
+        public override void Dispose ()
+        {
+            base.Dispose ();
+        }
+
+        public override void Close ()
+        {
+            base.Close ();
+        }
+
+        public override void Activate (bool actived, int index = -1)
+        {
+            if (index < 0)
+                foreach (StatisticTrans.CONN_SETT_TYPE indx in Enum.GetValues (typeof (StatisticTrans.CONN_SETT_TYPE)))
+                    if (indx < StatisticTrans.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE)
+                        _arrayAdmin [(int)indx].Activate (actived);
+                    else
+                        ;
+            else
+                _arrayAdmin [index].Activate (actived);
+        }
+
+        protected override void setDelegateWait ()
+        {
+            _arrayAdmin.ToList ().ForEach (a => a?.SetDelegateWait (delegateStartWait, delegateStopWait, delegateStatus));
+        }
+
+        protected override void setDelegateReport ()
+        {
+            _arrayAdmin.ToList ().ForEach (a => a?.SetDelegateReport (delegateErrorReport, delegateWarningReport, delegateActionReport, delegateClearReport));
+        }
+
+        protected override void setDelegateForceDate ()
+        {
+            _arrayAdmin.ToList ().ForEach (a => a?.SetDelegateDatetime (delegateForceDatetime));
+        }
+
+        protected override void setDelegateData ()
+        {
+            _arrayAdmin.ToList ().ForEach (a => a?.SetDelegateData (delegateRequestDone, delegateSuccessResult, delegateStateSuccessResult, delegateErrorResult));
+        }
+
+        protected override void setDelegateSaveComplete ()
+        {
+            _arrayAdmin.ToList ().ForEach (a => a?.SetDelegateSaveComplete (new DelegateIntFunc (delegateSaveCompleted)));
+        }
+
+        public override bool IsValidate ()
+        {
+            return (!(_arrayAdmin == null))
+                && (_arrayAdmin.ToList ().TrueForAll (admin => Equals (admin) == false));
+        }
+
+        public override bool IsValidate (int index = -1)
+        {
+            return (!(_arrayAdmin == null))
+                && (!(index < 0))
+                && (!(_arrayAdmin [index] == null));
+        }
+
+        public override int AdminCount
+        {
+            get
+            {
+                return _arrayAdmin.Length;
+            }
+        }
+    }
+}

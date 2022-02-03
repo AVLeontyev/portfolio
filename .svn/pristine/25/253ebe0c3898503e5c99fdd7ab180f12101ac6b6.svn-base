@@ -1,0 +1,1034 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
+using System.Data;
+using System.Collections.ObjectModel;
+
+//using Newtonsoft.Json;
+//using Newtonsoft.Json.Linq;
+
+using ASUTP;
+using System.Threading;
+using ASUTP.Helper;
+using interop.OICDAC;
+using RTDBCon_Interop;
+using ASUTP.Database;
+
+namespace StatisticCommon.OICDAC
+{
+    /// <summary>
+    /// Типы обращенйи к 'OICDAC.DbInterface' - соответствуют 'KindRefresh'
+    /// </summary>
+    [Serializable]
+    public enum Operation : short
+    {
+        Unknown = 0, Period, ActualData
+    }
+
+    /// <summary>
+    /// Взаимодействие с источниками данных
+    /// </summary>
+    public class Admin : HAdmin
+    {
+        /// <summary>
+        /// Идентификатор источника данных
+        /// </summary>
+        private static readonly int ID_SOURCE_OICDAC = 8001;
+        /// <summary>
+        /// Идентификатор собственной БД значений(для записи, чтения ранее сохраненных значений)
+        /// </summary>
+        private static readonly int ID_SOURCE_DEFAULT = 671;
+
+        /// <summary>
+        /// Перечисление - признаки способов сохранения значений в БД
+        /// </summary>
+        [Flags]
+        [Serializable]
+        public enum MODE_WRITE
+        {
+            UnSet = 0x0
+            ///Стиль до 2008 - INSERT|UPDATE
+            , STYLE_2005
+            ///Стиль начиная с 2008 - MERGE
+            , STYLE_2008
+            ///Сохраннеи текущих значений
+            , Current = 0x4
+            ///Сохраннеи архивных(ретроспективных) значений
+            , Archive = 0x8
+        }
+        /// <summary>
+        /// Перечисление - состояния для обработки (различные запросы к БД)
+        /// </summary>
+        private enum StatesMachine { CurrentTime, ReadMainCurrent, StartSourceActualData, WriteCurrent, WriteArchive }
+
+        /// <summary>
+        /// Режим записи значений в собственную БД (устанавливается из-вне)
+        /// </summary>
+        public static MODE_WRITE ModeWrite { get; set; }
+
+        /// <summary>
+        /// Список оборудования генерации
+        /// </summary>
+        private List<Tuple<FormChangeMode.KeyDevice, TG>> _allTG;
+        /// <summary>
+        /// Событие появления нового значения
+        /// </summary>
+        public event Action<FormChangeMode.KeyDevice, DbInterface.OIRequestResult> EventNewOIRequestResult;
+        //// TODO: заменить на словарь отсортированных списков
+        //private Dictionary<FormChangeMode.KeyDevice, SortedList<DateTime, DbInterface.OIRequestResult>> _dictRequestResult;
+        private List<DbInterface.RequestResult> _listRequestResult
+            , _listReadResult;
+        /// <summary>
+        /// Интервал (группы)периодических запросов
+        /// </summary>
+        public TimeSpan TS_INTERVAL_REQUEST = TimeSpan.FromSeconds (1);
+        /// <summary>
+        /// Объект таймера, обеспечивающий выполнение периодических запросов
+        /// </summary>
+        private System.Threading.Timer _timerRequest;
+
+        /// <summary>
+        /// Таблица-аргумент для пердачи хранимой процдуре MERGE
+        ///  только стиль 2008
+        /// </summary>
+        private DataTable _tableWriteReqRes;
+
+        //private DbAtomSources.InterfaceParameter _interfaceParameter;
+
+        private ASUTP.Database.AtomConnectionSettings[] _connSetts;
+
+        private DbInterface.MODE ModeInterface
+        {
+            get; // return (DbInterface.MODE)(_interfaceParameter.Value as object []) [(int)DbInterface.INDEX_PARAMETER.Mode];
+
+            set;
+        }
+
+        /// <summary>
+        /// Конструктор - основной (с аргументами)
+        /// </summary>
+        /// <param name="alias">Псевдоним источника БД</param>
+        /// <param name="mode">Режим работы приложения</param>
+        public Admin (string alias, DbInterface.MODE mode)
+            : base (TECComponentBase.TYPE.ELECTRO)
+        {
+            int err =
+//#if _DEBUG_ONLY_OICDAC
+                -1
+//#endif
+//                0
+                ;
+
+            _connSetts = new ASUTP.Database.AtomConnectionSettings[] {
+//#if _DEBUG_ONLY_OICDAC
+                new ASUTP.Database.ConnectionSettings (DbTSQLConfigDatabase.DbConfig ().GetDataTableConnSettingsOfIdSource (ASUTP.Forms.FormMainBase.s_iMainSourceData
+                    , -1
+                    , out err).Rows[0]
+                , -1),
+//#endif
+                new ASUTP.Database.AtomConnectionSettings (ID_SOURCE_OICDAC, alias, "OICDAC")
+            };
+
+            ParseGetData.Timeout =
+                //TS_INTERVAL_REQUEST
+                TimeSpan.FromMilliseconds(ASUTP.Core.Constants.MAX_WATING)
+                ;
+            ModeInterface = mode;
+
+            if (err == 0) {
+                _listRequestResult = new List<DbInterface.RequestResult> ();
+
+                initDataTableWriteRequestResult ();
+
+                _timerRequest = new System.Threading.Timer (fTimerRequest, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+
+                ActionReport ("StatisticCommon.OICDAC.Admin::ctor () - ...");
+            } else
+            // TODO: конструктор не должен иницировать исключение
+                throw new Exception ($"StatisticCommon.OICDAC.Admin::ctor () - не удалось получить параметры соединения с собственной БД, идентификатор=<{ASUTP.Forms.FormMainBase.s_iMainSourceData}>...");
+        }
+
+        public override void InitTEC (FormChangeMode.MODE_TECCOMPONENT mode, ASUTP.Core.HMark markQueries, bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData = false)
+        {
+            base.InitTEC (mode, markQueries, bIgnoreTECInUse, arTECLimit, bUseData);
+
+            initAllTG ();
+        }
+
+        /// <summary>
+        /// Инициализировать перечень подразделений с оборудованием генерации
+        /// </summary>
+        /// <param name="listTEC">Перечень подразделений с оборудованием генерации</param>
+        public void InitTEC (List<TEC> listTEC)
+        {
+            m_list_tec = listTEC;
+            initAllTG ();
+        }
+
+        private void initAllTG ()
+        {
+            _allTG = (from c in (from t in m_list_tec select t.ListTECComponents).SelectMany (l => l).ToList () where c.IsTG == true select Tuple.Create<FormChangeMode.KeyDevice, TG> (new FormChangeMode.KeyDevice () { Id = c.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG }, (TG)c.ListLowPointDev [0])).ToList ();
+        }
+        /// <summary>
+        /// Все ключи для оборудования генерации
+        /// </summary>
+        public IEnumerable<FormChangeMode.KeyDevice> AllKeys
+        {
+            get
+            {
+                return from tg in _allTG select tg.Item1;
+            }
+        }
+
+        public override bool Activate (bool active)
+        {
+            bool bRes = base.Activate (active);
+
+            ASUTP.Logging.Logg ().Debug($@"OICDAC.Admin::Activate (active={active}) - Result={bRes}...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+            if (bRes == true)
+                _timerRequest?.Change (active == true ? (int)TS_INTERVAL_REQUEST.TotalMilliseconds : System.Threading.Timeout.Infinite
+                    , System.Threading.Timeout.Infinite);
+            else
+                ;
+
+            return bRes;
+        }
+
+        /// <summary>
+        /// Начать выполнять запросы к источнику данных
+        /// </summary>
+        public override void Start ()
+        {
+            base.Start ();
+
+            // перед установлением связи с источником OICDAC, необходимо необходимо установить тип запроса - перидические данные
+            _kindRefresh = KindRefreshEnum.kr_Period;
+            serverTime = DateTime.MinValue;
+            m_prevDate =
+            m_curDate =
+                DateTime.MaxValue;
+
+            StartDbInterfaces ();
+        }
+
+        public override void Stop ()
+        {
+            try {
+                _timerRequest?.Change (System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                _timerRequest = null;
+
+                // связь с источником OICDAC прервана; при ее восстановлении необходимо начать с запроса перидических данных
+                _kindRefresh = KindRefreshEnum.kr_Period;
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, "OICDAC.Admin::Stop () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            base.Stop ();
+        }
+
+        private bool IsStatesMachineRequired (StatesMachine state)
+        {
+            bool bRes = state == StatesMachine.CurrentTime;
+
+            if (bRes == false)
+                switch (state) {
+                    case StatesMachine.ReadMainCurrent:
+                        bRes = (((IsWriteCurrentRequired == true) && (ModeWrite.HasFlag (MODE_WRITE.STYLE_2005) == true))
+                                || (ModeInterface.HasFlag (DbInterface.MODE.Client) == true))
+                            && (serverTime - m_prevDate).TotalMilliseconds > TS_INTERVAL_REQUEST.TotalMilliseconds;
+                        break;
+                    case StatesMachine.StartSourceActualData:
+                        bRes = //(StatisticTrans.MODE_MASHINE.SERVICE_PERIOD) ||
+                            (((IsWriteCurrentRequired == true)
+                                    || (IdMainListener < 0)) // при не присоединяемой БД значений параметр 'WriteCurrent' не имеет значения
+                                //&& (serverTime.Equals(DateTime.MinValue) == true)
+                                && (_kindRefresh == KindRefreshEnum.kr_Period));
+                        break;
+                    case StatesMachine.WriteCurrent:
+                        bRes = IsWriteCurrentRequired
+                            && (_kindRefresh == KindRefreshEnum.kr_ActualData);
+                        break;
+                    case StatesMachine.WriteArchive:
+                        bRes = (ModeInterface.HasFlag (DbInterface.MODE.Server) == true)
+                            && (ModeWrite.HasFlag (MODE_WRITE.Archive) == true)
+                            && (IdMainListener > 0)
+                            && (_kindRefresh == KindRefreshEnum.kr_ActualData);
+                        break;
+                    case StatesMachine.CurrentTime:
+                    default:
+                        break;
+                }
+            else
+                ;
+
+            return bRes;
+        }
+
+        private bool IsWriteCurrentRequired
+        {
+            get
+            {
+                return (ModeInterface.HasFlag (DbInterface.MODE.Server) == true)
+                    && (ModeWrite.HasFlag (MODE_WRITE.Current) == true)
+                    && (IdMainListener > 0);
+            }
+        }
+
+        private void fTimerRequest (object syncState)
+        {
+            string mes = string.Empty;
+
+            if (IsStarted == true) {
+                lock (_listRequestResult) {
+                    mes = $"::fTimerRequest () - кол-во элементов <{_listRequestResult?.Count}>, тип данных <{_kindRefresh}>...";
+                    ActionReport (mes);
+                    Logging.Logg ().Action (mes, Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+                if (IdMainListener > 0)
+                    AddState ((int)StatesMachine.CurrentTime);
+                else
+                    ;
+                if (IsStatesMachineRequired (StatesMachine.StartSourceActualData) == true)
+                    AddState ((int)StatesMachine.StartSourceActualData);
+                else
+                    ;
+                if (IsStatesMachineRequired (StatesMachine.ReadMainCurrent) == true)
+                    AddState ((int)StatesMachine.ReadMainCurrent);
+                else
+                    ;
+                if (IsStatesMachineRequired(StatesMachine.WriteCurrent) == true) {
+                    ActionReport ($"::fTimerRequest () - AddState ({StatesMachine.WriteCurrent})...");
+                    AddState ((int)StatesMachine.WriteCurrent);
+                } else
+                    ;
+                if (IsStatesMachineRequired (StatesMachine.WriteArchive) == true)
+                    AddState ((int)StatesMachine.WriteArchive);
+                else
+                    ;
+                Run ("Периодический запрос к БД чтение/запись данных");
+            } else
+                ;
+
+            // может быть останов, но событие уже поставлено в очереди
+            _timerRequest?.Change ((int)TS_INTERVAL_REQUEST.TotalMilliseconds, System.Threading.Timeout.Infinite);
+        }
+
+
+#region Сравнение пары объектов с результатами
+        /// <summary>
+        /// Класс для сравнения пары объектов с результатами
+        /// </summary>
+        private class RequestResultComparer : IEqualityComparer<DbInterface.RequestResult>
+        {
+            public bool Equals (DbInterface.RequestResult x, DbInterface.RequestResult y)
+            {
+                return ((x.Key.Id == y.Key.Id) && (x.Key.Mode == y.Key.Mode))
+                    //&& ((x.Value.KeySignal.Letter == y.Value.KeySignal.Letter) && (x.Value.KeySignal.Index == y.Value.KeySignal.Index))
+                    && (x.Value.Tag == y.Value.Tag)
+                    //&& (x.Item3 == y.Item3)
+                    ;
+            }
+
+            public int GetHashCode (DbInterface.RequestResult obj)
+            {
+                return (obj.Key.Id + (int)obj.Key.Mode + (int)obj.Value.Tag * (int)obj.Value.Tag + (int)obj.Stamp.Second * 1000 + (int)obj.Stamp.Millisecond).GetHashCode ();
+            }
+        }
+#endregion
+
+        private void dbOICDACSources_OnEventHandler (object obj)
+        {
+            ID_EVENT idEvent = ID_EVENT.Unknown;
+
+            DbInterface.KEY_SIGNAL.CategoryDelegateLetter fCategory;
+            DbInterface.RequestResult reqRes
+                , equaleReqRes
+                , lastReqRes;
+            bool bEquale = false
+                , bLastExists = false;
+            FormChangeMode.KeyDevice keyDevice;
+            DbInterface.OIRequestResult oicdacReqRes;
+
+            if (obj is bool)
+            // результат установления соединения
+                ;
+            else if (obj is Array)
+                idEvent = (ID_EVENT)(obj as object[])[0];
+            else
+                ;
+
+            switch (idEvent) {
+                case ID_EVENT.NewRequestResult:
+                    oicdacReqRes = (DbInterface.OIRequestResult)(obj as object []) [1];
+                    keyDevice = (from tg in _allTG where tg.Item2.OICDACNames [(DbInterface.OIKParameter)oicdacReqRes.Tag] == oicdacReqRes.KeySignal.Name select tg.Item1).FirstOrDefault ();
+                    reqRes = new DbInterface.RequestResult (keyDevice, oicdacReqRes);
+                    // получено значение - добавляем строку в список для обработки
+                    lock (_listRequestResult) {
+                        try {
+                            //if (ModeWrite.HasFlag (MODE_WRITE.Archive) == false) {
+                            //    equaleReqRes = _listRequestResult.Equale (reqRes, out bEquale);
+                            //    if (bEquale == true)
+                            //        _listRequestResult.Remove (equaleReqRes);
+                            //    else
+                            //        ;
+                            //} else
+                            //    ;
+
+                            //if (ModeWrite.HasFlag (MODE_WRITE.Archive) == true) {
+                            lastReqRes = _listRequestResult.Last (reqRes, out bLastExists);
+                            if (bLastExists == true) {
+                                lastReqRes.Next (reqRes.Value);
+                            } else
+                                ;
+                            //} else ;
+
+                            _listRequestResult.Add (reqRes);
+                        } catch (Exception e) {
+                            Logging.Logg ().Exception (e, $"OICDAC.Admin::dbOICDACSources_OnEventHandler (ID_EVENT={idEvent}) - lock (_listRequestResult)...", Logging.INDEX_MESSAGE.NOT_SET);
+                        }
+                    }
+
+                    // получено значение - добавляем строку в таблицу
+                    EventNewOIRequestResult?.Invoke (keyDevice, oicdacReqRes);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private enum INDEX_GROUP_LISTENER
+        {
+//#if _DEBUG_ONLY_OICDAC
+            MAIN = 0, //Обязательно начинается с "0", т.к. - индекс
+//#endif
+            OICDAC
+        }
+        /// Идентификатор группы подписчиков к ???одному источнику(БД)
+        /// , как правило = идентификатору ТЭЦ, т.к. у ТЭЦ несколько подписчиков (в ~ от типа запрашиваемых данных)
+        /// , но в этом случае один источник - один подписчик для всех ТЭЦ
+        private readonly ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE [] IdGroupListeners = {
+//#if _DEBUG_ONLY_OICDAC
+            ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL,
+//#endif
+            ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE.OICDAC
+        };
+
+        private const CONN_SETT_TYPE ConnSettTypeListener = CONN_SETT_TYPE.DATA_SOTIASSO;
+
+        private int IdMainListener
+        {
+            get
+            {
+                return
+//#if _DEBUG_ONLY_OICDAC
+                    m_dictIdListeners [(int)IdGroupListeners [(int)INDEX_GROUP_LISTENER.MAIN]] [(int)ConnSettTypeListener]
+//#endif
+//                    -1
+                    ;
+            }
+        }
+
+        private int IdSourceListener
+        {
+            get
+            {
+                return m_dictIdListeners [(int)IdGroupListeners [(int)INDEX_GROUP_LISTENER.OICDAC]] [(int)ConnSettTypeListener];
+            }
+        }
+
+#region Взамодействие с сщбственной БД (значений)
+        /// <summary>
+        /// Перечисление - поля (с точностью жо наименования) в таблице БД для хранения значений
+        /// </summary>
+        public enum FIELDS {
+            ID_SIGNAL
+            , VALUE
+            , DATETIME
+            , UPDATE_DATETIME
+            , tmdelta
+            , QUALIFY
+            , ID_SOURCE
+        };
+
+        public static KeyValuePair<FIELDS, Type>[] s_TableSOTIASSOValueTypes = new KeyValuePair<FIELDS, Type>[] {
+            new KeyValuePair<FIELDS, Type>(FIELDS.ID_SIGNAL, typeof(string))
+            , new KeyValuePair<FIELDS, Type>(FIELDS.DATETIME, typeof(DateTime))
+            , new KeyValuePair<FIELDS, Type>(FIELDS.VALUE, typeof(float))
+           // , new KeyValuePair<FIELDS, Type>(FIELDS.UPDATE_DATETIME, typeof(DateTime))
+            , new KeyValuePair<FIELDS, Type>(FIELDS.tmdelta, typeof(int))
+            , new KeyValuePair<FIELDS, Type>(FIELDS.QUALIFY, typeof(int))
+            , new KeyValuePair<FIELDS, Type>(FIELDS.ID_SOURCE, typeof(int))
+        };
+
+        private void initDataTableWriteRequestResult ()
+        {
+            if (ModeWrite.HasFlag(MODE_WRITE.STYLE_2008) == true) {
+                _tableWriteReqRes = new DataTable ();
+                s_TableSOTIASSOValueTypes.ToList ().ForEach (field => _tableWriteReqRes.Columns.Add (new DataColumn(field.Key.ToString(), field.Value)));
+            } else
+                ;
+        }
+
+        /// <summary>
+        /// Добавить строку к таблице, подгатавливая ее к передаче MS SQLServer-у в качестве аргумента хранимой процедуры (!!! только для MERGE)
+        /// </summary>
+        /// <param name="state">Состояние для которого производится вставка значения</param>
+        /// <param name="reqRes">Объект для вставки в таблицу БД</param>
+        private void addRowToWriteRequestResult (StatesMachine state, DbInterface.RequestResult reqRes)
+        {
+            TG dev;
+            if ((Equals (reqRes, null) == false)
+                && (reqRes.Ready == 0)) {
+                dev = (from tg in _allTG where tg.Item1 == reqRes.Key select tg.Item2).FirstOrDefault ();
+
+                if (Equals (dev) == false) {
+                    reqRes.Next (true, state == StatesMachine.WriteArchive);
+
+                    _tableWriteReqRes.Rows.Add (new object[] {
+                        dev.m_SensorsString_SOTIASSO[reqRes.Value.Tag]
+                        , reqRes.Value.Stamp1
+                        , reqRes.Value.Value
+                        , state == StatesMachine.WriteArchive ? reqRes.Delta : 0
+                        //, DateTime.MinValue // значение присваивается только при "Чтение"
+                        , reqRes.Value.Sign
+                        , ID_SOURCE_OICDAC
+                    });
+                } else
+                    ;
+            } else
+                ;
+        }
+
+        /// <summary>
+        /// Очистить список полученных от источника значений от уже сохраненных в собственной БД
+        /// </summary>
+        /// <param name="state">Состояние по которому произведена успешная оьработка(сохраннеи значений)</param>
+        private void clearListRequestResult (StatesMachine state)
+        {
+            //DbInterface.RequestResult reqResToRemove;
+            //List<DbInterface.RequestResult> listReqResToRemove;
+            DbInterface.RequestResult.STATE stateDone =
+                //(ModeWrite.HasFlag (MODE_WRITE.Archive) == true ? DbInterface.RequestResult.STATE.Done : DbInterface.RequestResult.STATE.DoneCurrent)
+                DbInterface.RequestResult.STATE.DoneAll
+                ;
+            // проверить - производилось ли сохранннение (метод может быть вызван в клиенте; в клиенте запись не выполняется)
+            if ((IsStatesMachineRequired(StatesMachine.WriteCurrent) == true)
+                || (IsStatesMachineRequired(StatesMachine.WriteArchive) == true))
+                lock (_listRequestResult) {
+                    //listReqResToRemove = new List<DbInterface.RequestResult> ();
+
+                    try {
+                        //listReqResToRemove =
+                        _listRequestResult =
+                            _listRequestResult.Where (rr => {
+                            rr.Next (false, false);
+
+                            return (rr.State < stateDone);
+                        }).ToList();
+
+                        //while (listReqResToRemove.Count > 0) {
+                        //    reqResToRemove = listReqResToRemove [0];
+                        //    _listRequestResult.Remove (reqResToRemove);
+                        //    listReqResToRemove.RemoveAt (0);
+                        //    reqResToRemove = null;
+                        //}
+                    } catch (Exception e) {
+                        Logging.Logg ().Exception (e, $"OICDAC.Admin::StateResponse (state={(StatesMachine)state}) - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+                }
+            else
+                ;
+        }
+
+        protected override int StateCheckResponse (int state, out bool error, out object outobj)
+        {
+            int iRes = 0;
+
+                error = false;
+                outobj = new DataTable();
+
+                StatesMachine statesMachine = (StatesMachine)state;
+
+                switch (statesMachine) {
+                    case StatesMachine.CurrentTime: // проверить наличие ответа на запрос текущих даты/времени
+                    case StatesMachine.ReadMainCurrent:
+                    case StatesMachine.StartSourceActualData:
+                    case StatesMachine.WriteCurrent:
+                    case StatesMachine.WriteArchive:
+                        iRes = response (m_IdListenerCurrent, out error, out outobj);
+                        break;
+                    default:
+                        error = true;
+                        outobj = null;
+                        break;
+                }
+
+                return iRes;
+        }
+
+        private enum QUERY_CODE
+        {
+            Unknown
+            , Current
+        }
+
+        /// <summary>
+        /// Признак необходимости запроса "периодических"(KindRefreshEnum.kr_Period) данных и обработки его результаттов
+        ///  , аналогия с 'OICDAC.Interface::kindRefresh', и они взаимозависимы
+        ///  , но  использовать одну и ту же переменную не представляется возможным:
+        ///  объекты (интерфейс и объект обращения к данным по интерфейсу) независимы - не имеют ссылок друг на друга
+        ///  (по существу должны быть реализованы в разных сборках)
+        /// </summary>
+        private KindRefreshEnum _kindRefresh;
+
+        protected override int StateRequest (int state)
+        {
+            int iRes = 0;
+
+            string msg = string.Empty
+                , req = string.Empty;
+            List<List<string>> values = new List<List<string>> { new List<string>(), new List<string>() }; // для 'UPADTE', 'INSERT'
+            DbInterface.RequestResult equaleReadRes;
+            bool bEquale = false;
+            ASUTP.Database.DbTSQLInterface.QUERY_TYPE action = ASUTP.Database.DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE;
+
+            switch ((StatesMachine)state) {
+                case StatesMachine.CurrentTime:
+                    // TODO: запросить текущие дату/время
+                    Request (IdMainListener, "SELECT GETDATE()");
+                    break;
+                case StatesMachine.ReadMainCurrent: // запрос чтения значений из собственной БД 
+                    Request (IdMainListener, "SELECT * FROM [dbo].[CURRENT_VALUES]");
+                    break;
+                case StatesMachine.StartSourceActualData: // запрос чтения значений источника данных
+                    Request (IdSourceListener, Operation.ActualData.ToString());
+                    break;
+                case StatesMachine.WriteCurrent: // UPDATE and INSERT
+                case StatesMachine.WriteArchive: // MERGE
+                    try {
+                        // заблокировать доступ к списку
+                        lock (_listRequestResult) {
+                            // очистить таблицу-аргумент для хранимой процедуры 'MERGE'
+                            if (ModeWrite.HasFlag(MODE_WRITE.STYLE_2008) == true) {
+                            // при стиле 2005 (INSERT/UPDATE) не используется
+                                _tableWriteReqRes.Clear ();
+                            } else
+                                ;
+                            // получить перечень значений, подлежащих обработке
+                            _listRequestResult.Where(reqRes => {
+                                return (StatesMachine)state == StatesMachine.WriteCurrent ? ((reqRes.Delta < 0) && (reqRes.State == DbInterface.RequestResult.STATE.New))
+                                    : (StatesMachine)state == StatesMachine.WriteArchive ? ((reqRes.Delta > 0) && (reqRes.State < DbInterface.RequestResult.STATE.RequestArchive))
+                                        : false;
+                            }).ToList()
+                                .ForEach (reqRes => {
+                                try {
+                                    // для каждого значения в ~ от способа записи
+                                    if (ModeWrite.HasFlag(MODE_WRITE.STYLE_2005) == true) {
+#region Проверка наличия - для вставки/обновлении
+                                        // найти эквивалент из в БД (результат чтения непосредственно перед обработкой события запиcb)
+                                        equaleReadRes = _listReadResult.Equale (reqRes, out bEquale);
+
+                                        action = bEquale == false ? ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT
+                                            : (reqRes.Stamp - equaleReadRes.Stamp).TotalMilliseconds > 0 ? ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE
+                                                : ASUTP.Database.DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE;
+
+                                        if ((action < ASUTP.Database.DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE)
+                                            && (Equals (reqRes.Value.Value, null) == false)) {
+                                            if (action == ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT) {
+                                                values[(int)action].Add (string.Format("({0})", string.Join (",", new string[] {
+                                                    reqRes.Key.Id.ToString ()
+                                                    , ((int)reqRes.Value.Tag).ToString()
+                                                    , $"'{reqRes.Value.Stamp1.ToString("yyyyMMdd hh:mm:ss.fff")}'"
+                                                    , Equals (reqRes.Value.Stamp2, null) == false ? $"'{reqRes.Value.Stamp2?.ToString("yyyyMMdd hh:mm:ss.fff")}'" : DBNull.Value.ToString()
+                                                    , Equals (reqRes.Value.Value, null) == false ? ((double)reqRes.Value.Value).ToString (System.Globalization.CultureInfo.InvariantCulture) : DBNull.Value.ToString()
+                                                    , "GETDATE()"
+                                                    , reqRes.Value.Sign.ToString()
+                                                })));
+                                            } else if (action == ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE) {
+                                                //TODO: !!! Таблица отсутствует. Актуализировать наименование таблицы и ее структуру
+                                                values[(int)action].Add (string.Format ("UPDATE [dbo].[OICDAC-CurrentValue]"
+                                                    + " SET [Stamp1] = {2}"
+                                                        + ", [Stamp2] = {3}"
+                                                        + ", [VALUE0] = {4}"
+                                                        + ", [last_changed_at] = {5}"
+                                                        + ", [QUALIFY] = {6}"
+                                                            + " WHERE"
+                                                                + " [ID_TG] = {0}"
+                                                                + " AND [TAG] = {1};"
+                                                    , reqRes.Key.Id
+                                                    , (int)reqRes.Value.Tag
+                                                    , $"'{reqRes.Value.Stamp1.ToString("yyyyMMdd hh:mm:ss.fff")}'"
+                                                    , Equals (reqRes.Value.Stamp2, null) == false ? $"'{reqRes.Value.Stamp2?.ToString("yyyyMMdd hh:mm:ss.fff")}'" : DBNull.Value.ToString()
+                                                    , Equals (reqRes.Value.Value, null) == false ? ((double)reqRes.Value.Value).ToString (System.Globalization.CultureInfo.InvariantCulture) : DBNull.Value.ToString()
+                                                    , "GETDATE()"
+                                                    , reqRes.Value.Sign));
+                                            } else
+                                                ;
+                                        } else
+                                            ;
+#endregion
+                                    } else if (ModeWrite.HasFlag(MODE_WRITE.STYLE_2008) == true) {
+                                        addRowToWriteRequestResult ((StatesMachine)state, reqRes);
+                                    } else
+                                        ;
+                                } catch (Exception e) {
+                                    Logging.Logg ().Exception (e, $"OICDAC.Admin::StateRequest (StatesMachine={(StatesMachine)state}) - reqRes.ID_TG=<{reqRes.Key.Id}>...", Logging.INDEX_MESSAGE.NOT_SET);
+                                }
+                            });
+
+                            //values = string.Join (","
+                            //    , from reqRes in _listRequestResult select string.Format("({0})", string.Join (",", )));
+                        }
+                    } catch (Exception e) {
+                        Logging.Logg ().Exception (e, $"OICDAC.Admin::StateRequest (StatesMachine={(StatesMachine)state}) - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+
+                    if (ModeWrite.HasFlag(MODE_WRITE.STYLE_2005) == true) {
+#region Проверка наличия - для вставки/обновлении
+                        values.ForEach (value => {
+                            if (value.Count > 0)
+                                if (values.IndexOf(value) == (int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE)
+                                    req += string.Join ("", value.ToArray ());
+                                else if (values.IndexOf(value) == (int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT)
+                                    req += $"INSERT INTO [dbo].[OICDAC-CurrentValue]"
+                                        + $" ({string.Join (",", Enum.GetNames (typeof (FIELDS)))})"
+                                        + $" VALUES {string.Join (",", value.ToArray ())}";
+                                else
+                                    ;
+                            else
+                                ;
+                        });
+#endregion
+                    } else if (ModeWrite.HasFlag(MODE_WRITE.STYLE_2008) == true) {
+                        req = $"sp_SOTIASSO_MERGE";
+                    } else
+                        ;
+
+                    if (string.IsNullOrEmpty (req) == false)
+                        if (ModeWrite.HasFlag(MODE_WRITE.STYLE_2005) == true)
+                            Request (IdMainListener, req);
+                        else if (ModeWrite.HasFlag(MODE_WRITE.STYLE_2008) == true)
+                            Request (IdMainListener, req
+                                , true
+                                , new ASUTP.Database.DbInterface.SP_PARAMETER { Name = "@src", Value = _tableWriteReqRes }
+                                , new ASUTP.Database.DbInterface.SP_PARAMETER { Name = "@id_source", Value = ID_SOURCE_DEFAULT }
+                                , new ASUTP.Database.DbInterface.SP_PARAMETER { Name = "@type", Value = (state == (int)StatesMachine.WriteCurrent) ? -1
+                                    : (state == (int)StatesMachine.WriteArchive) ? 0
+                                        : -1});
+                        else
+                            ;
+                    else
+                        ;
+                    break;
+                default:
+                    break;
+            }
+
+            if (string.IsNullOrEmpty (msg) == false)
+                ActionReport (msg);
+            else
+                ;
+
+            return iRes;
+        }
+
+        protected override int StateResponse (int state, object obj)
+        {
+            int iRes = 0;
+
+            string msg = string.Empty;
+
+            DataTable dataTableResponse = (DataTable)obj;
+
+            switch ((StatesMachine)state) {
+                case StatesMachine.CurrentTime:
+                    // TODO: принять/обработать значения текущих даты/времени
+                    serverTime = (DateTime)dataTableResponse.Rows[0][0];
+                    //// TODO: ??? выполняется по значению состояния
+                    //clearListRequestResult ((StatesMachine)state);
+                    if (m_prevDate > serverTime)
+                        m_prevDate = serverTime;
+                    else
+                        ;
+                    if (m_curDate > serverTime)
+                        m_curDate = serverTime;
+                    else
+                        ;
+                    break;
+                case StatesMachine.ReadMainCurrent:
+                    // TODO: принять/обработать значения
+                    _listReadResult = dataTableResponse.Rows.Cast<DataRow> ().Select (r => {
+                        KeyValuePair<OICDAC.DbInterface.OIKParameter, string> signal;
+                        Tuple<FormChangeMode.KeyDevice, TG> tg_row;
+                        bool bEqualeKeyDeviceTG = false;
+
+                        tg_row = _allTG.Equale(r[FIELDS.ID_SIGNAL.ToString()].ToString(), out bEqualeKeyDeviceTG);
+
+                        if ((bEqualeKeyDeviceTG == true)
+                            && (Equals (tg_row, null) == false)
+                            && (Equals (tg_row.Item1, FormChangeMode.KeyDevice.Empty) == false)) {
+                            signal = tg_row.Item2.TranslateKKSNAME (r [FIELDS.ID_SIGNAL.ToString ()].ToString ().Trim());
+
+                            if (signal.Key.Equals(DbInterface.OIKParameter.UNKNOWN) == false)
+                                return new DbInterface.RequestResult (tg_row.Item1
+                                    , new DbInterface.OIRequestResult (signal.Value
+                                        , (DateTime)r [FIELDS.DATETIME.ToString ()]
+                                        , (float)r [FIELDS.VALUE.ToString ()]
+                                        , (int)r [FIELDS.QUALIFY.ToString ()]
+                                        , signal.Key)
+                                    , (DateTime)r [FIELDS.UPDATE_DATETIME.ToString ()]
+                                );
+                            else
+                                return DbInterface.RequestResult.Empty;
+                        } else
+                            return DbInterface.RequestResult.Empty;
+                    }).Where(rr => { return Equals(rr, FormChangeMode.KeyDevice.Empty) == false; })
+                    .ToList();
+
+                    //var groups = from g in _listRequestResult.GroupBy<DbInterface.RequestResult, Tuple<FormChangeMode.KeyDevice, DbInterface.OIKParameter>>((reqRes) => {
+                    //    return Tuple.Create (reqRes.Item1, (DbInterface.OIKParameter)reqRes.Item2.Tag);
+                    //}) where g.Count() > 2 select g;
+
+                    //if (groups.Count () > 0) {
+                    //    Logging.Logg ().Error ($"OICDAC.Admin::StateResponse (StatesMachine={(StatesMachine)state}) - для ТГ кол-во значений больше, чем предусмотрено <2>", Logging.INDEX_MESSAGE.NOT_SET);
+                    //} else
+                    //    ;
+
+                    if (ModeInterface.HasFlag (DbInterface.MODE.Client) == true) {
+                        _listReadResult.ForEach (readReq => {
+                            System.Threading.Tasks.Task.Factory.StartNew (() => {
+                                EventNewOIRequestResult?.Invoke (readReq.Key, readReq.Value);
+                            });
+                        });
+                    } else
+                        ;
+
+                    m_prevDate = m_curDate;
+                    m_curDate = ASUTP.Core.HDateTime.ToMoscowTimeZone ();
+                    break;
+                case StatesMachine.StartSourceActualData:
+                    if (CheckNameFieldsOfTable (dataTableResponse, Enum.GetNames (typeof (FIELDS))) == true) {
+                        lock (_listRequestResult) {
+                            dataTableResponse.Rows.Cast<DataRow> ().ToList ().ForEach (r => {
+                                DbInterface.OIRequestResult reqRes;
+                                FormChangeMode.KeyDevice key;
+
+                                try {
+                                    reqRes = new DbInterface.OIRequestResult ((string)r[FIELDS.ID_SIGNAL.ToString ()]
+                                        //, KindRefreshEnum.kr_Period
+                                        , (DateTime)r[FIELDS.DATETIME.ToString ()]
+                                        , (float)r[FIELDS.VALUE.ToString ()]
+                                        //, (DateTime)r[FIELDS.UPDATE_DATETIME.ToString ()]
+                                        , (int)r[FIELDS.QUALIFY.ToString ()]
+                                        //ВНИМАНИЕ!, - поле используется для передачи типа сигнала 'Tag'
+                                        , (DbInterface.OIKParameter)(int)r[FIELDS.ID_SOURCE.ToString ()]
+                                    );
+
+                                    key = (from tgWithKey in _allTG where tgWithKey.Item2.OICDACNames[reqRes.Tag] == reqRes.KeySignal.Name select tgWithKey.Item1).FirstOrDefault ();
+
+                                    if ((Equals (key, null) == false)
+                                        && (key.Equals (FormChangeMode.KeyDevice.Empty) == false))
+                                        _listRequestResult.Add (new DbInterface.RequestResult (key, reqRes));
+                                    else
+                                        ;
+                                } catch (Exception e) {
+                                    Logging.Logg ().Exception (e, $@"OICDAC.Admin::StateResponse (State={(StatesMachine)state}) - разбор строки...", Logging.INDEX_MESSAGE.NOT_SET);
+                                }
+                            });
+                        }
+
+                        // установить признак, что данные из источника(по периоду) получили, теперь получать по подписке
+                        _kindRefresh = KindRefreshEnum.kr_ActualData;
+                    } else
+                        _kindRefresh = (bool)dataTableResponse.Rows[0][0] == true
+                            ? KindRefreshEnum.kr_ActualData
+                                : KindRefreshEnum.kr_Unknown;
+
+                    Logging.Logg ().Action (msg = $@"OICDAC.Admin.StateResponse (State=<{(StatesMachine)state}>) - получено строк <{dataTableResponse.Rows.Count}>...", Logging.INDEX_MESSAGE.NOT_SET);
+                    //readyData (ASUTP.Core.HDateTime.ToMoscowTimeZone (), true);
+                    readyStateData (state, ASUTP.Core.HDateTime.ToMoscowTimeZone (), _kindRefresh == KindRefreshEnum.kr_ActualData);
+                    break;
+                case StatesMachine.WriteCurrent:
+                case StatesMachine.WriteArchive:
+                    // TODO: не выполняется, т.к. MERGE ничего не возвращает
+                    clearListRequestResult ((StatesMachine)state);
+
+                    Logging.Logg ().Action (msg = $@"OICDAC.Admin.StateResponse (State=<{(StatesMachine)state}>) - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    //readData (ASUTP.Core.HDateTime.ToMoscowTimeZone (), true);
+                    readyStateData (state, ASUTP.Core.HDateTime.ToMoscowTimeZone (), true);
+                    break;
+                default:
+                    break;
+            }
+
+            if (string.IsNullOrEmpty (msg) == false)
+                ActionReport (msg);
+            else
+                ;
+
+            return iRes;
+        }
+
+        protected override INDEX_WAITHANDLE_REASON StateErrors (int state, int req, int res)
+        {
+            INDEX_WAITHANDLE_REASON reasonRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+
+            switch ((StatesMachine)state) {
+                case StatesMachine.WriteCurrent:
+                case StatesMachine.WriteArchive:
+                    lock (_listRequestResult) {
+                        _listRequestResult.ForEach (rr => {
+                            // перевести в ??? предыдущее состояние (!!! done)
+                            rr.Previous ();
+                        });
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            errorData (state);
+
+            return reasonRes;
+        }
+
+        protected override void StateWarnings (int state, int req, int res)
+        {
+            // TODO:
+        }
+
+        private DbInterface newDbInterface ()
+        {
+            return new OICDAC.DbInterface (""
+                , dbOICDACSources_OnEventHandler
+                , new object [(int)DbInterface.INDEX_PARAMETER.COUNT] {
+                    ModeInterface
+                    , (from tgWithKey in _allTG
+                        join param in new OICDAC.DbInterface.OIKParameter[] { OICDAC.DbInterface.OIKParameter.FREQUENCY, OICDAC.DbInterface.OIKParameter.APOWER } on 1 equals 1
+                            select new DbInterface.OIREQUEST_ITEM[] {
+                                new DbInterface.OIREQUEST_ITEM {
+                                    Group = FormChangeMode.KeyDevice.Empty
+                                    , Key = tgWithKey.Item1
+                                    , Name = tgWithKey.Item2.OICDACNames[param]
+                                    , Tag = param
+                                }
+                            }
+                    ).SelectMany(item => item)
+                }
+            );
+        }
+
+        public override void StartDbInterfaces ()
+        {
+            int err = -1;
+
+            try {
+                foreach(INDEX_GROUP_LISTENER indxGroupListener in Enum.GetValues(typeof(INDEX_GROUP_LISTENER))) {
+                    if (m_dictIdListeners.ContainsKey ((int)IdGroupListeners[(int)indxGroupListener]) == false) {
+                        // создать один подписчик для взаимодействия
+                        m_dictIdListeners.Add ((int)IdGroupListeners[(int)indxGroupListener], new int[(int)ConnSettTypeListener + 1]);
+                        for (int type = 0; type < (int)ConnSettTypeListener; type++)
+                            m_dictIdListeners[(int)IdGroupListeners[(int)indxGroupListener]][type] = -1;
+
+                    } else if (!(m_dictIdListeners[(int)IdGroupListeners [(int)indxGroupListener]] [(int)ConnSettTypeListener] < 0)) {
+                        ASUTP.Database.DbSources.Sources ().UnRegister (m_dictIdListeners[(int)IdGroupListeners [(int)indxGroupListener]] [(int)ConnSettTypeListener]);
+                        m_dictIdListeners[(int)IdGroupListeners [(int)indxGroupListener]] [(int)ConnSettTypeListener] = -1;
+                    } else
+                        ;
+
+                    if ((ModeInterface.HasFlag (DbInterface.MODE.Client) == true)
+                        && (indxGroupListener == INDEX_GROUP_LISTENER.OICDAC))
+                        continue;
+                    else
+                        ;
+
+                    if (indxGroupListener == INDEX_GROUP_LISTENER.OICDAC) {
+                        //_interfaceParameter = ;
+
+                        DbSources.Sources ().PreInitInterfaces (new DbSources.InterfaceParameter [] {
+                            new DbSources.InterfaceParameter () {
+                                IdType = DbInterface.DB_TSQL_INTERFACE_TYPE.OICDAC
+                                , IdSource = ID_SOURCE_OICDAC
+                                , delegateCreate = newDbInterface
+                            } });
+                    } else
+                        ;
+
+                    register ((int)IdGroupListeners [(int)indxGroupListener], (int)ConnSettTypeListener, _connSetts[(int)indxGroupListener]);
+                }
+            } catch (Exception e) {
+                Logging.Logg().Exception (e, $"AdminOICDAC::StartDbInterfaces () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+        }
+
+        public override void ClearValues ()
+        {
+            throw new NotImplementedException ();
+        }
+#endregion
+    }
+
+    static class EnumerableTupleKeDeviceTGExtensions
+    {
+        public static Tuple<FormChangeMode.KeyDevice, TG> Equale (this IEnumerable<Tuple<FormChangeMode.KeyDevice,TG>> target, string kks_name, out bool bResult)
+        {
+            Tuple<FormChangeMode.KeyDevice, TG> tgRes;
+            bResult = false;
+
+            tgRes = (from rr in target where rr.Item2.m_SensorsString_SOTIASSO.ContainsValue(kks_name) == true select rr).FirstOrDefault ();
+            if (Equals (tgRes, null) == false)
+                bResult = tgRes.Equals (FormChangeMode.KeyDevice.Empty) == false;
+            else
+                ;
+
+            return tgRes;
+        }
+    }
+
+    public static class EnumerableRequestResultExtensions
+    {
+        public static DbInterface.RequestResult Equale (this IEnumerable<DbInterface.RequestResult> target, DbInterface.RequestResult itemComparable, out bool bResult)
+        {
+            DbInterface.RequestResult reqRes;
+            bResult = false;
+
+            reqRes = (from rr in target where ((rr.Key == itemComparable.Key) && (rr.Value.Tag == itemComparable.Value.Tag)) select rr).FirstOrDefault ();
+            if (Equals (reqRes, null) == false)
+                bResult = reqRes.Equals (FormChangeMode.KeyDevice.Empty) == false;
+            else
+                ;
+
+            return reqRes;
+        }
+
+        public static DbInterface.RequestResult Last (this IEnumerable<DbInterface.RequestResult> target, DbInterface.RequestResult itemGrouping, out bool bResult)
+        {
+            DbInterface.RequestResult reqRes;
+            IGrouping<FormChangeMode.KeyDevice, DbInterface.OIKParameter> group;
+
+            bResult = false;
+
+            reqRes = target.GroupBy (rr => new {
+                KeyDevice = rr.Key,
+                Tag = rr.Value.Tag
+            })?.FirstOrDefault(gg => {
+                return gg.Key.KeyDevice == itemGrouping.Key && gg.Key.Tag == itemGrouping.Value.Tag;
+            })?.OrderBy(rr => rr.Stamp).LastOrDefault();
+
+            if (Equals (reqRes, null) == false)
+                bResult = reqRes.Equals (FormChangeMode.KeyDevice.Empty) == false;
+            else
+                ;
+
+            return reqRes;
+        }
+
+        public static IEnumerable<DbInterface.OIRequestResult> DistinctLastUpdated (this IEnumerable<DbInterface.OIRequestResult> target)
+        {
+            return (from g in target.GroupBy (reqRes => reqRes.KeySignal.Name) select g.OrderByDescending (r => r.Stamp1).First ());
+        }
+    }
+}

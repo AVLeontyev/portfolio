@@ -1,0 +1,40 @@
+﻿using ASUTP;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Reflection;
+using System.ServiceModel;
+using System.ServiceModel.Configuration;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
+using System.Text;
+using System.Collections.ObjectModel;
+using System.ServiceModel.Channels;
+
+namespace strans
+{
+    /// <summary>
+    /// Перечисление - признак ошибки при создании объекта того или иного типа
+    /// </summary>
+    public enum ERROR
+    {
+        Exception = -4
+        , Host = -3
+        , Client = -2
+        , Unknown = -1
+        , Ok
+    }
+
+    public interface ICreator
+    {
+        ERROR Error
+        {
+            get;
+        }
+
+        void Start (object obj = null);
+
+        void Stop ();
+    }
+}

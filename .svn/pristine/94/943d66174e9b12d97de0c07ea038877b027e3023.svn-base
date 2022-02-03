@@ -1,0 +1,338 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+using System.Data;
+using System.Threading;
+using System.Data.Common;
+using System.Data.OleDb;
+
+using ASUTP;
+using ASUTP.Core;
+using System.Collections.ObjectModel;
+using System.Reflection;
+using System.ComponentModel;
+using System.Reflection.Emit;
+//using interop.OICDAC;
+using RTDBCon_Interop;
+
+namespace StatisticCommon.OICDAC
+{
+    public class DbInterface : ASUTP.Database.DbInterface
+    {
+        public delegate void EnObjTableUpdated (object info);
+
+        public delegate void RTDBDataReceived (object key, List<OIValue> data);
+
+        public const Char CategoryTM = 'I';
+
+        public enum OIKParameter { UNKNOWN = 0, FREQUENCY = 7, APOWER = 1, RPOWER = 3 }
+
+        public enum RCATEGORY
+        {
+            UNKNOWN = -2
+            , ERROR
+            , OK
+            , WARNING
+        }
+
+        #region Коды результатов выполнения операций
+        public enum RESULT
+        {
+            UNKNOWN = -1
+            , ERR_QUERY_OK = 0
+            , ERR_QUERY_NOSERVICE
+            , ERR_QUERY_NOPERM
+            , ERR_QUERY_ABORT
+            , RTDBCON_QUERY_ABORT
+            , RTDBCON_CONNECTION_CLOSE
+            , ERR_QUERY_PARAM
+            , ERR_QUERY_OK_MAXLIMIT
+            , ERR_QUERY_OK_CHANGE_STEP
+            , ERR_QUERY_UNKNOWN_OI
+            , ERR_QUERY_TASK // 10
+
+            , ERR_QUERY_INTERVAL_OK = 11
+
+            , RTDB_MSG_STOP = 901
+            , RTDB_MSG_STRING = 910
+            , RTDB_CLOSE_USER = 998
+            , RTDB_MSG_DATA_RECEIVE = 1001
+            ,
+        }
+        #endregion
+
+        public enum EVENT : uint
+        {
+            NSI_CHANGED = 700
+            , NSI_EDIT_END = 701
+        };
+
+        #region Карта обработки результатов выполнения операций
+        public struct RRESULT
+        {
+            public RESULT Result;
+
+            public RCATEGORY Category;
+
+            public string Message;
+        }
+
+        public static RRESULT [] _results = {
+            new RRESULT() { Result = RESULT.UNKNOWN, Category = RCATEGORY.ERROR, Message = "неизвестная ошибка" }
+
+            , new RRESULT() { Result = RESULT.ERR_QUERY_OK, Category = RCATEGORY.OK, Message = "запрос отработал нормально" } // Ок
+            , new RRESULT() { Result = RESULT.ERR_QUERY_NOSERVICE, Category = RCATEGORY.ERROR, Message = "нет обработчика этого запроса" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_NOPERM, Category = RCATEGORY.ERROR, Message = "нет прав" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_ABORT, Category = RCATEGORY.ERROR, Message = "ошибка при обработке запроса" }
+            , new RRESULT() { Result = RESULT.RTDBCON_QUERY_ABORT, Category = RCATEGORY.ERROR, Message = "ошибка при посылке запроса" }
+            , new RRESULT() { Result = RESULT.RTDBCON_CONNECTION_CLOSE, Category = RCATEGORY.ERROR, Message = "соединение с БДРВ было закрыто" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_PARAM, Category = RCATEGORY.ERROR, Message = "ошибка в параметрах запроса" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_OK_MAXLIMIT, Category = RCATEGORY.OK, Message = "запрос отработал, превышен разрешённый размер - выданы не все данные" } // Ок
+            , new RRESULT() { Result = RESULT.ERR_QUERY_OK_CHANGE_STEP, Category = RCATEGORY.ERROR, Message = "запрос отработал, изменён шаг запроса" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_UNKNOWN_OI, Category = RCATEGORY.ERROR, Message = "в запросе указана неизвестная категория ОИ" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_TASK, Category = RCATEGORY.ERROR, Message = "отказ в запуске задачи от БДРВ - такая задача уже выполняется" }
+
+            , new RRESULT() { Result = RESULT.ERR_QUERY_INTERVAL_OK, Category = RCATEGORY.WARNING, Message = "не определено" }
+
+            , new RRESULT() { Result = RESULT.RTDB_MSG_STOP, Category = RCATEGORY.ERROR, Message = "выключение БДРВ" }
+            , new RRESULT() { Result = RESULT.RTDB_MSG_STRING, Category = RCATEGORY.ERROR, Message = "параметр lParam - указатель на событие ОИК" }
+            , new RRESULT() { Result = RESULT.RTDB_CLOSE_USER, Category = RCATEGORY.ERROR, Message = "отключение со стороны БДРВ то истечении времени ожидания" }
+            , new RRESULT() { Result = RESULT.RTDB_MSG_DATA_RECEIVE, Category = RCATEGORY.OK, Message = "подтверждение получения запроса" } // Ок
+        };
+        #endregion
+
+        [Flags]
+        public enum MODE
+        {
+            UNKNOWN = 0
+            /// Режим сервера - сохранение значений
+            , Server = 0x1
+            /// Режим клиента - чтение/отображение значений
+            , Client = 0x2
+            /// Обращение к собственной БД/БД (OIK)
+            , MSSQL = 0x4
+            /// Библиотека oikdac; массив запросов; получение значения по изменению
+            , OICDAC = 0x8
+            /// Библиотека rtdbcon
+            , RTDBCon = 0x10
+        }
+
+        public struct KEY_SIGNAL
+        {
+            public delegate OICategory CategoryDelegateLetter (Char letter);
+
+            private OICategory _category;
+
+            public Char Letter { get; private set; }
+
+            public int Index { get; private set; }
+
+            //public KEY_SIGNAL (string name)
+            //{
+            //    Category = null;
+
+            //    Index = -1;
+            //}
+
+            public KEY_SIGNAL (OICategory cat, Char letter, int index)
+            {
+                _category = cat;
+
+                Letter = letter;
+                Index = index;
+            }
+
+            public KEY_SIGNAL (string tag, CategoryDelegateLetter f)
+            {
+                _category = f?.Invoke(tag.Take(1).First());
+                if (Equals (_category, null) == true)
+                    Letter = tag.Take (1).First ();
+                else
+                    Letter = _category.Letter;
+
+                Index = int.Parse(new string(tag.Skip(1).ToArray()));
+            }
+
+            public override bool Equals (object obj)
+            {
+                return base.Equals (obj);
+            }
+        }
+
+        public struct OIRequestResult
+        {
+            public KEY_SIGNAL KeySignal;
+
+            public interop.OICDAC.KindRefreshEnum KindRefresh;
+
+            public DateTime Stamp1;
+
+            public object Value;
+
+            public int Sign;
+
+            public DateTime? Stamp2;
+
+            public OIKParameter Tag;
+        }
+
+        private MODE _mode;
+
+        #region OICDAC
+        private interop.OICDAC.DAC _dac;
+
+        private interop.OICDAC.OICConnection _dac_connection; // _dac.Connection
+
+        private interop.OICDAC.OIRequests _dac_requests; // _dac.OIRequests
+        private interop.OICDAC.OIRequest _req;
+        #endregion
+
+        #region RTDBCON
+        private OIKConnection _rtdb_connection; //
+
+        private readonly IntPtr _syncChannel;
+
+        // хэш таблица, связывающая запрос с пользовательскими данными
+        private Dictionary<OIKConnection.OIKAsyncQueryBase, object> completionMap =
+            new Dictionary<OIKConnection.OIKAsyncQueryBase, object> ();
+
+        public event Action<object> OnEnObjTableUpdated;
+
+        public event Action<object, List<OIValue>> OnDataReceived;
+
+        private bool _enObjTableUpdated = false;
+        #endregion
+
+        //private AutoResetEvent _eventConnected;
+
+        public DbInterface (string name, bool bIsActive = true, MODE mode = MODE.Server | MODE.OICDAC)
+            : base (name, bIsActive)
+        {
+        }
+
+        public override bool IsEmptyConnectionSettings
+        {
+            get
+            {
+                return String.IsNullOrEmpty ((string)m_connectionSettings);
+            }
+        }
+
+        protected override int Timeout { get; set; }
+
+        public override void Disconnect (out int err)
+        {
+            throw new NotImplementedException ();
+        }
+
+        public override bool EqualeConnectionSettings (object cs)
+        {
+            throw new NotImplementedException ();
+        }
+
+        public override void SetConnectionSettings (object cs, bool bStarted)
+        {
+            throw new NotImplementedException ();
+        }
+
+        /// <summary>
+        /// Установить соединение с источником данных и подготовить объект соединения к запросам
+        /// </summary>
+        /// <returns>Результат установления соединения и инициализации</returns>
+        protected override bool Connect ()
+        {
+            string msgLog = string.Empty;
+            bool result = false
+                , bRes = false;
+
+            if (m_connectionSettings == null)
+                return false;
+            else
+                ;
+
+            if (m_connectionSettings.GetType ().Equals (typeof (string)) == false)
+                return false;
+            else
+                ;
+
+            if (!(((string)m_connectionSettings).Length > 0))
+                return false;
+            else
+                ;
+
+            result =
+            bRes =
+                false;
+
+            //??? 'bRes' не м.б. 'True'
+            try {
+                if (bRes == true)
+                    return bRes;
+                else
+                    bRes = true;
+            } catch (Exception e) {
+                //Logging.Logg().Exception(e, "DbMCInterface::Connect ()", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            lock (lockConnectionSettings) {
+                if (IsNeedReconnectNew == true) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
+                    return false;
+                else
+                    ;
+            }
+
+            msgLog = string.Format ("Соединение с OICDAC ({0})", (string)m_connectionSettings);
+
+            try {
+                Logging.Logg ().Debug (string.Format (@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
+
+                if ((_mode.HasFlag (DbInterface.MODE.Server) == true)
+                    && (_mode.HasFlag (DbInterface.MODE.OICDAC) == true)) {
+                } else if ((_mode.HasFlag (DbInterface.MODE.Server) == true)
+                    && (_mode.HasFlag (DbInterface.MODE.RTDBCon) == true)) {
+                } else
+                    ;
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, string.Format (@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            if (bRes == true) {
+                // на случай перезагрузки сервера Модес-центр
+                try {
+                    m_iConnectCounter++;
+
+                    
+                } catch (Exception e) {
+                    //Logging.Logg().Exception(e, string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
+
+                    result = false;
+                }
+            } else
+                //Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"ОШИБКА")
+                //    , Logging.INDEX_MESSAGE.NOT_SET)
+                ;
+
+            // TODO: сообщить о результате операции по установке соединения
+
+            return result;
+        }
+
+        private int m_iConnectCounter;
+
+        protected override bool Disconnect ()
+        {
+            throw new NotImplementedException ();
+        }
+
+        protected override bool GetData (DataTable table, object query)
+        {
+            throw new NotImplementedException ();
+        }
+
+        protected override void GetDataCancel ()
+        {
+            throw new NotImplementedException ();
+        }
+    }
+}

@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASUTP.Logging</name>
+    </assembly>
+    <members>
+        <member name="T:ASUTP.Logging">
+            <summary>
+            Класс для объекта, обеспечивающего журналирование событий приложения/библиотеки
+            </summary>
+        </member>
+        <member name="T:ASUTP.Logging.LOG_MODE">
+            <summary>
+            Перечисление - возможные режимы журналирования (классификация по признаку конечного устойства для размещения фиксируемымых событий)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.LOG_MODE.DB">
+            <summary>
+            База данных, должен быть установлен объект _dbWriter
+            </summary>
+        </member>
+        <member name="T:ASUTP.Logging.ID_MESSAGE">
+            <summary>
+            Перечисление - возможные типы сообщений
+            </summary>
+        </member>
+        <member name="T:ASUTP.Logging.INDEX_MESSAGE">
+            <summary>
+            Перечисление - предустановленные подтипы сообщений
+            </summary>
+        </member>
+        <member name="P:ASUTP.Logging.s_mode">
+            <summary>
+            Режим работы журналирования
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.logRotateCheckLast">
+            <summary>
+            Дата/время крайней проверки размера файла (для окончания записи)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.logRotateChekMaxSeconds">
+            <summary>
+            Макс. кол-во сек. между проверки размера файла (для окончания записи)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.DatetimeStampSeparator">
+            <summary>
+            Строка - содержание разделителя в журнале между меткой времени и непосредственно сообщением
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.MessageSeparator">
+            <summary>
+            Строка - содержание разделителя в журнале между меткой времени и непосредственно сообщением
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.m_listQueueMessage">
+            <summary>
+            Список сообщений, ожидающих(не обработанных) размещения в журнале
+            </summary>
+        </member>
+        <member name="P:ASUTP.Logging.ConnSett">
+            <summary>
+            Объект с параметрами для соедиения с БД при режиме журналирования "БД"
+            </summary>
+        </member>
+        <member name="M:ASUTP.Logging.SetMode(ASUTP.Logging.LOG_MODE,System.String)">
+            <summary>
+            Установить режим работы объекта
+            </summary>
+            <param name="log_mode">Значение для режима работы с низким приоритетом. Устанавливается при отсутствии режима в командной строке</param>
+            <param name="LOG_KEY">Аргумент из состава командной строки - ключ для поиска режима журналирования</param>        
+            <returns>Результат установки режима работы</returns>
+        </member>
+        <member name="F:ASUTP.Logging.s_arDebugLogMessageIds">
+            <summary>
+            Массив для хранения пользовательских индексов/идентификаторов подтипов сообщений
+            , связанных с предустановленными индексами/идентификаторами
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.s_markDebugLog">
+            <summary>
+            Набор признаков для указания признаков необходимости размещения подтипов(INDEX_MESSAGE) сообщений в журнале
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.DelegateGetINIParametersOfID">
+            <summary>
+            Делегат для определения пользовательской конфигурации размещения подтипов сообщений (по целочисленному идентификатору)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.DelegateGetINIParametersOfKEY">
+            <summary>
+            Делегат для определения пользовательской конфигурации размещения подтипов сообщений (по строковому идентификатору)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Logging.LinkId(ASUTP.Logging.INDEX_MESSAGE,System.Int32)">
+            <summary>
+            Установить связь  пользовательским и предустановленным индексами
+            , для учета пользовательской конфигурации
+            </summary>
+            <param name="indx">Предустановленный индекс подтипа сообщений</param>
+            <param name="id">Пользовательский индекс (подтип) сообщений.
+             Пользователь должен определить метод, возвращающий признак необходимости размещения сообщений этого подтипа в журнале.
+             Если метод не определен, сообщения подтипа в журнал размещаются
+             , если нет, то в соответсвии с возвращаемым значением (пользовательской конфигурацией).</param>
+        </member>
+        <member name="M:ASUTP.Logging.UnLink(ASUTP.Logging.INDEX_MESSAGE)">
+            <summary>
+            Разорвать связь между пользовательским и предустановленным индексами
+            , отменить пользовательскую конфигурацию по отображению указанного в аргументе подтипа сообщения.
+             Означает безусловное размещение в журнале сообщений этого подтипа.
+            </summary>
+            <param name="indx">Индекс подтипа сообщения</param>
+        </member>
+        <member name="P:ASUTP.Logging.UserId">
+            <summary>
+            Идентификатор пользователя
+            </summary>
+        </member>
+        <member name="P:ASUTP.Logging.AppName">
+            <summary>
+            Идентификатор(строковый) приложения, назначаемый пользователем (не GUID!)
+            </summary>
+        </member>
+        <member name="P:ASUTP.Logging.AppId">
+            <summary>
+            Идентификатор(целочисленный) приложения, назначаемый пользователем (не GUID!)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Logging.ReLogg(ASUTP.Logging.LOG_MODE)">
+            <summary>
+            Изменить режим работы объекта
+            </summary>
+            <param name="mode">Значение нового режима работы</param>
+        </member>
+        <member name="M:ASUTP.Logging.Logg">
+            <summary>
+            Возвратить объект для размещения сообщений в журнале
+            </summary>
+            <returns>Объект для выполнения журналирования</returns>
+        </member>
+        <member name="M:ASUTP.Logging.start">
+            <summary>
+            Запустить поток обработки событий по приему сообщений для дальнейщего их размещения в журнале
+            </summary>
+        </member>
+        <member name="M:ASUTP.Logging.PostStop(System.String)">
+            <summary>
+            Разместить в журнале событие "Запуск" приложения
+            </summary>
+            <param name="message">Содержание сообщения "Запуск" приложения</param>
+        </member>
+        <member name="M:ASUTP.Logging.Stop">
+            <summary>
+            Остановить поток приема событий для размещения их в журнале
+            </summary>
+        </member>
+        <member name="M:ASUTP.Logging.timerDbConnect(System.Object)">
+            <summary>
+            Метод обратного вызова таймера проверки наличия соединения с БД
+            </summary>
+            <param name="par">Аргумент для события</param>
+        </member>
+        <member name="M:ASUTP.Logging.#ctor(System.String)">
+            <summary>
+            Конструктор
+            </summary>
+            <param name="name">имя лог-файла</param>
+        </member>
+        <member name="M:ASUTP.Logging.updateMarkDebugLog(ASUTP.Logging.INDEX_MESSAGE)">
+            <summary>
+            Обновить признак необходимости размещения в журнале сообщения подтипа, указанного в аргументе
+            </summary>
+            <param name="indxDebugLogMessage">Индекс/идентификатор подтипа сообщения</param>
+        </member>
+        <member name="M:ASUTP.Logging.UpdateMarkDebugLog">
+            <summary>
+            Обновляет параметры журналирования "присоединенных" на текущий момент подтипов сообщений
+            , присоединение/отсоединение ('Link'/'UnLink')
+            </summary>
+        </member>
+        <member name="M:ASUTP.Logging.Suspend">
+            <summary>
+            Приостановка логгирования
+            </summary>
+            <returns>строка с именем лог-файла</returns>
+        </member>
+        <member name="M:ASUTP.Logging.Resume">
+            <summary>
+            Восстановление логгирования
+            </summary>
+        </member>
+        <member name="M:ASUTP.Logging.LogLock">
+            <summary>
+            Блокирование лог-файла для изменения содержания
+            </summary>
+        </member>
+        <member name="M:ASUTP.Logging.LogUnlock">
+            <summary>
+            Разблокирование лог-файла после изменения содержания
+            </summary>
+        </member>
+        <member name="T:ASUTP.Logging.STATE_MESSAGE">
+            <summary>
+            Перечисление - возможные состояние для сообщения
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.STATE_MESSAGE.QUEUE">
+            <summary>
+            Поставлен в очередь
+            </summary>
+        </member>
+        <member name="F:ASUTP.Logging.STATE_MESSAGE.RUNNING">
+            <summary>
+            В процессе сохранения
+            </summary>
+        </member>
+        <member name="T:ASUTP.Logging.INDEX_SEMATHREAD">
+            <summary>
+            Перечисление - индексы для объектов синхронизации, определяющих выполнение журналирование или его прерывание
+            </summary>
+        </member>
+        <member name="M:ASUTP.Logging.post(ASUTP.Logging.ID_MESSAGE,System.String,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Запись сообщения в лог-файл
+            </summary>
+            <param name="message">сообщение</param>
+            <param name="separator">признак наличия разделителя</param>
+            <param name="timeStamp">признак наличия метки времени</param>
+            <param name="locking">признак блокирования при записи сообщения</param>
+        </member>
+        <member name="M:ASUTP.Logging.LogFileName(System.Int32)">
+            <summary>
+            Наименование лог-файла
+            </summary>
+            <returns>строка с наименованием лог-файла</returns>
+        </member>
+        <member name="M:ASUTP.Logging.PostStart(System.String)">
+            <summary>
+            Зафиксировать сообщение о запуске приложения в журнале
+            </summary>
+            <param name="message">Содержание сообщения о запуске</param>
+        </member>
+    </members>
+</doc>

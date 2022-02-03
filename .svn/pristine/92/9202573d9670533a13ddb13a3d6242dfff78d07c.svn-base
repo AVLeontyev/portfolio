@@ -1,0 +1,35 @@
+﻿using ASUTP.Core;
+using ASUTP.Database;
+using StatisticCommon;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Text;
+
+namespace StatisticCommon.Contract
+{
+    namespace Alarm
+    {
+        /// <summary>
+        /// Типы сигнализаций
+        /// </summary>
+        [Flags]
+        public enum TYPE_ALARM { UNKNOWN, CUR_POWER, TG_TURNONOFF, FREQ = 0x4, APOWER = 0x8, All = CUR_POWER | TG_TURNONOFF | FREQ | APOWER }
+
+        [ServiceContract (SessionMode = SessionMode.Required, CallbackContract = typeof (Communication.IServiceCallback))]
+        public interface IServiceAlarm : IService
+        {
+            [OperationContract]
+                bool Initialize(ASUTP.Database.ConnectionSettings connSett
+                    , int iMainSourceData
+                    , TimeSpan tsOverDate
+                    , TimeSpan tsFetchWaking
+                    , TYPE_ALARM typeAlarm
+                    , FormChangeMode.MODE_TECCOMPONENT modeTECComponent
+                    , List<int> listID_TECNotUse);
+        }
+    }
+}

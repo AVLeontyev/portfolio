@@ -1,0 +1,131 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Text;
+
+namespace StatisticCommon.Communication
+{
+    public class ServiceCallback : IServiceCallback
+    {
+        public event Action<ServiceCallbackResultEventArgs> EventRaise;
+
+        public void Raise (ServiceCallbackResultEventArgs arg)
+        {
+            EventRaise?.Invoke (arg);
+        }
+
+        public ServiceCallback (Action<ServiceCallbackResultEventArgs> handler)
+        {
+            EventRaise += new Action<ServiceCallbackResultEventArgs> (handler);
+        }
+    }
+
+    [DataContract]
+    public class ServiceCallbackResultEventArgs : EventArgs
+    {
+        [DataMember]
+        public Contract.IdPseudoDelegate Id
+        {
+            get;
+
+            private set;
+        }
+
+        [DataMember]
+        public DateTime Stamp
+        {
+            get;
+
+            private set;
+        }
+
+        [DataMember]
+        public object Data
+        {
+            get;
+
+            private set;
+        }
+
+        [DataMember]
+        public IList<AdminRDG.RDGStruct> Values
+        {
+            get;
+
+            private set;
+        }
+
+        private ServiceCallbackResultEventArgs (DateTime datetimeStamp)
+            : base ()
+        {
+            Id = Contract.IdPseudoDelegate.Unknown;
+            Stamp = datetimeStamp;
+            Data = null;
+            Values = null;
+        }
+
+        private ServiceCallbackResultEventArgs ()
+            : this (DateTime.MinValue)
+        {
+        }
+
+        public ServiceCallbackResultEventArgs (Contract.IdPseudoDelegate id)
+            : this (DateTime.MaxValue)
+        {
+            Id = id;
+        }
+
+        public ServiceCallbackResultEventArgs (Contract.IdPseudoDelegate id, string messageData)
+            : this (DateTime.MaxValue)
+        {
+            Id = id;
+            Data = messageData;
+        }
+
+        public ServiceCallbackResultEventArgs (Contract.IdPseudoDelegate id, bool bData)
+            : this (DateTime.MaxValue)
+        {
+            Id = id;
+            Data = bData;
+        }
+
+        public ServiceCallbackResultEventArgs (Contract.IdPseudoDelegate id, DateTime datetimeData)
+            : this (DateTime.MaxValue)
+        {
+            Id = id;
+            Data = datetimeData;
+        }
+
+        public ServiceCallbackResultEventArgs (Contract.IdPseudoDelegate id, int iData)
+            : this (DateTime.MaxValue)
+        {
+            Id = id;
+            Data = iData;
+        }
+
+        public ServiceCallbackResultEventArgs (Contract.IdPseudoDelegate id, DateTime datetimeValues, bool bResult, IList<AdminRDG.RDGStruct> values)
+            : this ()
+        {
+            Id = id;
+            Stamp = datetimeValues;
+            Data = bResult;
+            Values = values.ToArray ();
+        }
+
+        new public static ServiceCallbackResultEventArgs Empty
+        {
+            get
+            {
+                return new ServiceCallbackResultEventArgs ();
+            }
+        }
+    }
+
+    public interface IServiceCallback
+    {
+        [OperationContract (IsOneWay = true)]
+        void Raise (ServiceCallbackResultEventArgs arg);
+    }
+}

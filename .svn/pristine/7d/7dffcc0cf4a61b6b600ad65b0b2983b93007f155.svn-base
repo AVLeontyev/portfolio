@@ -1,0 +1,273 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.ServiceModel;
+using System.Text;
+using StatisticCommon.Communication;
+using Assignment;
+using StatisticCommon.Contract.Alarm;
+
+namespace salarm
+{
+    /// <summary>
+    /// Контейнер клиентов служб
+    ///  , обеспечивает взаимосвязь между непосредственно клентами служб и конфигурацией приложения развертывания
+    /// </summary>
+    /// <typeparam name="T">Тип перечисления для наименования конечной точки 'NameEndPoint'</typeparam>
+    internal partial class Client<T> : Deployment
+    {
+        private Assignment.Client<T>.Watcher _watch;
+
+        /// <summary>
+        /// Список объектов - клиентов служб
+        /// </summary>
+        private List<Assignment.Client<T>.IWorker> _workers;
+
+        /// <summary>
+        /// Конструктор - основной
+        /// </summary>
+        /// <param name="mode">Режим развертывания для передачи в базовый класс</param>
+        public Client (MODE mode)
+            : base(mode)
+        {
+            ConfigSectionClientItems clientSettings = null;
+            Assignment.Client<T>.IWorker worker;
+            bool clientTurn = false;
+
+            string messageReadFileConnSettResult = string.Empty
+                , messageLog = string.Empty;
+
+            try {
+                clientSettings =
+                    (ConfigSectionClientItems)ConfigurationManager.GetSection ($"{ConfigSectionClientItems.NameSection}");
+
+                _watch = new Assignment.Client<T>.Watcher (TimeSpan.FromMilliseconds(StatisticCommon.Constants.TIMER_SERVICE_MIN_INTERVAL));
+                _watch.Alarm += watch_OnAlarm;
+
+                _workers = new List<Assignment.Client<T>.IWorker> ();
+
+                clientSettings.Items.Cast<ClientItemCollection> ().ToList ().ForEach (settings => {
+                    clientTurn = false;
+                    worker = null;
+                    if (bool.TryParse (settings.GetValue ("turn"), out clientTurn) == true)
+                        if (clientTurn == true) {
+                            worker = createWorker(GetService (settings.NameEndPoint), settings);
+                            if (Equals (worker, null) == false) {
+                                _workers.Add (worker);
+
+                                messageLog = $@"Создан клиент: [{settings.Print()}]";
+                                ASUTP.Logging.Logg ().Action (messageLog, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                                itssAUX.PrintActionMessage (messageLog, true);
+                            } else {
+                                messageLog = $@"Клиент не создан: [{settings.Print ()}]";
+                                ASUTP.Logging.Logg ().Error (messageLog, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                                itssAUX.PrintErrorMessage (messageLog);
+                            }
+                            // в любом случае добавляем для контроля, чтобы пересрздать в случае ошибки
+                            _watch.Add ((T)Convert.ChangeType (settings.NameEndPoint, typeof (T)));
+                        } else {
+                            messageLog = $@"client NameEndPoint=<{settings.NameEndPoint}> is turn={clientTurn}...";
+                            ASUTP.Logging.Logg ().Warning (messageLog, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                            itssAUX.PrintWarningMessage (messageLog, true);
+                        }
+                    else {
+                        messageLog = $@"client NameEndPoint=<{settings.NameEndPoint}> is turn not recognized...";
+                        ASUTP.Logging.Logg ().Warning (messageLog, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                        itssAUX.PrintWarningMessage (messageLog, true);
+                    }
+                });
+            } catch (Exception e) {
+                ASUTP.Logging.Logg ().Exception (e, "salarm.Client::ctor () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+                Error = ERROR.Client;
+            }
+        }
+
+        /// <summary>
+        /// Создать рабочий экземпляр для реализации логики вызовов методов службы
+        /// </summary>
+        /// <param name="service">Тип развернутой службы</param>
+        /// <param name="settings">Конфигурация для инициализации экземпляра</param>
+        /// <returns>Объект-экземпляр</returns>
+        private Assignment.Client<T>.IWorker createWorker (Service service, ClientItemCollection settings)
+        {
+            bool bInitRes = false;
+            Dictionary<T, Type> workerTypes = new Dictionary<T, Type> {
+                { (T)Convert.ChangeType (NameEndPoint.EndPointServiceAlarm, typeof(T)), typeof(WorkerAlarm<StatisticCommon.Contract.Alarm.IServiceAlarm>) }
+            };
+
+            Assignment.Client<T>.IWorker workerRes = null;
+
+            int iReadFileConnSettResult = -1;
+            ASUTP.Database.FIleConnSett fileConnSett;
+            List<ASUTP.Database.ConnectionSettings> listConnSett;
+            List<int> listIdTECNotUse;
+            string messageReadFileConnSettResult = string.Empty
+                , messageLog = string.Empty;
+            StatisticCommon.OICDAC.DbInterface.MODE oicdacModeApp = StatisticCommon.OICDAC.DbInterface.MODE.UNKNOWN;
+            StatisticCommon.OICDAC.Admin.MODE_WRITE oicdacModeWrite = StatisticCommon.OICDAC.Admin.MODE_WRITE.UnSet;
+
+            Action<string, ASUTP.Logging.INDEX_MESSAGE, bool> fLogging;
+            Action<string, bool> fAUXPrintMessage;
+
+            fileConnSett = new ASUTP.Database.FIleConnSett (settings.GetValue ("conn-sett"), ASUTP.Database.FIleConnSett.MODE.FILE);
+            fileConnSett.ReadSettingsFile (-1, out listConnSett, out iReadFileConnSettResult, out messageReadFileConnSettResult);
+            listIdTECNotUse = settings.ListIdTECNotUse;
+
+            if (iReadFileConnSettResult == 0) {
+                workerRes = (Assignment.Client<T>.IWorker)Activator.CreateInstance (workerTypes[(T)Convert.ChangeType (settings.NameEndPoint, typeof(T))], settings.NameEndPoint, GetTypeContract (settings.NameEndPoint), service.Type);
+
+                if (Equals (workerRes, null) == false) {
+                    //TODO: Initialize
+                    switch ((NameEndPoint)settings.NameEndPoint) {
+                        case NameEndPoint.EndPointServiceAlarm:
+                            bInitRes = workerRes.Initialize (new InitializeAlarmArgument (//TYPE_ALARM.All
+                                    TYPE_ALARM.CUR_POWER |
+                                    TYPE_ALARM.TG_TURNONOFF |
+                                    TYPE_ALARM.FREQ |
+                                    TYPE_ALARM.APOWER
+                                ) {
+                                m_ConnSett = listConnSett [0]
+                                , m_iMainSourceData = settings.MainDataSource
+                                , m_tsOverDate = settings.OverDate
+                                , m_tsFetchWaking = TimeSpan.Zero
+                                , m_ModeTECComponent = StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.GTP
+                                , m_listID_TECNotUse = listIdTECNotUse
+                            });
+                            break;
+                        default:
+                            workerRes = null;
+                            break;
+                    }
+
+                    if (bInitRes == true) {
+                        workerRes.Interrupt += worker_OnInterrupt;
+                        workerRes.Leave += delegate (T nameEndPoint) {
+                            _watch.Leave ((T)Convert.ChangeType (nameEndPoint, typeof (NameEndPoint)));
+                        };
+                    } else
+                    //Initialize failed
+                        workerRes = null;
+                } else
+                //Create failed
+                    ;
+            } else {
+                messageLog = $@"client NameEndPoint=<{settings.NameEndPoint}> {messageReadFileConnSettResult}...";
+
+                if (settings.Turn == true) {
+                    ASUTP.Logging.Logg ().Error (messageLog, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                    itssAUX.PrintErrorMessage (messageLog);
+                } else {
+                    ASUTP.Logging.Logg ().Warning (messageLog, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                    itssAUX.PrintWarningMessage (messageLog, true);
+                }
+            }
+
+            return workerRes;
+        }
+
+        private void watch_OnAlarm (T nameEndPoint)
+        {
+            string message = string.Empty;
+
+            message = "Client::watch_OnAlarm () - ...";
+            ASUTP.Logging.Logg ().Error (message, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            itssAUX.PrintErrorMessage (message);
+
+            System.Threading.Tasks.Task.Factory.StartNew (() => {
+                worker_OnInterrupt ((T)Convert.ChangeType(nameEndPoint, typeof(T)));
+            });
+        }
+
+        private class WorkerComparer : IEqualityComparer<Assignment.Client<T>.IWorker>
+        {
+            public bool Equals (Assignment.Client<T>.IWorker x, Assignment.Client<T>.IWorker y)
+            {
+                return x.NameEndPoint.Equals(y.NameEndPoint);
+            }
+
+            public int GetHashCode (Assignment.Client<T>.IWorker obj)
+            {
+                return obj.NameEndPoint.GetHashCode () ^ obj.NameEndPoint.GetHashCode ();
+            }
+        }
+
+        public override void Start (object obj = null)
+        {
+            base.Start ();
+
+            _workers?.ForEach (worker => {
+                worker?.Start ();
+            });
+            _watch.Start ();
+        }
+
+        public override void Stop ()
+        {
+            _workers?.ForEach (worker => {
+                worker?.Stop ();
+            });
+            _watch.Stop ();
+
+            base.Stop ();
+        }
+
+        private void worker_OnInterrupt (T nameEndPoint)
+        {
+            Assignment.Client<T>.IWorker worker = null;
+
+            ConfigSectionClientItems clientSettings = null;
+
+            try {
+                clientSettings =
+                    (ConfigSectionClientItems)ConfigurationManager.GetSection ($"{ConfigSectionClientItems.NameSection}");
+
+                if (Equals (_workers, null) == false) {
+                    worker = (from w in _workers where w.NameEndPoint.Equals (nameEndPoint) == true select w).FirstOrDefault ();
+                    if ((Equals (worker, null) == false)
+                        && (worker.NameEndPoint.Equals (NameEndPoint.Empty) == false))
+                        _workers.Remove (worker);
+                    else
+                        ;
+                } else
+                    ;
+
+                do {
+                    worker?.Stop ();
+                    worker = null;
+
+                    try {
+                        worker = createWorker (GetService (nameEndPoint), (from s in clientSettings.Items.Cast<ClientItemCollection> () where s.NameEndPoint.Equals(nameEndPoint) select s).FirstOrDefault());
+
+                        if (Equals (worker, null) == false)
+                            _watch.Leave (nameEndPoint);
+                        else {
+                            ASUTP.Logging.Logg ().Error ("salarm.Client::worker_OnInterrupt () - клиент не создан ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                            itssAUX.PrintErrorMessage ("salarm.Client::worker_OnInterrupt () - клиент не создан ...");
+                        }
+                    } catch (Exception e) {
+                        ASUTP.Logging.Logg ().Exception (e, "salarm.Client::worker_OnInterrupt () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                        itssAUX.PrintErrorMessage (e.Message);
+                    } finally {
+                        if (Equals (worker, null) == true) {
+                            System.Threading.Thread.Sleep (MSEC_WAIT_CREATE_WORKER);
+                        } else
+                            ;
+                    }
+                } while (Equals (worker, null) == true);
+
+                _workers.Add (worker);
+
+                worker?.Start ();
+            } catch (Exception e) {
+                ASUTP.Logging.Logg ().Exception (e, "salarm.Client::worker_OnInterrupt () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+                itssAUX.PrintErrorMessage (e.Message);
+            } finally {
+            }
+        }
+    }
+}

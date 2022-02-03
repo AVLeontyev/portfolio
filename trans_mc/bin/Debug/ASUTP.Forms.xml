@@ -1,0 +1,493 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASUTP.Forms</name>
+    </assembly>
+    <members>
+        <member name="P:ASUTP.Forms.FormConnectionSettings.SelectedIndex">
+            <summary>
+            Индекс выбранного элемента - объекта с параметрами соединения
+            </summary>
+        </member>
+        <member name="P:ASUTP.Forms.FormConnectionSettings.Count">
+            <summary>
+            Количество объектов с параметрами соединения
+            </summary>
+        </member>
+        <member name="P:ASUTP.Forms.FormConnectionSettings.Ready">
+            <summary>
+            Признак состояния объекта (0 - без ошибок: файл считан, параметры соединения распознаны И интерпретированы)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormConnectionSettings.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormConnectionSettings.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormConnectionSettings.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:ASUTP.Forms.FormMainBase">
+            <summary>
+            Базовая форма для главной формы приложения
+             , обрабатывает файл конфигурации с параметрами для соединения с БД
+             , отображает сообщение при аварийном завершении работы
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.m_formWait">
+            <summary>
+            Форма, индицирующая продолжительное выполнение операции
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.s_fileConnSett">
+            <summary>
+            Объект для работы с шифрованным файлом с параметрами соединения с БД (конфигурации)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.lockCounter">
+            <summary>
+            Объект для синхронизации доступа к счетчику кол-ва отображаемых наследуемых форм
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.formCounter">
+            <summary>
+            СЧетчик кол-ва наследуемых отображаемых форм
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.delegateStartWait">
+            <summary>
+            Делегат для вызова на отображение окна 'FormWait'
+            </summary>        
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.delegateStopWait">
+            <summary>
+            Делегат для снятия с отображения окна 'FormWait'
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.delegateEvent">
+            <summary>
+            Делегат для обработки события периодического обновления строки состояния наследуемой формы
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.delegateUpdateActiveGui">
+            <summary>
+            Делегат для обработки события - применение параметров (с обновлением) графической интерпретации данных
+            </summary>        
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.delegateHideGraphicsSettings">
+            <summary>
+            Делегат для обработки события - скрыть форму с параметрами графической интерпретации данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.delegateParamsApply">
+            <summary>
+            Делегат для обработки события - применение параметров
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBase.s_iMainSourceData">
+            <summary>
+            Идентификатор основного источника данных
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.InitializeComponent">
+            <summary>
+            Инициализация индивидуальных параметров формы
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.Abort(System.String)">
+            <summary>
+            Инициировать аварийное завершение работы
+            </summary>
+            <param name="msg">Сообщение при исключении (аварийном завершении работы)</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.Abort(System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Инициировать (при необходимости) аварийное завершение
+             , отобразить сообщение
+            </summary>
+            <param name="msg">Текст сообщения</param>
+            <param name="bThrow">Признак инициирования аварийного завершения</param>
+            <param name="bSupport">Признак отображения контактной информации техн./поддержки</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.startWait">
+            <summary>
+            Запустить (отобразить) форму 'FormWait'
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.stopWait">
+            <summary>
+            Остановить (скрыть) форму 'FormWait' 
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.findMainMenuItemOfText(System.Windows.Forms.ToolStripMenuItem,System.String)">
+            <summary>
+            Рекурсивная функция поиска элемента меню в указанном пункте меню
+            </summary>
+            <param name="miParent">Пункт меню в котором осуществляется поиск</param>
+            <param name="text"></param>
+            <returns>Результат - пукт меню с текстом для поиска</returns>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.FindMainMenuItemOfText(System.String)">
+            <summary>
+            Поиск в главном меню элемента с именнем
+            </summary>
+            <param name="text">Текст пункта (под)меню для поиска</param>
+            <returns>Результат - пукт меню с текстом для поиска</returns>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.RemoveMainMenuItemOfText(System.String)">
+            <summary>
+            Удалить п.главного меню приложения (по тексту)
+            </summary>
+            <param name="text">Текст (под)пункта меню</param>
+            <returns>Признак выполнения удаления (-1 - ошибка, 0 - элемент не найден, 1 - пункт меню удален)</returns>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.Close(System.Boolean)">
+            <summary>
+            Закрыть окно
+            </summary>
+            <param name="bForce">Признак немедленного закрытия окна</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.FormMainBase_Shown(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события создания дескрипотра окна
+             для подсчета кол-ва отображаемых наследуемых форм
+             для своевременного вызова функции полного останова окна 'FormWait'
+            </summary>
+            <param name="obj">Объект, инициировавший событие - this</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainBase.FormMainBase_FormClosed(System.Object,System.Windows.Forms.FormClosedEventArgs)">
+            <summary>
+            Обработчик события - закрытие формы
+             для подсчета кол-ва отображаемых наследуемых форм
+            </summary>
+            <param name="obj">Объект, инициировавший событие - this</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainBaseWithStatusStrip.show_error_alert">
+            <summary>
+            Признак отображения сообщения (в 1-ой части строки состояния)
+            </summary>
+        </member>
+        <member name="T:ASUTP.Forms.FormMainFloatBase">
+            <summary>
+            Класс базовый для форм, с возможностью "открепления" от главного окна приложения
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainFloatBase.delegateFormClosing">
+            <summary>
+            Делегаты обработки событий: снятие с отображения, загрузка формы
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormMainFloatBase.delegateFormLoad">
+            <summary>
+            Делегаты обработки событий: снятие с отображения, загрузка формы
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainFloatBase.#ctor(System.String,System.Windows.Forms.Panel,System.Boolean)">
+            <summary>
+            Конструктор - основной (с параметрами)
+            </summary>
+            <param name="text">Заголовок окна</param>
+            <param name="child">Дочерняя панель для размещения на форме</param>
+            <param name="bLabel">Признак наличия подписи(дублирование заголовка)</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainFloatBase.UpdateActiveGui(System.Int32)">
+            <summary>
+            Обработчик события - изменение значения графических параметров
+            , на форму не влияет - ничего не делаем
+            </summary>
+            <param name="type">Тип изменившихся графических параметров</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainFloatBase.HideGraphicsSettings">
+            <summary>
+            Снять с отображения окно для настроек графических параметров
+            (окна для настроек нет - ничего не делаем)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainFloatBase.timer_Start">
+            <summary>
+            Метод обратного вызова при 1-ом 
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainFloatBase.UpdateStatusString">
+            <summary>
+            Обновить строку состояния
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Forms.FormMainFloatBase.container_onSizeChanged(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - изменение размера панели
+            </summary>
+            <param name="obj">Объект, инициировавший событие (контейнер панели)</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="T:ASUTP.Forms.FormParametersBase">
+            <summary>
+            Класс базовый для форм с отображением значений параметров
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormParametersBase.btnOk">
+            <summary>
+            Элемент граф./интерфейса - кнопка "Применить"
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormParametersBase.btnReset">
+            <summary>
+            Элемент граф./интерфейса - кнопка "Сборс"
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormParametersBase.btnCancel">
+            <summary>
+            Элемент граф./интерфейса - кнопка "Отмена"
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormParametersBase.mayClose">
+            <summary>
+            Признак возможности снятия с отображения окна
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormParametersBase.m_State">
+            <summary>
+            Признак 
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormParametersBase.#ctor">
+            <summary>
+            Конструктор - основной (без арнументов)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormParametersBase.Update(System.Int32@)">
+            <summary>
+            Обновить/прочитать значения
+            </summary>
+            <param name="err"></param>
+        </member>
+        <member name="M:ASUTP.Forms.FormParametersBase.loadParam(System.Boolean)">
+            <summary>
+            Загрузить значения
+            </summary>
+            <param name="bInit"></param>
+        </member>
+        <member name="M:ASUTP.Forms.FormParametersBase.saveParam">
+            <summary>
+            Сохранить значения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormParametersBase.Parameters_FormClosing(System.Object,System.Windows.Forms.FormClosingEventArgs)">
+            <summary>
+            Обработчик события - перед закрытие формы
+            </summary>
+            <param name="sender">Объект, инициировавший событие</param>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormParametersBase.buttonCancel_Click(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - нажатие кнопки "Отмена"
+            </summary>
+            <param name="sender">Объект, инициировавший событие</param>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormParametersBase.FormParametersBase_KeyUp(System.Object,System.Windows.Forms.KeyEventArgs)">
+            <summary>
+            Обработчик события - освобождение после нажатия клавиши на клавиатуре
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события(информация о клавише на клавиатуре)</param>
+        </member>
+        <member name="F:ASUTP.Forms.FormPassword.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormPassword.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormPassword.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:ASUTP.Forms.FormPasswordBase">
+            <summary>
+            Класс формы базовый для ввода/изменения паролей
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormPasswordBase.m_idExtPassword">
+            <summary>
+            Идентификтор - в общем смысле признак, что действие значения свойства распространяется на группу(роль) пользователей
+            , в этом конкретном случае свойство=пароль всегда устанавлививается для группы(роли), поэтому всегда = "1"
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormPasswordBase.m_indexRolePassword">
+            <summary>
+            Индекс группы(роли) пользователей для которой вводится/изменяется пароль
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormPasswordBase.m_pass">
+            <summary>
+            Объект для (де)шифрации паролей
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormPasswordBase.closing">
+            <summary>
+            Признак ??? отображения окна ввода/изменения пароля
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormPasswordBase.#ctor(ASUTP.Helper.Passwords)">
+            <summary>
+            Конструктор - основной (с параметром)
+            </summary>
+            <param name="p">Объект для (де)шифрации паролей</param>
+        </member>
+        <member name="F:ASUTP.Forms.FormPasswordBase.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormPasswordBase.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormPasswordBase.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormPasswordBase.btnOk">
+            <summary>
+            Элемент граф./интерфейса - кнопка "Применить"
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormPasswordBase.btnCancel">
+            <summary>
+            Элемент граф./интерфейса - кнопка "Отмена"
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormSetPassword.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormSetPassword.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormSetPassword.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:ASUTP.Forms.FormWait">
+            <summary>
+            Класс для описания окна визуализации длительного выполнения операции
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormWait.lockState">
+            <summary>
+            Объект для блокирования изменения значения счетчика вызовов окна на отображение
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormWait._waitCounter">
+            <summary>
+            Счетчик вызовов окна на отображение
+            </summary>
+        </member>
+        <member name="P:ASUTP.Forms.FormWait.isContinue">
+            <summary>
+            Признак запуска окна
+            </summary>
+        </member>
+        <member name="F:ASUTP.Forms.FormWait._this">
+            <summary>
+            Ссылка на самого себя
+             для реализации создания одного и только одного объекта в границах приложения
+            </summary>
+        </member>
+        <member name="P:ASUTP.Forms.FormWait.This">
+            <summary>
+            Получить объект из внешенго кода
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormWait.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormWait.StartWaitForm(System.Drawing.Point,System.Drawing.Size)">
+            <summary>
+            Вызвать на отображение окно
+            </summary>
+            <param name="ptParent">Позиция отображения родительского окна</param>
+            <param name="szParent">Размер родительского окна</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormWait.StopWaitForm(System.Boolean)">
+            <summary>
+            Снять с отображения окно
+            </summary>
+            <param name="bExit">Признак принудительного снятия с отображения</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormWait.close">
+            <summary>
+            Делегат для вызова метода закрытия окна
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormWait.setLocation(System.Drawing.Point,System.Drawing.Size)">
+            <summary>
+            Установить позицию окна
+             в зависимости от позиции родительского
+            </summary>
+            <param name="ptParent">Позиция отображения родительского окна</param>
+            <param name="szParent">Размер родительского окна</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormWait.FormWait_Shown(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - 
+            </summary>
+            <param name="sender">Объект, инициоровавший событие - this</param>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="F:ASUTP.Forms.FormWait.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Forms.FormWait.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:ASUTP.Forms.FormWait.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+    </members>
+</doc>

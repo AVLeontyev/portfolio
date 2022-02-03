@@ -1,0 +1,1270 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+using System.Data;
+using System.Threading;
+using System.Data.Common;
+using System.Data.OleDb;
+
+using ASUTP;
+using ASUTP.Core;
+using System.Collections.ObjectModel;
+using System.Reflection;
+using System.ComponentModel;
+using System.Reflection.Emit;
+//using interop.OICDAC;
+using RTDBCon_Interop;
+using interop.OICDAC;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace StatisticCommon.OICDAC
+{
+    enum ID_EVENT
+    {
+        Unknown
+        , NewRequestResult
+    }
+
+    sealed public class DbInterface : DbAtomInterface
+    {
+        public delegate void EnObjTableUpdated (object info);
+
+        public delegate void RTDBDataReceived (object key, List<OIValue> data);
+
+        public const Char CategoryTM = 'I';
+
+        protected /*override*/ object OApi
+        {
+            get
+            {
+                return (Mode.HasFlag (MODE.OICDAC) == true) ? (object)_dac_connection
+                  : (Mode.HasFlag (MODE.RTDBCon) == true) ? (object)_rtdb_connection
+                      : null; //??? throw new Exception ($"Объект для режима <{Mode}> не найден")
+            }
+        }
+
+        public enum OIKParameter { UNKNOWN = 0, FREQUENCY = 7, APOWER = 1, RPOWER = 3 }
+
+        public enum RCATEGORY
+        {
+            UNKNOWN = -2
+            , ERROR
+            , OK
+            , WARNING
+        }
+
+        #region Коды результатов выполнения операций
+        public enum RESULT
+        {
+            UNKNOWN = -1
+            , ERR_QUERY_OK = 0
+            , ERR_QUERY_NOSERVICE
+            , ERR_QUERY_NOPERM
+            , ERR_QUERY_ABORT
+            , RTDBCON_QUERY_ABORT
+            , RTDBCON_CONNECTION_CLOSE
+            , ERR_QUERY_PARAM
+            , ERR_QUERY_OK_MAXLIMIT
+            , ERR_QUERY_OK_CHANGE_STEP
+            , ERR_QUERY_UNKNOWN_OI
+            , ERR_QUERY_TASK // 10
+
+            , ERR_QUERY_INTERVAL_OK = 11
+
+            , RTDB_MSG_STOP = 901
+            , RTDB_MSG_STRING = 910
+            , RTDB_CLOSE_USER = 998
+            , RTDB_MSG_DATA_RECEIVE = 1001
+            ,
+        }
+        #endregion
+
+        public enum EVENT
+        {
+            UNKNOWN
+            , DAC_OnRTDBConnected
+            , DAC_OnRTDBConnectionClose
+            , RTDB_OnOIKEvent
+            , RTDB_OnRTDBCode
+        }
+
+        public enum RTDB_OIK_EVENT : uint
+        {
+            UNKNOWN = 0
+            , NSI_CHANGED = 700
+            , NSI_EDIT_END = 701
+        };
+
+        private static Dictionary<MODE, IEnumerable<EVENT>> s_dictEvents = new Dictionary<MODE, IEnumerable<EVENT>> {
+            { MODE.Server | MODE.OICDAC, new EVENT[] { EVENT.DAC_OnRTDBConnected, EVENT.DAC_OnRTDBConnectionClose } }
+            , { MODE.Server | MODE.RTDBCon, new EVENT[] { EVENT.RTDB_OnOIKEvent, EVENT.RTDB_OnRTDBCode } }
+        };
+
+        private static Dictionary<MODE, IEnumerable<KEY_ACTION_CONNECT>> s_dictConnectionActionOrders = new Dictionary<MODE, IEnumerable<KEY_ACTION_CONNECT>> {
+            { MODE.Server | MODE.OICDAC
+                , new KEY_ACTION_CONNECT[] {
+                    KEY_ACTION_CONNECT.Create
+                    , KEY_ACTION_CONNECT.UnHandlers
+                    , KEY_ACTION_CONNECT.Handlers
+                    , KEY_ACTION_CONNECT.Connect
+                }
+            }
+            , { MODE.Server | MODE.RTDBCon
+                , new KEY_ACTION_CONNECT[] {
+                    KEY_ACTION_CONNECT.Create
+                    , KEY_ACTION_CONNECT.Connect
+                    , KEY_ACTION_CONNECT.UnHandlers
+                    , KEY_ACTION_CONNECT.Handlers
+                }
+            }
+        };
+
+        #region Карта обработки результатов выполнения операций
+        public struct RRESULT
+        {
+            public RESULT Result;
+
+            public RCATEGORY Category;
+
+            public string Message;
+        }
+
+        public static RRESULT [] _results = {
+            new RRESULT() { Result = RESULT.UNKNOWN, Category = RCATEGORY.ERROR, Message = "неизвестная ошибка" }
+
+            , new RRESULT() { Result = RESULT.ERR_QUERY_OK, Category = RCATEGORY.OK, Message = "запрос отработал нормально" } // Ок
+            , new RRESULT() { Result = RESULT.ERR_QUERY_NOSERVICE, Category = RCATEGORY.ERROR, Message = "нет обработчика этого запроса" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_NOPERM, Category = RCATEGORY.ERROR, Message = "нет прав" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_ABORT, Category = RCATEGORY.ERROR, Message = "ошибка при обработке запроса" }
+            , new RRESULT() { Result = RESULT.RTDBCON_QUERY_ABORT, Category = RCATEGORY.ERROR, Message = "ошибка при посылке запроса" }
+            , new RRESULT() { Result = RESULT.RTDBCON_CONNECTION_CLOSE, Category = RCATEGORY.ERROR, Message = "соединение с БДРВ было закрыто" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_PARAM, Category = RCATEGORY.ERROR, Message = "ошибка в параметрах запроса" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_OK_MAXLIMIT, Category = RCATEGORY.OK, Message = "запрос отработал, превышен разрешённый размер - выданы не все данные" } // Ок
+            , new RRESULT() { Result = RESULT.ERR_QUERY_OK_CHANGE_STEP, Category = RCATEGORY.ERROR, Message = "запрос отработал, изменён шаг запроса" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_UNKNOWN_OI, Category = RCATEGORY.ERROR, Message = "в запросе указана неизвестная категория ОИ" }
+            , new RRESULT() { Result = RESULT.ERR_QUERY_TASK, Category = RCATEGORY.ERROR, Message = "отказ в запуске задачи от БДРВ - такая задача уже выполняется" }
+
+            , new RRESULT() { Result = RESULT.ERR_QUERY_INTERVAL_OK, Category = RCATEGORY.WARNING, Message = "не определено" }
+
+            , new RRESULT() { Result = RESULT.RTDB_MSG_STOP, Category = RCATEGORY.ERROR, Message = "выключение БДРВ" }
+            , new RRESULT() { Result = RESULT.RTDB_MSG_STRING, Category = RCATEGORY.ERROR, Message = "параметр lParam - указатель на событие ОИК" }
+            , new RRESULT() { Result = RESULT.RTDB_CLOSE_USER, Category = RCATEGORY.ERROR, Message = "отключение со стороны БДРВ то истечении времени ожидания" }
+            , new RRESULT() { Result = RESULT.RTDB_MSG_DATA_RECEIVE, Category = RCATEGORY.OK, Message = "подтверждение получения запроса" } // Ок
+        };
+        #endregion
+
+        /// <summary>
+        /// Перечисление - возможные режимы работы объекта(в целом и всего приложения): сервер или клиент
+        /// </summary>
+        [Flags]
+        [Serializable]
+        public enum MODE
+        {
+            UNKNOWN = 0
+            /// Режим сервера - сохранение значений
+            , Server = 0x1
+            /// Режим клиента - чтение/отображение значений
+            , Client = 0x2
+            /// Обращение к собственной БД/БД (OIK)
+            , MSSQL = 0x4
+            /// Библиотека oikdac; массив запросов; получение значения по изменению
+            , OICDAC = 0x8
+            /// Библиотека rtdbcon
+            , RTDBCon = 0x10
+        }
+
+        public struct KEY_SIGNAL
+        {
+            public delegate OICategory CategoryDelegateLetter (Char letter);
+
+            private OICategory _category;
+
+            public Char Letter { get; private set; }
+
+            public int Index { get; private set; }
+
+            //public KEY_SIGNAL (string name)
+            //{
+            //    Category = null;
+
+            //    Index = -1;
+            //}
+
+            public string Name
+            {
+                get
+                {
+                    return $"{Letter}{Index}";
+                }
+            }
+
+            public KEY_SIGNAL (OICategory cat, Char letter, int index)
+            {
+                _category = cat;
+
+                Letter = letter;
+                Index = index;
+            }
+
+            public KEY_SIGNAL (string tag, CategoryDelegateLetter f)
+            {
+                if (string.IsNullOrEmpty (tag) == false) {
+                    _category = f?.Invoke (tag.Take (1).First ());
+                    if (Equals (_category, null) == true)
+                        Letter = tag.Take (1).First ();
+                    else
+                        Letter = _category.Letter;
+
+                    Index = int.Parse (new string (tag.Skip (1).ToArray ()));
+                } else {
+                    _category = null;
+                    Letter = char.MinValue;
+                    Index = -1;
+                }
+            }
+
+            public override bool Equals (object obj)
+            {
+                return base.Equals (obj);
+            }
+
+            public override int GetHashCode ()
+            {
+                return base.GetHashCode ();
+            }
+        }
+
+        public enum INDEX_PARAMETER
+        {
+            Mode
+            , RequestItems
+                , COUNT
+        }
+
+        public struct OIREQUEST_ITEM
+        {
+            public FormChangeMode.KeyDevice Group;
+
+            public FormChangeMode.KeyDevice Key;
+
+            public string Name;
+
+            public DbInterface.OIKParameter Tag;
+        }
+
+        /// <summary>
+        /// Структура для значения сигнала, принятого от OICDAC в ~ с 'IOIRequestEvents_OnGetResultExEventHandler'
+        /// </summary>
+        public struct OIRequestResult
+        {
+            public KEY_SIGNAL KeySignal;
+
+            public interop.OICDAC.KindRefreshEnum KindRefresh;
+
+            public DateTime Stamp1;
+
+            public object Value;
+            /// <summary>
+            /// Аналог QUALIFY
+            /// </summary>
+            public int Sign;
+
+            public DateTime? Stamp2;
+            /// <summary>
+            /// Тип значения для оборудования (частота, мощность)
+            /// </summary>
+            public OIKParameter Tag;
+
+            public OIRequestResult (string signal, interop.OICDAC.KindRefreshEnum kindRefresh, DateTime stamp1, float value, int sign, DateTime stamp2, OIKParameter tag)
+            {
+                KeySignal = new DbInterface.KEY_SIGNAL (signal, null);
+                KindRefresh = kindRefresh;
+                Stamp1 = stamp1;
+                Value = value;
+                Sign = sign;
+                Stamp2 = stamp2;
+                Tag = tag;
+            }
+
+            public OIRequestResult (string signal, DateTime stamp1, float value, int sign, OIKParameter tag)
+            {
+                KeySignal = new DbInterface.KEY_SIGNAL (signal, null);
+                KindRefresh = interop.OICDAC.KindRefreshEnum.kr_ActualData;
+                Stamp1 = stamp1;
+                Value = value;
+                Sign = sign;
+                Stamp2 = DateTime.MaxValue;
+                Tag = tag;
+            }
+        }
+
+        /// <summary>
+        /// Объект для хранения значения, полученног из источника данных
+        /// </summary>
+        public class RequestResult : IDisposable
+        {
+            /// <summary>
+            /// Перечисление вохможных состояний объекта
+            /// </summary>
+            public enum STATE
+            {
+                Unknown
+                , New
+                , RequestCurrent
+                , DoneCurrent
+                , RequestArchive
+                , DoneAll
+                , Garbage
+            }
+            /// <summary>
+            /// Пустое значение
+            /// </summary>
+            public static RequestResult Empty = new DbInterface.RequestResult (FormChangeMode.KeyDevice.Empty
+                , new DbInterface.OIRequestResult (string.Empty
+                    , DateTime.MaxValue
+                    , float.NegativeInfinity
+                    , -1
+                    , DbInterface.OIKParameter.UNKNOWN)
+                , DateTime.MaxValue
+            );
+            /// <summary>
+            /// Ключ оборудования, значение которого содержится в объекте
+            /// </summary>
+            public FormChangeMode.KeyDevice Key;
+            /// <summary>
+            /// Значение сигнала
+            /// </summary>
+            public DbInterface.OIRequestResult Value;
+            /// <summary>
+            /// Метка времени приема значения приложением
+            /// </summary>
+            public DateTime Stamp;
+            /// <summary>
+            /// Меткадаты/времени изменения состояния
+            /// </summary>
+            private DateTime _stampState;
+
+            private double _delta;
+            /// <summary>
+            /// Разница в мс между метками даты/времени значений текущего и следующего за ним
+            /// </summary>
+            public double Delta
+            {
+                get
+                {
+                    return _delta;
+                }
+            }
+
+            /// <summary>
+            /// Признак участия в запросе
+            /// </summary>
+            private bool _requesting
+            {
+                get
+                {
+                    return (State == STATE.RequestCurrent)
+                        || (State == STATE.RequestArchive);
+                }
+            }
+
+            /// <summary>
+            /// Признак готовности объекта к использованию (полям/свойствам присвоены значения)
+            /// </summary>
+            public int Ready
+            {
+                get
+                {
+                    return (Equals (Key, null) == false)
+                        && (Equals (Key, FormChangeMode.KeyDevice.Empty) == false)
+                        && (Equals (Value, null) == false)
+                        && ((Stamp > DateTime.MinValue)
+                            && (Stamp < DateTime.MaxValue))
+                        ? 0
+                            : -1;
+                }
+            }
+
+            private Stack<STATE> _states;
+            /// <summary>
+            /// Текущее стостояние объекта со значением сигнала
+            /// </summary>
+            public STATE State
+            {
+                get
+                {
+                    return ((Equals(_states, null) == false)
+                        && (_states.Count > 0))
+                        ? _states.Peek ()
+                            : STATE.Unknown;
+                }
+            }
+
+            /// <summary>
+            /// Конструктор - основной без параметров
+            /// </summary>
+            private RequestResult ()
+            {
+                Key = FormChangeMode.KeyDevice.Empty;
+                Value = new OIRequestResult ();
+                Stamp = HDateTime.ToMoscowTimeZone ();
+                _delta = double.NegativeInfinity;
+                _states = new Stack<STATE>();
+
+                push(STATE.New);
+            }
+
+            /// <summary>
+            /// Конструктор - дополнительный (с параметрами)
+            /// </summary>
+            /// <param name="key">Ключ оборудования</param>
+            /// <param name="value">Значение сигнала</param>
+            public RequestResult (FormChangeMode.KeyDevice key, DbInterface.OIRequestResult value)
+                : this()
+            {
+                Key = key;
+                Value = value;
+            }
+
+            /// <summary>
+            /// Конструктор - дополнительный (с параметрами)
+            /// </summary>
+            /// <param name="key">Ключ оборудования</param>
+            /// <param name="value">Значение сигнала</param>
+            /// <param name="stamp">Метка времени получения сигнала</param>
+            public RequestResult (FormChangeMode.KeyDevice key, DbInterface.OIRequestResult value, DateTime stamp)
+                : this(key, value)
+            {
+                Stamp = stamp;
+            }
+
+            /// <summary>
+            /// Установить разницу меток времени в ~ со очередным полученным сигналом
+            /// </summary>
+            /// <param name="next">Следующее за текущим значение сигнала</param>
+            public void Next (DbInterface.OIRequestResult next)
+            {
+                _delta = (next.Stamp1 - Value.Stamp1).TotalMilliseconds;
+            }
+
+            /// <summary>
+            /// Изменить состояние на очередное за текущим
+            /// </summary>
+            /// <param name="bRequest">Признак начала/завершения запроса</param>
+            /// <param name="bForced">Признак принудительного изменения "через шаг"</param>
+            public void Next (bool bRequest, bool bForced)
+            {
+                STATE peek = State // текущее сотояние
+                    , newState; // новое состояние
+
+                // изменять состояние только, если элемент участвовал в запросе И еще может изменять состояние
+                if ((!(_requesting == bRequest))
+                    && (peek < STATE.DoneAll)) {
+                    foreach (STATE state in (Enum.GetValues (typeof (STATE)).Cast<STATE> ())) {
+                        newState = STATE.Unknown;
+
+                        if (state == STATE.DoneAll)
+                            continue;
+                        else if (peek == state) {
+                            // вариант одной строкой
+                            newState = peek + ((peek == STATE.New)
+                                ? ((bForced == true) ? (STATE.RequestArchive - peek) : (STATE.RequestCurrent - peek))
+                                    : 1);
+                            //// вариант с if
+                            //if (peek == STATE.New)
+                            //    newState = peek + (bForced == true ? 3 : 1);
+                            //else
+                            //    newState = peek + 1;
+                        } else
+                            ;
+
+                        if (!(newState == STATE.Unknown)) {
+                            // применить состояние, выйти из цикла
+                            push (newState);
+
+                            break;
+                        } else
+                            ;
+                    }
+                } else if (peek < STATE.DoneAll) {
+                    // TODO: очень странно - состояние позволяет, а в запросе не участвует?
+                    // принудительно перевести в состояние "выполнено"
+                    if ((HDateTime.ToMoscowTimeZone () - _stampState).TotalHours > 1)
+                        push (STATE.Garbage);
+                    else
+                        ;
+                } else
+                    ;
+            }
+
+            /// <summary>
+            /// Восстановить предыдущее состояние при ошибке выполнения запроса
+            /// </summary>
+            public void Previous ()
+            {
+                STATE peek = State;
+                STATE prev;
+
+                // изменять состояние только, если элемент участвовал в запросе И еще может изменять состояние
+                if ((!(_requesting == false))
+                    && (peek < STATE.DoneAll)) {
+                    // извлечь текущее
+                    pop ();
+                    // , чтобы получить предыдущее
+                    prev = State;
+
+                    // восстановить текущее
+                    push (peek);
+                    // добавить повторно предыдущее
+                    push (prev);
+                } else
+                    ;
+            }
+
+            /// <summary>
+            /// Установить ткущее соостояние
+            /// </summary>
+            /// <param name="state">Новое состояние объекта</param>
+            private void push (STATE state)
+            {
+                _states.Push (state);
+                _stampState = HDateTime.ToMoscowTimeZone ();
+            }
+
+            /// <summary>
+            /// Извлечь с удалением текущее состояние объекта
+            /// </summary>
+            private void pop ()
+            {
+                _states.Pop ();
+                _stampState = HDateTime.ToMoscowTimeZone ();
+            }
+
+            public void Dispose ()
+            {
+                _states.Clear ();
+                _states = null;
+            }
+        }
+
+        #region OICDAC - источник данных подписчик-COM-объект
+        private interop.OICDAC.IOICDAC _dac;
+
+        private interop.OICDAC.OICConnection _dac_connection; // _dac.Connection
+
+        private interop.OICDAC.OIRequests _dac_requests; // _dac.OIRequests
+        private List<KeyValuePair<FormChangeMode.KeyDevice, interop.OICDAC.OIRequest>> _requests;
+        private List<OIREQUEST_ITEM> _listOIRequestItems;
+        #endregion
+
+        #region RTDBCON - объвление - источник данных БД реального времени
+        private OIKConnection _rtdb_connection; // rtdbcon.dll
+
+        private IntPtr _syncChannel;
+
+        // хэш таблица, связывающая запрос с пользовательскими данными
+        private Dictionary<OIKConnection.OIKAsyncQueryBase, object> completionMap =
+            new Dictionary<OIKConnection.OIKAsyncQueryBase, object> ();
+
+        public event DbInterface.EnObjTableUpdated OnEnObjTableUpdated;
+
+        public event DbInterface.RTDBDataReceived OnDataReceived;
+
+        private bool _enObjTableUpdated = false;
+        #endregion
+
+        /// <summary>
+        /// Событие для ожидания установки соединения
+        /// </summary>
+        private ManualResetEvent _eventConnected;
+
+        /// <summary>
+        /// Пользовательский конструктор
+        /// </summary>
+        /// <param name="name">имя</param>
+        public DbInterface(string name, Action<object>oicdacApiHandler, object parameters)
+            //Вызов конструктора из базового класса DbInterface
+            : base(name, oicdacApiHandler)
+        {
+            Mode = (MODE)(parameters as object []) [(int)INDEX_PARAMETER.Mode];
+            _listOIRequestItems = ((parameters as object []) [(int)INDEX_PARAMETER.RequestItems] as IEnumerable<OIREQUEST_ITEM>).ToList ();
+
+            ConnectActionOrder = s_dictConnectionActionOrders[Mode];
+
+            __kindRefresh = KindRefreshEnum.kr_Unknown;
+
+            _eventConnected = new ManualResetEvent (false);
+            _requests = new List<KeyValuePair<FormChangeMode.KeyDevice, OIRequest>> ();
+        }
+
+        /// <summary>
+        /// Создать объект для соединения
+        /// </summary>
+        protected override void create ()
+        {
+            string errorMessage = "Unknown error";
+
+            Dictionary<DbInterface.MODE, Action> dictCreate = new Dictionary<DbInterface.MODE, Action> () {
+                { DbInterface.MODE.Server | DbInterface.MODE.OICDAC, () => {
+                    #region OICDAC
+                    if (Equals(_dac, null) == true) {
+                    // создаем объект - КДД
+                        _dac = new DACClass ();
+                    } else
+                        ;
+
+                    try {
+                        //// основное окно приложения
+                        //_dac.AppHandle = (int)this.Handle;
+
+                        _dac_connection = _dac.Connection;
+                        _dac_requests = _dac.OIRequests;
+
+                        // TODO: разветвить запрос по филиалам/станциям, ключи филиалов станций получить из параметров ИЛИ из списка элементов(GroupBy)
+                        addRequest (FormChangeMode.KeyDevice.Empty);
+
+                        _listOIRequestItems.ForEach (item => {
+                            addRequestItem (FormChangeMode.KeyDevice.Empty, item.Name, item.Tag);
+                        });
+                    } catch (Exception e) {
+                        Logging.Logg().Exception(e, $@"DbOICDACInterface:;create () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+
+                    // подключение к основному ОИК
+                    _dac.Connection.Alias = m_connectionSettings.server;
+                    _dac.Connection.ConnectKind = interop.OICDAC.ConnectKindEnum.ck_ByAlias;
+
+                    errorMessage = string.Empty;
+                    #endregion
+                }}
+                , { DbInterface.MODE.Server | DbInterface.MODE.RTDBCon, () => {
+                    #region RTDBCON - соединение
+                    // TODO:
+                    //_rtdb_connection  = 
+
+                    errorMessage = string.Empty;
+                    #endregion
+                }}
+                , { DbInterface.MODE.Client | DbInterface.MODE.MSSQL, () => {
+                    errorMessage = string.Empty;
+                }}
+            };
+
+            try {
+                dictCreate[Mode]();
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, "OICDAC.Admin::create () - создание DAC-объекта...", Logging.INDEX_MESSAGE.NOT_SET);
+            } finally {
+            }
+        }
+
+        /// <summary>
+        /// Ожидать окончания результата попытки соединения
+        /// </summary>
+        /// <returns>Признак результата ожидания</returns>
+        protected override int waitConnected ()
+        {
+            int iRes = -1;
+
+            try {
+                iRes = _eventConnected.WaitOne () == true
+                    ? 0
+                        : 1;
+            } catch {
+            }
+
+            return iRes;
+        }
+
+        /// <summary>
+        /// Установить соединение
+        /// </summary>
+        /// <returns>Признак ошибки при вызовах методов для установления соединения</returns>
+        protected override bool connect ()
+        {
+            bool bRes = false;
+
+            string errorMessage = "Unknown error";
+
+            Dictionary<DbInterface.MODE, Action> dictConnect = new Dictionary<DbInterface.MODE, Action> () {
+                { DbInterface.MODE.Server | DbInterface.MODE.OICDAC, () => {
+                    #region OICDAC
+                    bRes =
+                    _dac.Connection.Connected =
+                        true;
+
+                    errorMessage = string.Empty;
+                    #endregion
+                }}
+                , { DbInterface.MODE.Server | DbInterface.MODE.RTDBCon, () => {
+                    #region RTDBCON - соединение
+                    if (!_rtdb_connection.SetOIK (m_connectionSettings.server.Trim ())) {
+                        errorMessage = "RTDB: Ошибка при подключении к ОИК " + m_connectionSettings.server.Trim ();
+                    } else if (!_rtdb_connection.RTDBOpen ("Sample")) {
+                        errorMessage = "RTDB: Ошибка RTDBOpen при подключении к " + m_connectionSettings.server.Trim ();
+                    } else {
+                        // Открываем синхронный канал связи с БДРВ
+                        _syncChannel = _rtdb_connection.SyncChannelOpen ();
+
+                        errorMessage = string.Empty;
+                #endregion
+                    }
+                }}
+                , { DbInterface.MODE.Client | DbInterface.MODE.MSSQL, () => {
+                    //bRes = 
+
+                    errorMessage = string.Empty;
+                }}
+            };
+
+            try {
+                dictConnect[Mode]();
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, "OICDAC.Admin::connect () - DAC-объект connected...", Logging.INDEX_MESSAGE.NOT_SET);
+            } finally {
+            }
+
+            return bRes;
+        }
+
+        protected override bool Disconnect ()
+        {
+            try {
+                if ((Mode.HasFlag (DbInterface.MODE.Server) == true)
+                    && (Mode.HasFlag (DbInterface.MODE.OICDAC) == true)) {
+                    if ((Equals (_dac_connection, null) == false)
+                        && (Equals (_dac_connection.Connected, true) == true)) {
+                        deleteAllRequest ();
+
+                        _dac_connection.Connected = false;
+
+#if _DAC_RECREATE
+                        _dac_connection = null;
+                        _dac_requests = null;
+
+                        _dac = null;
+
+                        GC.Collect ();
+#endif
+                    } else
+                        ;
+                } else
+                    ;
+
+                //base.Stop ();
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, "OICDAC.DbInterface::Disconnect () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            return base.Disconnect ();
+        }
+
+        protected override bool unregisterHandler ()
+        {
+            bool bRes = false;
+
+            IEnumerable<Delegate/*MethodInfo*/> handlers; ;
+
+#region Отмена регистрации универсального обработчика
+            List<EVENT> eventNames = new List<EVENT> () {
+                EVENT.DAC_OnRTDBConnected, EVENT.DAC_OnRTDBConnectionClose
+                , EVENT.RTDB_OnRTDBCode, EVENT.RTDB_OnOIKEvent
+            };
+
+            foreach (EVENT eventName in eventNames) {
+                foreach (Delegate handler in getHandlerExists (OApi, eventName.ToString())) {
+                    switch (eventName) {
+#region OICDAC
+                        case EVENT.DAC_OnRTDBConnected:
+                            _dac_connection.OnRTDBConnected -= dacConnection_OnRTDBConnected;
+                            break;
+                        case EVENT.DAC_OnRTDBConnectionClose:
+                            _dac_connection.OnRTDBConnectionClose -= dacConnection_OnRTDBConnectionClose;
+                            break;
+#endregion
+
+#region RTDB
+                        case EVENT.RTDB_OnRTDBCode:
+                            _rtdb_connection.OnRTDBCode -= rtdbConnection_OnRTDBCode;
+                            break;
+                        case EVENT.RTDB_OnOIKEvent:
+                            _rtdb_connection.OnOIKEvent -= rtdbConnection_OnOIKEvent;
+                            break;
+#endregion
+
+                        default:
+                            break;
+                    }
+                }
+            }
+            // проверить
+            handlers = getHandlerExists (OApi);
+#endregion
+
+            return handlers.Count () == 0;
+        }
+
+        protected override bool registerHandler ()
+        {
+            int counter = -1;
+            RTDBCon_Interop.OIKConnection.EventFilter eFilter;
+            bool bEventHandler = true; // 'false', если определены правила в конфигурв=ации
+            // на 'Close' подписываемся всегда (правило не устанавливается)
+            //.OnClose += atomApi_OnClose;
+            counter = 0;
+
+            // TODO: добавить обработчики (??? в соответствии с конфигурацией)
+            foreach (EVENT nameEvent in s_dictEvents[Mode]) {
+                if (nameEvent == EVENT.UNKNOWN)
+                    continue;
+                else
+                    ;
+
+                // TODO: получить правило из конфигурации
+                //bEventHandler = bool.Parse (_jsonEventListener.Value<string> (nameEvent.ToString ()));
+                // сообщить, что подписка на событие с именем 'nameEvent' (не) будет выполнена, в ~ с признаком 'bEventHandler'
+                delegateAtomApiHandler (Tuple.Create<EVENT, bool> (nameEvent, bEventHandler));
+
+                if (bEventHandler == true) {
+                    counter++;
+
+                    switch (nameEvent) {
+#region OICDAC
+                        case EVENT.DAC_OnRTDBConnected:
+                            //!!! unregisterHandlers выполняеися некорректно - грубая отписка
+                            _dac_connection.OnRTDBConnected -= dacConnection_OnRTDBConnected;
+                            _dac_connection.OnRTDBConnected += dacConnection_OnRTDBConnected;
+                            break;
+                        case EVENT.DAC_OnRTDBConnectionClose:
+                            //!!! unregisterHandlers выполняеися некорректно - грубая отписка
+                            _dac_connection.OnRTDBConnectionClose -= dacConnection_OnRTDBConnectionClose;
+                            _dac_connection.OnRTDBConnectionClose += dacConnection_OnRTDBConnectionClose;
+                            break;
+#endregion
+
+#region RTDB
+                        case EVENT.RTDB_OnRTDBCode:
+                            // Подписываемся на событие...
+                            // Устанавливаем обработчик событий RTDBCon.dll
+                            // Данный обработчик будет вызываться при возникновении таких событий как:
+                            // разрыв соединения, смена ролей, отключене пользователя...
+                            _rtdb_connection.OnRTDBCode += rtdbConnection_OnRTDBCode;
+                            break;
+                        case EVENT.RTDB_OnOIKEvent:
+                            // Подписываемся на событие...
+                            // Устанавливаем обработчик событий ОИК
+                            // Этот обработчик будет вызываться всякий раз, когда
+                            // будет возникать событие ОИК, на которое мы подписаны
+                            _rtdb_connection.OnOIKEvent += rtdbConnection_OnOIKEvent;
+
+                            eFilter = new OIKConnection.EventFilter ();
+                            //efilter.DeleteOldFilter = true;
+                            eFilter.SetAllNoSend ();
+
+                            // список идентификаторов событий, на которые нужно подписаться
+                            eFilter.IdEvents = new List<uint> () { (uint)DbInterface.RTDB_OIK_EVENT.NSI_CHANGED, (uint)DbInterface.RTDB_OIK_EVENT.NSI_EDIT_END };
+                            eFilter.SetAllSend ();
+                            //_rtdbSession.SetEventFilter(efilter);
+                            _rtdb_connection.QueryEventUpdate (eFilter);
+                            break;
+#endregion
+                        default:
+                            break;
+                    }
+                } else {
+                    ;
+                }
+            }
+
+            // проверить
+            return getHandlerExists (OApi).Count() == counter;
+        }
+
+        private void oicdacApi_OnEvent (object sender, EventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Метод-обработчик однотипных событий источника данных
+        ///  , в случае OICDAC (DAC, RTDB) использование не представляется возможным
+        ///  , приведение к единому формату всех событий повысит сложность восприятия кодв
+        /// </summary>
+        /// <param name="obj">Объект-иницитор события</param>
+        /// <param name="e">Аргумент события</param>
+        private void oicdacApi_OnEventHandler(object obj, EventArgs e)
+        {
+            object[] sendToTrans;
+
+            if (1 == 1) {
+                sendToTrans = new object [] { ID_EVENT.Unknown };
+            } else
+                sendToTrans = new object[] { ID_EVENT.Unknown };
+
+            lock (atomApiEventLocked) {
+            // простая ретрансляция
+                delegateAtomApiHandler?.Invoke(sendToTrans);
+            }
+        }
+
+        /// <summary>
+        /// Зарегистрировать/отменить регистрацию обработчика события получения данных
+        /// </summary>
+        /// <param name="bAdvised">Признак регистрации/отмены</param>
+        private void adviseKrActualData (bool bAdvised)
+        {
+            (from reqWithKey in _requests select reqWithKey.Value).ToList ().ForEach (req => {
+                req.Stop ();
+                // для определенности - отписаться от события
+                req.OnGetResultEx -= rq_OnGetResultEx;
+
+                if (bAdvised == true) {
+                    req.OnGetResultEx += rq_OnGetResultEx;
+                } else
+                    ;
+            });
+        }
+
+        protected override bool GetData (DataTable table, object query, params SP_PARAMETER[]parameters)
+        {
+            bool result = false;
+            string msg = string.Empty;
+
+            table.Reset();
+            table.Locale = System.Globalization.CultureInfo.CurrentCulture;
+
+            try {
+                msg = $"DbOICDACInterface::GetData () - query={query}";
+                #region OIC
+                using (ParseGetData getData = new ParseGetData (from reqWithKey in _requests select reqWithKey.Value, query)) {
+                    if (getData.Operation == Operation.Period) {
+                        _kindRefresh = KindRefreshEnum.kr_Period;
+                        result = getData.Result (table);
+                    } else if (getData.Operation == Operation.ActualData) {
+                        table.Columns.Add (string.Empty, typeof (bool));
+                        table.Rows.Add (new object[] { true });
+                        result = true;
+                    }
+                }
+
+                _kindRefresh = KindRefreshEnum.kr_ActualData;
+                _requests.ForEach (req => {
+                    req.Value.Stop ();
+                    req.Value.Start ();
+                });
+
+                msg = $"{msg}, тип данных <{_kindRefresh}>...";
+#endregion
+
+#region RTDB
+#endregion
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, msg, Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            Logging.Logg().Debug(msg, Logging.INDEX_MESSAGE.NOT_SET);
+
+            return result;
+        }
+
+        protected override void GetDataCancel ()
+        {
+            //TODO: как остановить длительно выполняющийся метод 
+        }
+
+        
+#region OICDAC
+        void dacConnection_OnRTDBConnectionClose ()
+        {
+            Logging.Logg ().Action (string.Format ("Разорвано соединение: {0}\\{1}\\{2}"
+                    , _dac_connection.Domain, _dac_connection.Group, _dac_connection.RTDBAbbrev)
+                , Logging.INDEX_MESSAGE.NOT_SET);
+
+            _eventConnected.Reset ();
+        }
+
+        void dacConnection_OnRTDBConnected ()
+        {
+            Logging.Logg ().Action ("Открыто соединение: " + string.Format ("{0}\\{1}\\{2}"
+                    , _dac_connection.Domain, _dac_connection.Group, _dac_connection.RTDBAbbrev)
+                , Logging.INDEX_MESSAGE.NOT_SET);
+
+            try {
+                _eventConnected.Set ();
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $@"::dacConnection_OnRTDBConnectionClose () - '_eventConnected.Set ()'...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+        }
+
+        private void rq_OnGetResultEx (string signal, interop.OICDAC.KindRefreshEnum kindRefresh, DateTime stamp1, object value, int sign, DateTime stamp2, int tag)
+        {
+            // ретрансляция для 'Admin'
+            lock (atomApiEventLocked) {
+                delegateAtomApiHandler?.Invoke (new object[] {
+                    ID_EVENT.NewRequestResult
+                    , new DbInterface.OIRequestResult (
+                        signal
+                        , kindRefresh
+                        , stamp1
+                        , (float)(double)value
+                        , sign
+                        , stamp2
+                        , (DbInterface.OIKParameter)tag)
+                });
+            }
+        }
+
+        private interop.OICDAC.KindRefreshEnum __kindRefresh;
+        /// <summary>
+        /// Признак необходимости запроса "периодических"(KindRefreshEnum.kr_Period) данных и обработки его результаттов
+        ///  , аналогия с 'OICDAC.Admin::kindRefresh', и они взаимозависимы
+        ///  , но  использовать одну и ту же переменную не представляется возможным:
+        ///  объекты (интерфейс и объект обращения к данным по интерфейсу) независимы - не имеют ссылок друг на друга
+        ///  (по существу должны быть реализованы в разных сборках)
+        /// </summary>
+        private interop.OICDAC.KindRefreshEnum _kindRefresh
+        {
+            get
+            {
+                return __kindRefresh;
+            }
+
+            set
+            {
+                if (!(__kindRefresh == value)) {
+                    interop.OICDAC.OIRequestItem rqi;
+                    (from reqWithKey in _requests select reqWithKey.Value).ToList ().ForEach (req => {
+                        req.Stop ();
+
+                        for (int i = 0; i < req.OIRequestItems.Count; i++)
+                            req.OIRequestItems.Item (i).KindRefresh = value;
+                    });
+
+                    __kindRefresh = value;
+
+                    adviseKrActualData (__kindRefresh == KindRefreshEnum.kr_ActualData);
+                } else
+                    ;
+            }
+        }
+
+        private void deleteRequest (int index)
+        {
+            OIRequest req;
+            FormChangeMode.KeyDevice key;
+
+            if ((Equals (_dac_requests, null) == true)
+                || (Equals (_requests, null) == true))
+                throw new Exception ($"OICDAC.Admin::deleteRequest (index={index}) - одна из коллекций с запросами не инициализирована - ...");
+            else
+                ;
+
+            if (!(_dac_requests.Count == _requests.Count))
+                throw new Exception ($"OICDAC.Admin::deleteRequest (index={index}) - кол-во элементов коллекций не совпадает: [ReqOICDAC.Count={_dac_requests.Count}, ReqLocal.Count={_requests.Count}] - ...");
+            else
+                ;
+
+            if (index < _dac_requests.Count) {
+                req = _dac_requests.Item (index);
+                // останавливаем и удаляем старый запрос
+                _dac_requests.Item (index).Stop ();
+                _dac_requests.Item (index).Delete ();
+
+                req = null;
+
+                req = _requests[index].Value;
+                _requests.RemoveAt (index);
+                req = null;
+            }
+        }
+
+        private void deleteAllRequest ()
+        {
+            OIRequest req;
+            FormChangeMode.KeyDevice key;
+
+            while (_dac_requests.Count > 0) {
+                deleteRequest (0);
+            }
+        }
+
+        /// <summary>
+        /// Возвратить группу запроса в режиме 'OICDAC'
+        /// </summary>
+        /// <param name="keyReq">Ключ группы запроса</param>
+        /// <returns>Группа запроса 'OICDAC'</returns>
+        private OIRequest getRequest (FormChangeMode.KeyDevice keyReq)
+        {
+            return (from r in _requests where r.Key == keyReq select r)?.FirstOrDefault ().Value;
+        }
+
+        private OIRequestItem getRequestItem (OIRequest group, string dataSource)
+        {
+            int indx = -1;
+
+            for (indx = 0; indx < group.OIRequestItems.Count; indx++)
+                if (group.OIRequestItems.Item (indx).DataSource.Equals (dataSource) == true)
+                    break;
+                else
+                    ;
+
+            return (indx < group.OIRequestItems.Count)
+                ? group.OIRequestItems.Item (indx)
+                    : null;
+        }
+
+        private bool existRequestItem (OIRequest group, string dataSource)
+        {
+            return Equals (getRequestItem(group, dataSource), null) == false;
+        }
+
+        /// <summary>
+        /// Добавить группу запроса в режиме 'OICDAC'
+        /// </summary>
+        /// <param name="keyReq">Ключ группы запроса</param>
+        private void addRequest (FormChangeMode.KeyDevice keyReq)
+        {
+            OIRequest req;
+            Guid id_rq = Guid.NewGuid ();
+            // добавляем новый запрос
+            // ссылку на запрос запоминаем, иначе через некоторое время .NET автоматически отвязвает от него обработчик
+            req = _dac_requests.Add ();
+            _requests.Add(new KeyValuePair<FormChangeMode.KeyDevice, OIRequest>(keyReq, req));
+            // ??? только что добавили - теперь ищем
+            req = getRequest (keyReq);
+            // получаем данные с миллисекундами
+            req.UseMilliseconds = true;
+            //// задаем обработчик события получения данных
+            //req.OnGetResultEx += rq_OnGetResultEx;
+        }
+
+        /// <summary>
+        /// Добавить элемент в группу запроса
+        /// </summary>
+        /// <param name="keyReq">Идентификатор группы запроса - идентификатор подразделения</param>
+        /// <param name="oiParamName">Идентификатор сигнала</param>
+        /// <param name="tag">Признак идентификатора сигнала</param>
+        private void addRequestItem (FormChangeMode.KeyDevice keyReq, string oiParamName, DbInterface.OIKParameter tag)
+        {
+            OIRequest req;
+            interop.OICDAC.OIRequestItem rqi;
+
+            req = getRequest(keyReq);
+
+            if (Equals (req, null) == false) {
+                if (existRequestItem (req, oiParamName) == false) {
+                    rqi = req.AddOIRequestItem ();
+
+                    rqi.IsLocalTime = false;
+                    rqi.KindRefresh = _kindRefresh;
+                    rqi.DataSource = oiParamName;
+                    rqi.Tag = (int)tag;
+                } else
+                    ;
+            } else
+                Logging.Logg().Error($"OICDAC.Admin::addRequestItem () - не найдена группа запросов по ключу {keyReq.ToString()}...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+#endregion
+
+#region RTDBCON - обработка событий
+        // Обработчик событий ОИК
+        void rtdbConnection_OnOIKEvent (OIKConnection.OIKEvent oikEvent, OIKConnection oikcon)
+        {
+            switch ((DbInterface.RTDB_OIK_EVENT)oikEvent.IdEvent) {
+                case DbInterface.RTDB_OIK_EVENT.NSI_CHANGED:
+                    // измение НСИ
+                    if (oikEvent.Params [1] == 231)
+                        // если изменилась таблица EnObj
+                        _enObjTableUpdated = true;
+                    break;
+                case DbInterface.RTDB_OIK_EVENT.NSI_EDIT_END:
+                    // завершено редактирование НСИ
+                    if (_enObjTableUpdated)
+                        // если была изменена таблица EnObj - вызываем обработчик
+                        OnEnObjTableUpdated (oikEvent);
+                    _enObjTableUpdated = false;
+                    break;
+            }
+
+            Console.WriteLine ($"[{DateTime.Now.ToString ("HH::mm::ss.fff")}], Time={DateTime.Now.ToString ("HH::mm::ss.fff")}, Id=<{oikEvent.IdEvent}>: {oikEvent.Message}");
+        }
+
+        /// <summary>
+        /// Обработчик событий rtdbcon.dll
+        /// </summary>
+        /// <param name="code">Код ошибки</param>
+        /// <param name="oikcon">Соединение с БДРВ, к которому относится данное событие</param>
+        void rtdbConnection_OnRTDBCode (int code, OIKConnection oikcon)
+        {
+            DbInterface.RESULT [] codeDisconnect = {
+                DbInterface.RESULT.RTDBCON_CONNECTION_CLOSE
+                , DbInterface.RESULT.RTDB_MSG_STOP
+                , DbInterface.RESULT.RTDB_CLOSE_USER
+            };
+
+            DbInterface.RRESULT? res = null;
+
+            if (codeDisconnect.Cast<int> ().Contains<int> (code) == true)
+                res = (from r in StatisticCommon.OICDAC.DbInterface._results where (int)r.Result == code select r).FirstOrDefault ();
+            else
+                ;
+
+            if (Equals (res, null) == false) {
+            // код из аргумента содержится в массиве, следовтельно сообщаем об этом (инициируем действия, например, по прекращению периодического опроса)
+                //Disconnect ();
+            } else
+                ;
+
+            //TODO: установить признак установления соединения
+            //_eventConnected.Set ();
+        }
+
+        /// <summary>
+        /// Метод возвращает категорию ОИ
+        /// </summary>
+        /// <param name="letter">символ категории ОИ</param>
+        /// <returns>Объект - категория ОИ</returns>
+        public OICategory GetCategory (char letter)
+        {
+            return _rtdb_connection.CatList.FindCat (letter);
+        }
+
+        public override void Dispose ()
+        {
+            _dac = null;
+
+            _dac_connection = null;
+            _dac_requests = null;
+
+            GC.Collect ();
+        }
+        #endregion
+
+        private DbInterface.MODE _mode;
+        /// <summary>
+        /// Режим работы объекта(в целом и всего приложения): сервер или клиент
+        ///  , в случае сервера - тип источника данных: COM-объект-подписчик или БД реального времени(RTDB)
+        /// </summary>
+        public DbInterface.MODE Mode
+        {
+            get
+            {
+                return _mode;
+            }
+
+            private set
+            {
+                // проверить возможность установки нового значения (несовместимые признаки, например: сервер и клиент)
+                bool bError = ((value.HasFlag (DbInterface.MODE.Server) == true) && (value.HasFlag (DbInterface.MODE.Client) == true))
+                    || ((value.HasFlag (DbInterface.MODE.Client) == true) && ((value.HasFlag (DbInterface.MODE.OICDAC) == true) || (value.HasFlag (DbInterface.MODE.RTDBCon) == true)));
+
+                if (bError == true)
+                    throw new Exception ($"StatisticCommon.OICDAC.Admin::Mode - ошибка установки значения <{CmdArg<DbInterface.MODE>.Result.ToString ()}> ");
+                else
+                    ;
+
+                _mode = value;
+            }
+        }
+    }
+}

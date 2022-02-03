@@ -1,0 +1,548 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASUTP.Core</name>
+    </assembly>
+    <members>
+        <member name="T:ASUTP.Core.Constants">
+            <summary>
+            Класс для хранения статических констант
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.Constants.MAX_RETRY">
+            <summary>
+            Максимальное количество повторов
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.Constants.MAX_WAIT_COUNT">
+            <summary>
+            Количество попыток проверки наличия результата в одном цикле
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.Constants.WAIT_TIME_MS">
+            <summary>
+            Интервал ожидания между проверками наличия результата
+             , при условии что в предыдущей итерации результат не был получен
+            </summary>
+        </member>
+        <member name="P:ASUTP.Core.Constants.MAX_WATING">
+            <summary>
+            Максимальное время ожидания окончания длительно выполняющейся операции
+            </summary>
+        </member>
+        <member name="T:ASUTP.Core.Crypt">
+            <summary>
+            Класс для хранения значения ключа при (де)шифрации
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.Crypt.KEY">
+            <summary>
+            1-ая (публичная) часть ключа (де)шифрования
+            </summary>
+        </member>
+        <member name="M:ASUTP.Core.Crypt.#ctor">
+            <summary>
+            Конструктор - дополнительный (без параметров)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Core.Crypt.Crypting">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+            <returns>Объект класса</returns>
+        </member>
+        <member name="M:ASUTP.Core.Crypt.Decrypt(System.Char[],System.Int32,System.String@)">
+            <summary>
+            Дешифровать значение
+            </summary>
+            <param name="src">Массив символов для дешифрации</param>
+            <param name="count">??? Количество символов в массиве</param>
+            <param name="msgErr">Сообщение при ошибке выполнения метода</param>
+            <returns>Дешифрованное значение</returns>
+        </member>
+        <member name="M:ASUTP.Core.Crypt.Decrypt(System.Byte[],System.String)">
+            <summary>
+            Дешифровать массив байт
+            </summary>
+            <param name="data">Массив байт для дешифрации</param>
+            <param name="password">1-ая (публичная) часть ключа</param>
+            <returns>Массив байт после дешифрации</returns>
+        </member>
+        <member name="M:ASUTP.Core.Crypt.Decrypt(System.String,System.String)">
+            <summary>
+            Дешифровать строку
+            </summary>
+            <param name="data">Строка для дешифрации</param>
+            <param name="password">1-ая (публичная) часть ключа</param>
+            <returns>Строка после дешифрации</returns>
+        </member>
+        <member name="M:ASUTP.Core.Crypt.InternalDecrypt(System.Byte[],System.String)">
+            <summary>
+            Возвратить поток с дешифрованным значением
+            </summary>
+            <param name="data">Массив байт для дешифрации</param>
+            <param name="password">1-ая (публичная) часть ключа</param>
+            <returns>Поток с дешифрованным значением</returns>
+        </member>
+        <member name="M:ASUTP.Core.Crypt.Encrypt(System.Text.StringBuilder,System.Int32@)">
+            <summary>
+            Зашифровать значение
+            </summary>
+            <param name="src">Строка для шифрования</param>
+            <param name="err">Признак ошибки при выполнении метода</param>
+            <returns>Массив символов после шифрации</returns>
+        </member>
+        <member name="M:ASUTP.Core.Crypt.Encrypt(System.Byte[],System.String)">
+            <summary>
+            Зашифровать значение
+            </summary>
+            <param name="data">Массив байт для шифрации</param>
+            <param name="password">1-ая (публичная) часть ключа</param>
+            <returns>>Массив байт после шифрации</returns>
+        </member>
+        <member name="M:ASUTP.Core.Crypt.Encrypt(System.String,System.String)">
+            <summary>
+            Зашифровать значение
+            </summary>
+            <param name="data">Строка для шифрации</param>
+            <param name="password">1-ая (публичная) часть ключа</param>
+            <returns>Строка после шифрации</returns>
+        </member>
+        <member name="T:ASUTP.Core.DelegateFunc">
+            <summary>
+            Тип для делегата без аргументов и без возвращаемого значения
+            </summary>
+        </member>
+        <member name="T:ASUTP.Core.DelegateIntFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'int' и без возвращаемого значения
+            </summary>
+            <param name="param">Аргумент 1</param>
+        </member>
+        <member name="T:ASUTP.Core.DelegateIntIntFunc">
+            <summary>
+            Тип для делегата с аргументами типа 'int', 'int' и без возвращаемого значения
+            </summary>
+            <param name="param1">Аргумент 1</param>
+            <param name="param2">Аргумент 2</param>
+        </member>
+        <member name="T:ASUTP.Core.IntDelegateIntIntFunc">
+            <summary>
+            Тип для делегата с аргументами типа 'int', 'int' с возвращаемым значением типа 'int'
+            </summary>
+            <param name="param1">Аргумент 1</param>
+            <param name="param2">Аргумент 2</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:ASUTP.Core.DelegateStringFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'string' и без возвращаемого значения
+            </summary>
+            <param name="param">Аргумент 1</param>
+        </member>
+        <member name="T:ASUTP.Core.DelegateBoolFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'bool' и без возвращаемого значения
+            </summary>
+            <param name="param">Аргумент 1</param>
+        </member>
+        <member name="T:ASUTP.Core.DelegateObjectFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'object' и без возвращаемого значения
+            </summary>
+            <param name="obj">Аргумент 1</param>
+        </member>
+        <member name="T:ASUTP.Core.DelegateRefObjectFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'ссылка на object' с и без возвращаемого значения
+            </summary>
+            <param name="obj">Аргумент 1</param>
+        </member>
+        <member name="T:ASUTP.Core.DelegateDateFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'DateTime' с и без возвращаемого значения
+            </summary>
+            <param name="date">Аргумент 1</param>
+        </member>
+        <member name="T:ASUTP.Core.IntDelegateFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'DateTime' и без возвращаемого значения
+            </summary>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:ASUTP.Core.IntDelegateIntFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'int' с возвращаемым значения типа 'int'
+            </summary>
+            <param name="param">>Аргумент 1</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:ASUTP.Core.StringDelegateFunc">
+            <summary>
+            Тип для делегата без аргументов с возвращаемым значения типа 'string'
+            </summary>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:ASUTP.Core.StringDelegateIntFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'int' с возвращаемым значения типа 'string'
+            </summary>
+            <param name="param">Аргумент 1</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:ASUTP.Core.StringDelegateStringFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'string' с возвращаемым значения типа 'string'
+            </summary>
+            <param name="keyParam">Аргумент 1</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:ASUTP.Core.HDateTime">
+            <summary>
+            Класс для хранения даты/времени и выполнения дополнительных специальных преобразований
+            </summary>
+        </member>
+        <member name="T:ASUTP.Core.HDateTime.INTERVAL">
+            <summary>
+            Перечисление - идентификаторы периодов времени
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.HDateTime.INTERVAL.UNKNOWN">
+            <summary>
+            Неизвестный
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.HDateTime.INTERVAL.MINUTES">
+            <summary>
+            Интервал - vинуты
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.HDateTime.INTERVAL.HOURS">
+            <summary>
+            Интервал - часы
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.HDateTime.INTERVAL.COUNT_ID_TIME">
+            <summary>
+            Количество элементов в перчислении
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.HDateTime.NameMonths">
+            <summary>
+            Массив со строковыми наименованиями месяцев в году
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.HDateTime.s_Name_Moscow_TimeZone">
+            <summary>
+            Наименование в ОС для зоны "Москва - стандартное время РФ"
+            </summary>
+        </member>
+        <member name="M:ASUTP.Core.HDateTime.ToMoscowTimeZone(System.DateTime)">
+            <summary>
+            Привести дату/время к зоне "Москва - стандартное время РФ"
+            </summary>
+            <param name="dt">Дата/время для приведения</param>
+            <returns>Дата/время в МСК</returns>
+        </member>
+        <member name="M:ASUTP.Core.HDateTime.ToMoscowTimeZone">
+            <summary>
+             Возвратить текущие дату/время в МСК
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE">
+            <summary>
+            Разность между локальным текущим времененм и МСК текущим временем
+            </summary>
+        </member>
+        <member name="P:ASUTP.Core.HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE">
+            <summary>
+            Возвратить смещение зоны "Москва - стандартное время РФ" от UTC
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ASUTP.Core.HMark">
+            <summary>
+            Класс для хранения массива признаков
+            Значение каждого признака хранится в одном из битов (адреса) объекта
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.HMark.m_mark">
+            <summary>
+            Совокупность значений признаков
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.HMark.ValueChanged">
+            <summary>
+            Делегат при обработке события - изменение значения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Core.HMark.#ctor(System.Int32)">
+            <summary>
+            Конструктор объекта
+            </summary>
+            <param name="val">Совокупность значений признаков</param>
+        </member>
+        <member name="M:ASUTP.Core.HMark.#ctor(System.Int32[])">
+            <summary>
+            Конструктор объекта
+            </summary>
+            <param name="arNumBits">Индексы (номера)</param>
+        </member>
+        <member name="M:ASUTP.Core.HMark.marked(System.Boolean,System.Int32)">
+            <summary>
+            Присвоить признак по указанному адресу (номеру бита)
+            </summary>
+            <param name="opt">Значение признака</param>
+            <param name="bit">Номер бита</param>
+        </member>
+        <member name="M:ASUTP.Core.HMark.Set(System.Int32,System.Boolean)">
+            <summary>
+            Установить значение признака по указанному адресу
+            </summary>
+            <param name="bit">Номер бита</param>
+            <param name="val">Значение признака</param>
+        </member>
+        <member name="M:ASUTP.Core.HMark.SetOf(ASUTP.Core.HMark)">
+            <summary>
+            Установить значение всех признаков
+            </summary>
+            <param name="mark">Исходное значение для всех признаков</param>
+        </member>
+        <member name="M:ASUTP.Core.HMark.SetOf(System.Int32)">
+            <summary>
+            Установить значение всех признаков
+            </summary>
+            <param name="val">Исходное значение для всех признаков</param>
+        </member>
+        <member name="M:ASUTP.Core.HMark.Add(ASUTP.Core.HMark)">
+            <summary>
+            Добавить истинные признаки при их отсутствии
+            </summary>
+            <param name="mark">Исходное значение для всех признаков</param>
+        </member>
+        <member name="M:ASUTP.Core.HMark.Marked(System.Int32)">
+            <summary>
+            Установить значение признака ИСТИНА по адресу (номеру бита)
+            </summary>
+            <param name="bit">Номер бита</param>
+        </member>
+        <member name="M:ASUTP.Core.HMark.UnMarked">
+            <summary>
+            Установить все признаки в ЛОЖЬ
+            </summary>
+        </member>
+        <member name="M:ASUTP.Core.HMark.UnMarked(System.Int32)">
+            <summary>
+            Установить значение признака в ЛОЖЬ по адресу (номеру бита)
+            </summary>
+            <param name="bit">Номер бита</param>
+        </member>
+        <member name="M:ASUTP.Core.HMark.IsMarked(System.Int32)">
+            <summary>
+            Проверить установлено ли значение признака в ИСТИНА по адресу (номеру бита)
+            </summary>
+            <param name="bit">Номер бита</param>
+            <returns>Признак установки значения</returns>
+        </member>
+        <member name="M:ASUTP.Core.HMark.IsMarked">
+            <summary>
+            Проверить установлен ли хотя бы один признак в ИСТИНА
+            </summary>
+            <returns>Признак установки значения</returns>
+        </member>
+        <member name="M:ASUTP.Core.HMark.IsMarked(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Проверить установлено ли значение признака в ИСТИНА по адресу (номеру бита) и доп./смещению
+            </summary>
+            <param name="val">Все значения признаков</param>
+            <param name="bit">Номер бита</param>
+            <param name="offset">Доп./смещение</param>
+            <returns>Признак установки значения</returns>
+        </member>
+        <member name="P:ASUTP.Core.HMark.Value">
+            <summary>
+            Возвратить значение всех признаков в виде целого числа
+            </summary>
+        </member>
+        <member name="M:ASUTP.Core.HMath.Pow2(System.Int32,System.Int32)">
+            <summary>
+            Возвести число в степень 2 
+            </summary>
+            <param name="number">Число, возводимое в степень 2</param>
+            <param name="offset">Слагаемое к числу, возводимого в степень (используется для битов)</param>
+            <returns>Значение числа в степени 2</returns>
+        </member>
+        <member name="F:ASUTP.Core.HMath.random">
+            <summary>
+            Function to get random number
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.HMath.syncLock">
+            <summary>
+            Объект синхронизации для получения случайного целочисленного значения в диапазоне
+            </summary>
+        </member>
+        <member name="M:ASUTP.Core.HMath.GetRandomNumber(System.Int32,System.Int32)">
+            <summary>
+            Возвраить случайное целочисленное значение в диапазоне
+            </summary>
+            <param name="min">Нижняя (левая) граница диапазона</param>
+            <param name="max">Верхняя (правая) граница диапазона</param>
+            <returns>Случайное целочисленное значение</returns>
+        </member>
+        <member name="T:ASUTP.Core.WinApi">
+            <summary>
+            Библиотека функций WinApi
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.WinApi.WM_SYSCOMMAND">
+            <summary>
+            Служит для генерации сообщения WM_SYSCOMMAND
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.WinApi.WM_ACTIVATEAPP">
+            <summary>
+            Constant value was found in the "windows.h" header file.
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.WinApi.SC_CLOSE">
+            <summary>
+            Для использования как wParam при WM_SYSCOMMAND. Отправляет приложению сообщение, что ПОЛЬЗОВТЕЛЬ захотел закрыть окно
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.WinApi.SC_RESTORE">
+            <summary>
+            Для использования как wParam при WM_SYSCOMMAND. Отправляет приложению сообщение,
+            что ПОЛЬЗОВТЕЛЬ захотел восстановить нормальный размер окна
+            </summary>
+        </member>
+        <member name="F:ASUTP.Core.WinApi.WM_CLOSE">
+            <summary>
+            Служит для закрытия приложения от имени TaskManager
+            </summary>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.EnumWindows(ASUTP.Core.WinApi.EnumWindowsProcDel,System.IntPtr)">
+            <summary>
+            Перечисление всех окон
+            </summary>
+            <param name="lpEnumFunc"></param>
+            <param name="lParam"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ASUTP.Core.WinApi.EnumWindowsProcDel">
+            <summary>
+            Тип для делегата при использовании в функции поиска
+            </summary>
+            <param name="hWnd">Дескриптор окна</param>
+            <param name="lParam">Аргумент 1</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.IsIconic(System.IntPtr)">
+            <summary>
+            Определяет свернуто ли приложение
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.GetWindowText(System.IntPtr,System.Text.StringBuilder,System.Int32)">
+            <summary>
+            Получает заголовок окна
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <param name="lpString"></param>
+            <param name="nMaxCount"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.GetWindowTextLength(System.IntPtr)">
+            <summary>
+            получает размер заголовка окна
+            </summary>
+            <param name="hWnd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.FindWindowEx(System.IntPtr,System.IntPtr,System.String,System.String)">
+            <summary>
+            Поиск дочерних окон
+            </summary>
+            <param name="parentHandle">имя родителя</param>
+            <param name="childAfter"></param>
+            <param name="lclassName"></param>
+            <param name="windowTitle"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.PostMessage(System.IntPtr,System.UInt32,System.IntPtr,System.IntPtr)">
+            <summary>
+            Отправить сообщение окну
+            </summary>
+            <param name="hWnd">Дескриптор окна</param>
+            <param name="Msg">Сообщение (идентификатор)</param>
+            <param name="wParam">Аргумент 1</param>
+            <param name="lParam">Аргумент 2</param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.PostThreadMessage(System.UInt32,System.UInt32,System.IntPtr,System.IntPtr)">
+            <summary>
+            Отправить сообщение потоку
+            </summary>
+            <param name="threadId">Тдентификатор потока</param>
+            <param name="msg">Сообщение (идентификатор)</param>
+            <param name="wParam">Аргумент 1</param>
+            <param name="lParam">Аргумент 2</param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.GetWindowThreadProcessId(System.IntPtr,System.Int32@)">
+            <summary>
+            Получение ид потока, который создал окно
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <param name="lpdwProcessId">номер ид</param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.FindWindow(System.String,System.String)">
+            <summary>
+            Найти дескриптор окна
+            </summary>
+            <param name="ClassName"></param>
+            <param name="WindowName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.ShowWindow(System.IntPtr,System.Int32)">
+            <summary>
+            Разворачивает окно
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <param name="nCmdShow"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.SetForegroundWindow(System.IntPtr)">
+            <summary>
+            Выводит поверх всех окон приложение
+            </summary>
+            <param name="hWnd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.IsWindowVisible(System.IntPtr)">
+            <summary>
+            Проверка видимости окна
+            </summary>
+            <param name="hWnd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.GetPlacement(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="hwnd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Core.WinApi.GetWindowPlacement(System.IntPtr,ASUTP.Core.WinApi.WINDOWPLACEMENT@)">
+            <summary>
+            Получает данные о состоянии окна (WindowState)
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <param name="lpwndpl">состояние окна</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

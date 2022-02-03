@@ -1,0 +1,461 @@
+﻿using ASUTP;
+using StatisticCommon;
+using StatisticTrans;
+using StatisticTrans.Contract;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.Text;
+using System.Threading.Tasks;
+using StatisticCommon.Contract;
+using StatisticCommon.Communication;
+using Assignment;
+
+namespace strans
+{
+    /// <summary>
+    /// Наименование оконечной точки при развертывании служб
+    ///  , при подключении к службам клиентов
+    /// </summary>
+    internal enum NameEndPoint {
+        Empty
+        , EndPointServiceTransModesTerminale
+        , EndPointServiceTransModesCentre
+        , EndPointServiceTransTG
+        , EndPointServiceTransGTP
+        , EndPointServiceOICDAC
+    }
+
+    partial class Client<T>
+    {
+        public interface IWorker<T1> : Assignment.Client.IWorker<T1>
+        {
+            MODE_MASHINE ModeMashine { get; set; }
+        }
+
+        public interface IInitializeArgument: Assignment.Client.IInitializeArgument
+        {
+            MODE_MASHINE m_ModeMashine { get; set; }
+        }
+
+        private class InitializeArgument : Assignment.Client.InitializeArgument, IInitializeArgument
+        {
+            public MODE_MASHINE m_ModeMashine { get; set; }
+        }
+
+        private class InitializeModesTerminaleArgument : InitializeArgument
+        {
+        }
+
+        private class InitializeModesCentreArgument : InitializeArgument
+        {
+            public string m_HostSource { get; set; }
+
+            public string m_jEventListener { get; set; }
+        }
+
+        private class InitializeOICDACArgument : InitializeArgument
+        {
+            public StatisticCommon.OICDAC.DbInterface.MODE m_ModeApplication;
+
+            public StatisticCommon.OICDAC.Admin.MODE_WRITE m_ModeWrite;
+        }
+
+        private abstract class Worker : Assignment.Client.Worker<NameEndPoint>
+        {
+            public Worker (NameEndPoint nameEndPoint, Type contractType, Type serviceType, IEnumerable<NeedMessageDebugLogging> listNeedMessageDebugLogging = default(List<NeedMessageDebugLogging>))
+                : base (nameEndPoint, contractType, serviceType, listNeedMessageDebugLogging)
+            {
+            }
+
+            private MODE_MASHINE _modeMashine;
+            public MODE_MASHINE ModeMashine { get { return _modeMashine; } set { _modeMashine = value; } }
+
+            public override void Start ()
+            {
+                base.Start ();
+
+                try {
+                    switch (ModeMashine) {
+                        case MODE_MASHINE.SERVICE_ON_EVENT: // только для контракта/сервиса Модес-Центр
+                            __client.Activate (true, (int)StatisticTrans.CONN_SETT_TYPE.SOURCE);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if ((!(ModeMashine == MODE_MASHINE.INTERACTIVE))
+                        || (ModeMashine == MODE_MASHINE.UNKNOWN)) {
+                        initializeTimerClient ();
+                        // немедленно начать выполнение
+                        timerClientActivate (true);
+                    } else
+                        ;
+                } catch (Exception e) {
+                    throw new Exception ("Worker::Start () - ...", e);
+                } finally {
+                }
+            }
+
+            public override void Stop ()
+            {
+                try {
+                    switch (ModeMashine) {
+                        case MODE_MASHINE.SERVICE_ON_EVENT:
+                            __client.Activate (false, (int)StatisticTrans.CONN_SETT_TYPE.SOURCE);
+                            break;
+                        default:
+                            break;
+                    }
+                        ;
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, "strans.Client.Worker::Stop () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    __client = null;
+                }
+
+                base.Stop ();
+            }
+
+            protected override void trans_auto_stop ()
+            {
+                //TODO: только для возможности вызывать '_client.FetchEvent'
+                switch (ModeMashine) {
+                    case MODE_MASHINE.INTERACTIVE:
+                        break;
+                    case MODE_MASHINE.SERVICE_ON_EVENT:
+                        break;
+                    case MODE_MASHINE.SERVICE_PERIOD:
+                        // определить интервал для выполнения очередного цикла
+                        timerClientActivate ();
+                        break;
+                    case MODE_MASHINE.SERVICE_TO_DATE:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Класс для реализации работы клиента по вызовам методов объекта развернутого сервиса
+        /// </summary>
+        private abstract class WorkerTrans : Worker
+        {
+            protected StatisticTrans.Contract.IServiceTrans _client
+            {
+                get
+                {
+                    return (StatisticTrans.Contract.IServiceTrans)__client;
+                }
+            }
+
+            public WorkerTrans (NameEndPoint nameEndPoint, Type contractType, Type serviceType, IEnumerable<NeedMessageDebugLogging> listNeedMessageDebugLogging = default(List<NeedMessageDebugLogging>))
+                : base (nameEndPoint, contractType, serviceType, listNeedMessageDebugLogging)
+            {
+            }
+
+            protected override void trans_auto_start ()
+            {
+                _client.PrepareActionRDGValues (StatisticTrans.CONN_SETT_TYPE.SOURCE);
+
+                base.trans_auto_start ();
+            }
+
+            protected override void trans_auto_next ()
+            {
+                FormChangeMode.KeyDevice key = _client.GetFirstTECComponentKey (StatisticTrans.CONN_SETT_TYPE.SOURCE);
+
+                if (key.Equals (FormChangeMode.KeyDevice.Empty) == false) {
+                    _client.GetRDGValues (StatisticTrans.CONN_SETT_TYPE.SOURCE, key, _datetimePicker);
+
+                    //// то же, что и выполняется в 'trans_auto_stop'
+                    //timerClientActivate ();
+                } else {
+                    // TODO: FileAppSettings.This ().OverDate () - по умолчанию, а требуется из собственного файла конфигурации
+                    //  для GUI-приложений он стандартный, а для текущего приложения - сложный(отличный от стандартного)
+                    if (DateTime.Now.IsTomorrow (_datetimePicker, _client.OverDate) == true)
+                        _datetimePicker = _datetimePicker.AddDays (1);
+                    else
+                        ;
+
+                    trans_auto_stop ();
+                }
+
+                base.trans_auto_next ();
+            }
+
+            #region Возвращение результата длительно выполняющихся операций
+            protected override void setDataGridViewAdmin (DateTime date, bool bResult, IEnumerable<AdminRDG.RDGStruct> values)
+            {
+                FormChangeMode.KeyDevice key;
+
+                debug (IdPseudoDelegate.Ready, $"::setDataGridViewAdmin () - NameEndPoint:{NameEndPoint}, Date: [{date.Date}], Values(count: [{(Equals (values, null) == false ? values.Count().ToString() : "не известно")}])...");
+
+                try {
+                    if (bResult == true) {
+                        key = _client.GetCurrentKey (StatisticTrans.CONN_SETT_TYPE.SOURCE);
+                        _client.CopyRDGValues (StatisticTrans.CONN_SETT_TYPE.SOURCE, StatisticTrans.CONN_SETT_TYPE.DEST);
+                        _client.SaveRDGValues (StatisticTrans.CONN_SETT_TYPE.DEST, new PARAMToSaveRDGValues (key, date, false));
+                    } else
+                        ;
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    _interrupt = true;
+                }
+            }
+
+            protected override void errorDataGridViewAdmin (int iState)
+            {
+                error (IdPseudoDelegate.Error, $"::errorDataGridViewAdmin () - NameEndPoint:{NameEndPoint}, State: [{iState}]...");
+
+                clientTECComponentComplete (iState, false);
+            }
+
+            /// <summary>
+            /// При [авто]режиме переход к следующему элементу списка компонентов
+            /// </summary>
+            /// <param name="iState">Текущее обрабатываемое состояние</param>
+            protected override void saveDataGridViewAdminComplete (int iState)
+            {
+                debug (IdPseudoDelegate.SaveCompleted, $"::saveDataGridViewAdminComplete () - NameEndPoint:{NameEndPoint}, State: [{iState}]...");
+
+                clientTECComponentComplete (iState, true);
+            }
+
+            private void clientTECComponentComplete (int iState, bool bResult)
+            {
+                try {
+                    _client.TECComponentComplete (StatisticTrans.CONN_SETT_TYPE.SOURCE, iState, bResult);
+                    trans_auto_next ();
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    _interrupt = true;
+                }
+            }
+
+            private void setDatetimePicker (DateTime date)
+            {
+                _datetimePicker = date;
+            }
+            #endregion
+        }
+
+        private class WorkerModesTerminale : WorkerTrans
+        {
+            public WorkerModesTerminale (NameEndPoint nameEndPoint, Type contractType, Type serviceType)
+                : base (nameEndPoint, contractType, serviceType)
+            {
+            }
+
+            protected override IService createClient ()
+            {
+                return new ServiceChannelFactory <StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale, NameEndPoint> ()
+                    .Create (_callback_EventRaise, NameEndPoint);
+            }
+
+            public override bool Initialize (Assignment.Client.IInitializeArgument arg)
+            {
+                return Equals (_client, null) == false
+                    && base.Initialize (arg) == true
+                    && ((StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale)_client).Initialize (arg.m_ConnSett
+                        , arg.m_iMainSourceData
+                        , ((IInitializeArgument)arg).m_ModeMashine
+                        , arg.m_tsOverDate
+                        , arg.m_tsFetchWaking
+                        , arg.m_ModeTECComponent
+                        , arg.m_listID_TECNotUse);
+            }
+        }
+
+        private class WorkerModesCentre : WorkerTrans
+        {
+            public WorkerModesCentre (NameEndPoint nameEndPoint, Type contractType, Type serviceType)
+                : base (nameEndPoint, contractType, serviceType)
+            {
+            }
+
+            protected override IService createClient ()
+            {
+                return new ServiceChannelFactory <StatisticTrans.Contract.ModesCentre.IServiceModesCentre, NameEndPoint> ()
+                    .Create (_callback_EventRaise, NameEndPoint);
+            }
+
+            public override bool Initialize (Assignment.Client.IInitializeArgument arg)
+            {
+                return Equals (_client, null) == false
+                    && base.Initialize (arg) == true
+                    && ((StatisticTrans.Contract.ModesCentre.IServiceModesCentre)_client).Initialize (arg.m_ConnSett
+                        , arg.m_iMainSourceData
+                        , (arg as InitializeModesCentreArgument).m_HostSource
+                        , ((IInitializeArgument)arg).m_ModeMashine
+                        , arg.m_tsOverDate
+                        , arg.m_tsFetchWaking
+                        , (arg as InitializeModesCentreArgument).m_jEventListener
+                        , arg.m_ModeTECComponent
+                        , arg.m_listID_TECNotUse);
+            }
+
+            protected override void timerClient_Tick (object obj)
+            {
+                base.timerClient_Tick (obj);
+            }
+
+            protected override void trans_auto_stop ()
+            {
+                if (((StatisticTrans.Contract.ModesCentre.IServiceModesCentre)_client).IsServiceOnEvent == true)
+                    ((StatisticTrans.Contract.ModesCentre.IServiceModesCentre)_client).FetchEvent (true);
+                else
+                    ;
+
+                base.trans_auto_stop ();
+            }
+        }
+
+        private class WorkerTransTG : WorkerTrans
+        {
+            public WorkerTransTG(NameEndPoint nameEndPoint, Type contractType, Type serviceType)
+                : base(nameEndPoint, contractType, serviceType)
+            {
+            }
+
+            protected override IService createClient ()
+            {
+                return (IService)new ServiceChannelFactory <StatisticTrans.Contract.TransTG.IServiceTransTG, NameEndPoint> ()
+                    .Create(_callback_EventRaise, NameEndPoint);
+            }
+
+            public override bool Initialize(Assignment.Client.IInitializeArgument arg)
+            {
+                return Equals(_client, null) == false
+                    && base.Initialize(arg) == true
+                    && ((StatisticTrans.Contract.TransTG.IServiceTransTG)_client).Initialize(arg.m_ConnSett
+                        , arg.m_iMainSourceData
+                        , ((IInitializeArgument)arg).m_ModeMashine
+                        , arg.m_tsOverDate
+                        , arg.m_tsFetchWaking
+                        , arg.m_ModeTECComponent
+                        , arg.m_listID_TECNotUse);
+            }
+
+            protected override void timerClient_Tick(object obj)
+            {
+                base.timerClient_Tick(obj);
+            }
+
+            protected override void trans_auto_stop()
+            {
+                if (((StatisticTrans.Contract.TransTG.IServiceTransTG)_client).IsServiceOnEvent == true)
+                    ((StatisticTrans.Contract.TransTG.IServiceTransTG)_client).FetchEvent(true);
+                else
+                    ;
+
+                base.trans_auto_stop();
+            }
+        }
+
+        private class WorkerTransGTP : WorkerTrans
+        {
+            public WorkerTransGTP(NameEndPoint nameEndPoint, Type contractType, Type serviceType)
+                : base(nameEndPoint, contractType, serviceType)
+            {
+            }
+
+            protected override IService createClient ()
+            {
+                return (IService)new ServiceChannelFactory <StatisticTrans.Contract.TransGTP.IServiceTransGTP, NameEndPoint> ()
+                    .Create(_callback_EventRaise, NameEndPoint);
+            }
+
+            public override bool Initialize(Assignment.Client.IInitializeArgument arg)
+            {
+                return Equals(_client, null) == false
+                    && base.Initialize(arg) == true
+                    && ((StatisticTrans.Contract.TransGTP.IServiceTransGTP)_client).Initialize(arg.m_ConnSett
+                        , arg.m_iMainSourceData
+                        , ((IInitializeArgument)arg).m_ModeMashine
+                        , arg.m_tsOverDate
+                        , arg.m_tsFetchWaking
+                        , arg.m_ModeTECComponent
+                        , arg.m_listID_TECNotUse);
+            }
+
+            protected override void timerClient_Tick(object obj)
+            {
+                base.timerClient_Tick(obj);
+            }
+
+            protected override void trans_auto_stop()
+            {
+                if (((StatisticTrans.Contract.TransGTP.IServiceTransGTP)_client).IsServiceOnEvent == true)
+                    ((StatisticTrans.Contract.TransGTP.IServiceTransGTP)_client).FetchEvent(true);
+                else
+                    ;
+
+                base.trans_auto_stop();
+            }
+        }
+
+        private class WorkerOICDAC : Assignment.Client.Worker<NameEndPoint>
+        {
+            private IService _client
+            {
+                get
+                {
+                    return __client;
+                }
+            }
+
+            public WorkerOICDAC(NameEndPoint nameEndPoint, Type contractType, Type serviceType)
+                : base(nameEndPoint, contractType, serviceType)
+            {
+            }
+
+            protected override IService createClient ()
+            {
+                return (IService)new ServiceChannelFactory <StatisticTrans.Contract.OICDAC.IServiceOICDAC, NameEndPoint> ()
+                    .Create(_callback_EventRaise, NameEndPoint);
+            }
+
+            public override bool Initialize(Assignment.Client.IInitializeArgument arg)
+            {
+                return Equals(_client, null) == false
+                    && base.Initialize(arg) == true
+                    && ((StatisticTrans.Contract.OICDAC.IServiceOICDAC)_client).Initialize(arg.m_ConnSett
+                        , arg.m_iMainSourceData
+                        , ((IInitializeArgument)arg).m_ModeMashine
+                        , ((InitializeOICDACArgument)arg).m_ModeApplication
+                        , ((InitializeOICDACArgument)arg).m_ModeWrite);
+            }
+
+            protected override void setDataGridViewAdmin (DateTime date, bool bResult, IEnumerable<AdminRDG.RDGStruct> values)
+            {
+                Logging.Logg().Action($"::setDataGridViewAdmin (Date={date.ToShortDateString()}, bResult={bResult}) - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            protected override void errorDataGridViewAdmin (int iState)
+            {
+                Logging.Logg().Error($"::errorDataGridViewAdmin (iState={iState}) - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            protected override void saveDataGridViewAdminComplete (int iState)
+            {
+                Logging.Logg().Action($"::saveDataGridViewAdminComplete (iState={iState}) - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            protected override void trans_auto_stop ()
+            {
+                throw new NotImplementedException ();
+            }
+        }
+    }
+}

@@ -1,0 +1,35 @@
+﻿using System;
+using System.Text;
+using System.Runtime.InteropServices;
+using System.IO;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+
+using ASUTP.Database;
+
+namespace StatisticCommon.OICDAC
+{
+    /// <summary>
+    /// Класс для описания объекта управления установленными соединенями
+    /// </summary>
+    public class DbSources : ASUTP.Database.DbSources {
+        /// <summary>
+        /// Конструктор - основной (без параметров)
+        /// </summary>
+        protected DbSources () : base () { }
+        /// <summary>
+        /// Функция доступа к объекту управления установленными соединенями
+        /// </summary>
+        /// <returns>Объект управления установленными соединенями</returns>
+        public static new DbSources Sources()
+        {
+            if (m_this == null)
+                m_this = new DbSources();
+            else
+                ;
+
+            return (DbSources) m_this;
+        }
+    }
+}

@@ -1,0 +1,1166 @@
+=================================================
+23.08.2018 06:14:21.519
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:14:21.595
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:14:22.174
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Входная строка имела неверный формат.
+System.FormatException: Входная строка имела неверный формат.
+   в System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   в System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   в System.Int32.Parse(String s)
+   в StatisticTrans.FormMainTrans.<>c.<.ctor>b__22_0(String id) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 374
+   в System.Linq.Enumerable.WhereSelectArrayIterator`2.MoveNext()
+   в System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   в System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 374
+   в trans_gtp.FormMainTransGTP..ctor() в D:\My Project's\C.Net\Statistic\trans_gtp\FormMainTransGTP.cs:строка 21
+   в trans_gtp.Program.Main() в D:\My Project's\C.Net\Statistic\trans_gtp\Program.cs:строка 22
+=================================================
+23.08.2018 06:14:22.174
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:46:51.673
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:46:51.741
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:46:52.039
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Входная строка имела неверный формат.
+System.FormatException: Входная строка имела неверный формат.
+   в System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   в System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   в System.Int32.Parse(String s)
+   в StatisticTrans.FormMainTrans.<>c.<.ctor>b__22_0(String id) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 374
+   в System.Linq.Enumerable.WhereSelectArrayIterator`2.MoveNext()
+   в System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   в System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 374
+   в trans_gtp.FormMainTransGTP..ctor() в D:\My Project's\C.Net\Statistic\trans_gtp\FormMainTransGTP.cs:строка 21
+   в trans_gtp.Program.Main() в D:\My Project's\C.Net\Statistic\trans_gtp\Program.cs:строка 22
+=================================================
+23.08.2018 06:46:52.040
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:48:58.725
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:48:58.804
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:48:59.349
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Входная строка имела неверный формат.
+System.FormatException: Входная строка имела неверный формат.
+   в System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   в System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   в System.Int32.Parse(String s)
+   в StatisticTrans.FormMainTrans.<>c.<.ctor>b__22_0(String id) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 374
+   в System.Linq.Enumerable.WhereSelectArrayIterator`2.MoveNext()
+   в System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   в System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 374
+   в trans_gtp.FormMainTransGTP..ctor() в D:\My Project's\C.Net\Statistic\trans_gtp\FormMainTransGTP.cs:строка 21
+   в trans_gtp.Program.Main() в D:\My Project's\C.Net\Statistic\trans_gtp\Program.cs:строка 22
+=================================================
+23.08.2018 06:48:59.365
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:49:31.066
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:50:17.013
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:50:49.156
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:50:50.860
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:51:35.949
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:51:37.715
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:51:43.386
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+System.InvalidOperationException: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+   в System.ServiceModel.Description.ConfigLoader.LoadChannelBehaviors(ServiceEndpoint serviceEndpoint, String configurationName)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName, Configuration configuration)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName)
+   в System.ServiceModel.ChannelFactory.InitializeEndpoint(String configurationName, EndpointAddress address)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(Object callbackObject, String endpointConfigurationName, EndpointAddress remoteAddress)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(InstanceContext callbackInstance, String endpointConfigurationName)
+   в trans_gtp.FormMainTransGTP.createChannelService(InstanceContext context) в D:\My Project's\C.Net\Statistic\trans_gtp\FormMainTransGTP.cs:строка 60
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 476
+   в trans_gtp.FormMainTransGTP..ctor() в D:\My Project's\C.Net\Statistic\trans_gtp\FormMainTransGTP.cs:строка 21
+   в trans_gtp.Program.Main() в D:\My Project's\C.Net\Statistic\trans_gtp\Program.cs:строка 22
+=================================================
+23.08.2018 06:51:43.387
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:52:33.535
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:52:38.188
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:52:38.469
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Не удалось найти элемент конечной точки с именем "EndPointServiceTransGTP" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+System.InvalidOperationException: Не удалось найти элемент конечной точки с именем "EndPointServiceTransGTP" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+   в System.ServiceModel.Description.ConfigLoader.LoadChannelBehaviors(ServiceEndpoint serviceEndpoint, String configurationName)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName, Configuration configuration)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName)
+   в System.ServiceModel.ChannelFactory.InitializeEndpoint(String configurationName, EndpointAddress address)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(Object callbackObject, String endpointConfigurationName, EndpointAddress remoteAddress)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(InstanceContext callbackInstance, String endpointConfigurationName)
+   в trans_gtp.FormMainTransGTP.createChannelService(InstanceContext context) в D:\My Project's\C.Net\Statistic\trans_gtp\FormMainTransGTP.cs:строка 60
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 476
+   в trans_gtp.FormMainTransGTP..ctor() в D:\My Project's\C.Net\Statistic\trans_gtp\FormMainTransGTP.cs:строка 21
+   в trans_gtp.Program.Main() в D:\My Project's\C.Net\Statistic\trans_gtp\Program.cs:строка 22
+=================================================
+23.08.2018 06:52:38.484
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:56:20.413
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:56:20.483
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:56:20.988
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 06:56:21.788
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Строка не распознана как действительное логическое значение.
+System.FormatException: Строка не распознана как действительное логическое значение.
+   в System.Boolean.Parse(String value)
+   в trans_gtp.FormMainTransGTP.Start() в D:\My Project's\C.Net\Statistic\trans_gtp\FormMainTransGTP.cs:строка 85
+   в trans_gtp.FormMainTransGTP..ctor() в D:\My Project's\C.Net\Statistic\trans_gtp\FormMainTransGTP.cs:строка 55
+   в trans_gtp.Program.Main() в D:\My Project's\C.Net\Statistic\trans_gtp\Program.cs:строка 22
+=================================================
+23.08.2018 06:56:21.789
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:57:13.440
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:57:13.518
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:57:14.014
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 06:57:47.510
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:57:47.600
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:57:48.048
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 06:59:14.596
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:59:14.674
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 06:59:15.117
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 07:00:48.307
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 07:00:48.404
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 07:00:48.743
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 07:03:44.731
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 07:03:44.793
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 07:03:45.027
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 07:16:51.607
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 07:16:51.703
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 07:16:52.161
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 07:24:43.676
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 07:24:43.749
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 07:24:44.216
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 07:25:01.278
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 07:25:01.356
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 07:25:01.630
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 07:25:31.804
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 07:25:31.878
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 07:25:32.658
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 07:26:30.636
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 07:26:30.727
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 07:26:31.082
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 07:26:55.568
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 07:26:55.691
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+23.08.2018 07:26:56.257
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+24.08.2018 04:19:44.985
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+24.08.2018 04:19:45.142
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+24.08.2018 04:19:45.780
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+24.08.2018 04:20:21.611
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+24.08.2018 04:20:21.687
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+24.08.2018 04:20:22.004
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+24.08.2018 06:58:01.601
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+24.08.2018 06:58:01.678
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+24.08.2018 06:58:02.118
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+24.08.2018 10:49:01.959
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+24.08.2018 10:49:03.194
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+24.08.2018 10:49:12.179
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 09:16:17.148
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:16:17.226
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:16:20.058
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 09:18:17.208
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:18:17.288
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:18:17.556
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 09:18:52.105
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:18:52.208
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:18:52.579
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 09:19:43.498
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:19:43.566
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:19:43.843
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 09:21:27.408
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:21:27.481
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:23:02.336
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:23:02.401
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:23:45.275
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:23:45.328
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:24:40.354
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:24:40.419
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:25:23.058
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:25:23.127
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:26:49.585
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:26:49.653
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:28:20.172
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:28:20.285
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:28:40.807
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:28:40.876
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:29:23.914
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:29:23.996
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:33:03.124
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:33:03.171
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:34:52.012
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:34:52.059
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:36:43.965
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:36:44.028
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:38:24.736
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:38:24.801
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:38:43.802
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:38:43.877
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:40:23.849
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:40:23.904
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:41:59.625
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:41:59.687
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:42:25.452
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:42:25.578
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:42:42.923
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:42:43.002
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:43:35.272
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:43:35.368
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:43:54.890
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:43:54.952
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:44:23.098
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:44:23.145
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:45:24.708
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:45:24.789
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:45:52.380
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:45:52.442
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:47:43.957
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:47:44.004
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:51:05.752
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:51:05.814
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:55:57.006
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:55:57.068
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:56:46.412
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:56:46.475
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 09:57:53.750
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:57:53.797
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 10:15:08.821
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:15:08.940
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 10:15:55.714
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:15:55.811
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 10:16:20.261
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:16:20.470
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 10:17:03.316
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:17:03.615
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 10:27:01.672
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:27:01.828
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 10:27:08.164
+-------------------------------------------------
+!Отладка!: FormMainTransMC::comboBoxTECComponent_SelectedIndexChanged () - IsCanSelectedIndexChanged=True, IndexDB=SOURCE, <AdminMC.CurrentKey.Id=103 >> SelectedIndex=0, SelectedKey.Id=115> ...
+=================================================
+27.08.2018 10:32:19.289
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:32:19.887
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 10:32:41.683
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+27.08.2018 10:32:45.698
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:32:45.770
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 10:33:52.644
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:33:52.724
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 10:42:24.205
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:42:24.277
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 11:51:58.931
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 11:51:58.992
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 12:05:11.314
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 12:05:11.761
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+27.08.2018 12:35:21.542
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 12:35:22.865
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 05:50:18.116
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 05:50:18.268
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 05:59:54.370
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 05:59:54.493
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 06:00:29.058
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 06:00:29.155
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 06:00:55.952
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 06:00:56.039
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:23:42.190
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:23:45.091
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:25:05.467
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:25:05.572
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:25:45.585
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:25:45.694
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:26:33.576
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:26:33.644
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:31:37.047
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:31:37.104
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:34:40.470
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:34:40.533
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:35:22.156
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:35:22.271
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:35:40.948
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:35:41.076
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:38:27.817
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:38:27.915
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:38:52.791
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:38:52.927
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:39:16.315
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:39:16.448
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:39:36.719
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:39:36.926
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:40:33.891
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:40:34.003
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:40:53.180
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:40:53.352
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:43:44.033
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:43:44.183
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:45:57.195
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:45:57.241
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 09:53:15.570
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 09:53:15.647
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:10:24.744
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:10:24.799
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:11:30.767
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:11:30.851
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:13:00.801
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:13:00.879
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:13:48.438
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:13:48.563
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:13:56.491
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+28.08.2018 10:17:46.958
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:17:47.024
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:18:33.108
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:18:33.194
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:19:06.935
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:19:07.024
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:25:10.778
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:25:10.887
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:26:13.078
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:26:13.185
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:26:57.445
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:26:57.540
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:27:29.893
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:27:29.940
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:43:28.941
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:43:29.146
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:43:49.948
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:43:50.027
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:44:10.852
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:44:10.942
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:44:42.523
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:44:42.603
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:44:58.667
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:44:58.769
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:48:01.517
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:48:01.644
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:50:08.707
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:50:08.800
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 10:50:47.575
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 10:50:47.637
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 11:00:23.387
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 11:00:23.494
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 11:02:02.817
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 11:02:02.908
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 11:02:35.980
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 11:02:36.042
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 11:14:50.560
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 11:14:50.648
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)
+=================================================
+28.08.2018 11:15:30.998
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+28.08.2018 11:17:19.829
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 11:17:19.882
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_gtp/bin/Debug/trans_gtp.exe)

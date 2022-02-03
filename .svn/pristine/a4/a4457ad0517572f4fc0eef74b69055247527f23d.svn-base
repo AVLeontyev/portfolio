@@ -1,0 +1,234 @@
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Windows.Forms;
+
+using StatisticCommon;
+using StatisticTrans;
+using StatisticTransModes;
+using ASUTP;
+using StatisticTrans.Contract.ModesCentre;
+using StatisticTrans.Contract;
+using System.ServiceModel;
+using System.Threading.Tasks;
+using System.Drawing;
+using System.Threading;
+
+namespace trans_gtp
+{
+    public partial class FormMainTransGTP : FormMainTrans
+    {
+        public FormMainTransGTP()
+            : base(FileAppSettings.This().GetIdApplication
+                    , new System.Collections.Generic.KeyValuePair<string, string> [] {
+                        new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString ())
+                        , new System.Collections.Generic.KeyValuePair<string, string> (@"ТЭЦПараметрыНазначение", @"{}")
+                    }
+            )
+        {
+            InitializeComponentTransDB();
+
+            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminKomDisp(SystemColors.ControlText, new Color [] { SystemColors.Window, Color.Yellow, Color.Red });
+            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // m_dgwAdminTable
+            // 
+            this.m_dgwAdminTable.Location = new System.Drawing.Point(319, 5);
+            this.m_dgwAdminTable.Name = "m_dgwAdminTable";
+            this.m_dgwAdminTable.RowHeadersVisible = false;
+            this.m_dgwAdminTable.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.m_dgwAdminTable.Size = new System.Drawing.Size(498, 471);
+            this.m_dgwAdminTable.TabIndex = 27;
+            this.panelMain.Controls.Add(this.m_dgwAdminTable);
+            ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).EndInit();
+            this.ResumeLayout(false);
+
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainTrans));
+            this.notifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("statistic4"))); //$this.Icon
+
+            m_modeTECComponent = FormChangeMode.MODE_TECCOMPONENT.GTP;
+
+            ////Создание массива для объектов получения данных
+            //m_arAdmin = new AdminTS[(Int16)StatisticTrans.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+
+            Start();
+        }
+
+        protected override IServiceTrans createChannelService(InstanceContext context)
+        {
+            return new DuplexChannelFactory<StatisticTrans.Contract.TransGTP.IServiceTransGTP>(context, FileAppSettings.This().GetValue(@"NameEndPointService"))
+                .CreateChannel();
+        }
+
+        protected override void start () {
+            base.Start ();
+        }
+        
+        protected override void Start()
+        {
+            bool bInitialize = false;
+
+            bInitialize = EditFormConnectionSettings ("connsett_gtp.ini", false);
+
+            if (bInitialize == true)
+            {
+                bInitialize = ((StatisticTrans.Contract.TransGTP.IServiceTransGTP)_client).Initialize(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett()
+                , s_iMainSourceData
+                , handlerCmd.ModeMashine
+                , FileAppSettings.This().OverDate(StatisticCommon.Constants.OverDate)
+                , FileAppSettings.This().FetchWaking(StatisticCommon.Constants.FetchWaking)
+                , m_modeTECComponent,
+                m_listID_TECNotUse);
+
+                if (bInitialize == true) {
+                    //_client.SetIgnoreDate (StatisticTrans.CONN_SETT_TYPE.SOURCE, bool.Parse (FileAppSettings.This ().GetValue (@"ИгнорДатаВремя-ModesCentre")));
+                    _client.SetIgnoreDate (StatisticTrans.CONN_SETT_TYPE.DEST, bool.Parse (FileAppSettings.This ().GetValue (@"ИгнорДатаВремя-techsite")));
+
+                    _client.Start ();
+
+                    ////??? только после события 'Started'
+                    //base.Start ();
+                } else
+                    ;
+            }
+            else
+                ;
+        }
+
+        protected override void getDataGridViewAdmin(StatisticTrans.CONN_SETT_TYPE indxDB)
+        {
+            //int indxDB = m_IndexDB;
+
+            double value;
+            bool valid;
+
+            for (int i = 0; i < 24; i++)
+            {
+                for (int j = 0; j < (int)DataGridViewAdminKomDisp.COLUMN_INDEX.TO_ALL; j++)
+                {
+                    switch (j)
+                    {
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN: // План
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Value, out value);
+                            break;
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION: // Рекомендация
+                            //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
+
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Value, out value);
+                            //((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation = value;
+
+                            //((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].dtRecUpdate = ((AdminTS)m_arAdmin[(int)StatisticTrans.CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].dtRecUpdate;
+
+                            break;
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD:
+                            //((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].fc = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value.ToString());
+                            break;
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE:
+                            {
+                                //((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviationPercent = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value.ToString());
+                                break;
+                            }
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION: // Максимальное отклонение
+                            {
+                                valid = double.TryParse((string)this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Value, out value);
+                                //((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviation = value;
+
+                                break;
+                            }
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            //m_arAdmin[indxDB].CopyCurToPrevRDGValues();
+        }
+
+        /// <summary>
+        /// Обновить значения в представлении
+        /// </summary>
+        /// <param name="date">Дата за которую требуется обновить значения</param>
+        /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления со старыми значениями при изменении цветовой схемы)</param>
+        /// <param name="values">Значения для отображения</param>
+        protected override void updateDataGridViewAdmin(DateTime date, bool bNewValues, IList<AdminRDG.RDGStruct> values)
+        {
+            StatisticTrans.CONN_SETT_TYPE indxDB = m_IndexDB;
+            //HAdmin.RDGStruct [] values;
+
+            //values = _client.GetRDGValues (indxDB);
+
+            for (int i = 0; i < 24; i++)
+            {
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("dd-MM-yyyy HH:00");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Value = values[i].pbr.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].ToolTipText = values[i].pbr_number;
+                //if (i > 0)
+                //    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + m_arAdmin[indxDB].m_curRDGValues[i - 1].pbr) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
+                //else
+                //    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + values_PBR_0) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Value = values[i].recomendation.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].ToolTipText = values[i].dtRecUpdate.ToString();
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value = values[i].fc.ToString();
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value = values[i].deviationPercent.ToString();
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Value = values[i].deviation.ToString("F2");
+            }
+
+            //m_arAdmin[indxDB].CopyCurToPrevRDGValues ();
+
+            //this.m_dgwAdminTable.Invalidate();
+        }
+
+        protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
+        {
+            ASUTP.Database.ConnectionSettings connSettSource
+                , connSettDest;
+
+            if (IsCanSelectedIndexChanged == true)
+            {
+                ClearTables();
+
+                StatisticTrans.CONN_SETT_TYPE indexDB = m_IndexDB;
+
+                switch (m_modeTECComponent)
+                {
+                    case FormChangeMode.MODE_TECCOMPONENT.GTP:
+
+                        connSettDest = _client.GetConnectionSettingsByKeyDeviceAndType(StatisticTrans.CONN_SETT_TYPE.DEST, SelectedItemKey, StatisticCommon.CONN_SETT_TYPE.PBR);
+                        connSettSource = _client.GetConnectionSettingsByKeyDeviceAndType(StatisticTrans.CONN_SETT_TYPE.SOURCE, SelectedItemKey, StatisticCommon.CONN_SETT_TYPE.PBR);
+
+                        _client.GetRDGValues(m_IndexDB, SelectedItemKey, dateTimePickerMain.Value.Date);
+
+                        setUIControlConnectionSettings(StatisticTrans.CONN_SETT_TYPE.DEST, connSettDest);
+                        setUIControlConnectionSettings(StatisticTrans.CONN_SETT_TYPE.SOURCE, connSettSource);
+
+                        break;
+                    case FormChangeMode.MODE_TECCOMPONENT.TG:
+                        break;
+                    case FormChangeMode.MODE_TECCOMPONENT.TEC:
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+                ;
+        }
+
+        protected override void timer_Start()
+        {
+            base.timer_Start();
+        }
+
+        protected override void buttonSaveSourceSett_Click(object sender, EventArgs e) 
+        {
+
+        }
+
+        protected override void setUIControlSourceState(bool bEnabled)
+        {
+
+        }
+    }
+}

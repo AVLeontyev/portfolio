@@ -1,0 +1,424 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Threading;
+
+using ASUTP.Database;
+using ASUTP.Forms;
+using ASUTP.Helper;
+using ASUTP.Core;
+using ASUTP;
+using System.Reflection;
+
+namespace StatisticCommon
+{
+    public abstract partial class FormMainStatisticClient<FM, P> : ASUTP.Forms.FormMainBaseWithStatusStrip {
+        /// <summary>
+        /// Панель - единственная дочерняя по отношению к главной форме
+        ///  , и единственная родительская по отношению к рабочей панели
+        /// </summary>
+        protected Panel _panelMain;
+        /// <summary>
+        /// Объект с параметрами приложения (из БД_конфигурации)
+        /// </summary>
+        public static FormParameters formParameters;
+        /// <summary>
+        /// Состояние формы (признак выполнения очередной операции: 0 - без ошибок)
+        /// </summary>
+        private HStatisticUsers.ERROR_CODE_EX _state;
+
+        private HStatisticUsers.ID_ALLOWED _idMenuViewItemTab;
+
+        public FormMainStatisticClient (HStatisticUsers.ID_ALLOWED idMenuViewItemTab, string text)
+        {
+            _idMenuViewItemTab = idMenuViewItemTab;
+
+            this.Name = $"Form{text}";
+            this.Text = text;
+
+            ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager (typeof (FM));
+            this.Icon = resources.GetObject (text) as System.Drawing.Icon;
+
+            _state = HStatisticUsers.ERROR_CODE_EX.NOT_DEFINED;
+            InitializeComponent(); 
+        }
+
+        protected event Func<int> EventAppConfigValue;
+
+        protected bool Ready { get; set; }
+
+        /// <summary>
+        /// Обработчик события - загрузка панели завершена (...запуск старта панели...)
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
+        protected virtual void FormMainStatisticClient_Load (object obj, EventArgs ev)
+        {
+            string msg = string.Empty;
+            bool bAbort = false;
+            //Отобразить окно для визуализации выполнения длительной операции
+            delegateStartWait();
+
+            //Создать объект - чтение зашифрованного файла с параметрами соединения
+            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
+            //Создать список форм для редактирования параметров соединения
+            s_listFormConnectionSettings = new List<FormConnectionSettings>();
+            //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
+            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
+            s_listFormConnectionSettings.Add(null);
+
+            Ready = initialize(out msg);
+            //Снять с отображения окно для визуализации выполнения длительной операции
+            delegateStopWait();
+
+            if (Ready == false)
+                //Прекратить/выдать сообщение об ошибке
+                Abort(string.IsNullOrEmpty (msg) == false ? msg : "Неизвестная ошибка", bAbort);
+            else
+                //Продолжить выполнение приложения
+                this.Activate();
+        }
+
+        protected virtual void FormMainStatisticClient_Closed (object obj, FormClosingEventArgs ev)
+        {
+            ((IHPanelCommon)m_panel)?.Stop ();
+        }
+
+        //private FormWindowState _previousWindowState = FormWindowState.Minimized;
+
+        /// <summary>
+        /// Активация формы
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие(форма)</param>
+        /// <param name="ev">Аргумент события</param>
+        //protected virtual void FormMainStatisticClient_Activate (object obj, EventArgs ev)
+        protected override void OnActivated (EventArgs e)
+        {
+            base.OnActivated (e);
+
+            //if (_previousWindowState == FormWindowState.Minimized) {
+                (m_panel as PanelStatistic)?.Activate (true);
+
+            //    _previousWindowState = FormWindowState.Normal;
+            //} else
+            //    ;
+        }
+
+        /// <summary>
+        /// Деактивация формы
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие(форма)</param>
+        /// <param name="ev">Аргумент события</param>
+        //protected virtual void FormMainStatisticClient_Deactivate (object obj, EventArgs ev)
+        protected override void OnDeactivate (EventArgs e)
+        {
+            base.OnDeactivate (e);
+
+            //if (_previousWindowState == FormWindowState.Normal) {
+                (m_panel as PanelStatistic)?.Activate (false);
+
+            //    _previousWindowState = FormWindowState.Minimized;
+            //} else
+            //    ;
+        }
+
+        /// <summary>
+        /// Инициализация панели
+        /// </summary>
+        private bool initialize(out string msgError)
+        {
+            bool bRes = true;
+            msgError = string.Empty;
+
+            #region Создать панель - дабавить ее на форму
+            ConstructorInfo [] ctorInfo;
+            ConstructorInfo ctorInfoMain;
+            ParameterInfo [] ctorParameterInfo;
+            #endregion
+
+            if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
+            {
+                ////!!! Один экземпляр для всего приложения на весь срок выполнения
+                ////??? для создания статического 'OICDAC.DbSources' = 'DbSources'
+                //StatisticCommon.OICDAC.DbSources.Sources ();
+                new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                DbTSQLConfigDatabase.DbConfig ().Register ();
+
+                try {
+                    formParameters = new FormParameters_DB ();
+                    updateParametersSetup ();
+                } catch (Exception e) {
+                    msgError = $"FormMainStatisticClient::initialize () - ошибка <{e.Message}> чтения параметров конфигурации...";
+                }
+
+                try {
+                    // значение "0" - поумолчанию - будет заменено на значение из БД
+                    _state = validateUser (HUsers.MODE_REGISTRATION.USER_DOMAINNAME, _idMenuViewItemTab, out msgError);
+                } catch (Exception e) {
+                    msgError = $"FormMainStatisticClient::initialize () - ошибка <{e.Message}> проверкии прав пользователя...";
+                }
+
+                switch ((HStatisticUsers.ERROR_CODE_EX)_state)
+                {
+                    case HStatisticUsers.ERROR_CODE_EX.UNKNOWN:
+                        msgError = FormMainStatistic.MSG_ERROR_INIT[(int)FormMainStatistic.INDEX_ERROR_INIT.UNKNOWN];
+                        break;
+                    case HStatisticUsers.ERROR_CODE_EX.USER_NOT_FOUND_EX: //@"Не найден пользователь"
+                        break;
+                    case HStatisticUsers.ERROR_CODE_EX.QUERY_FAILED_EX:
+                    case HStatisticUsers.ERROR_CODE_EX.SETUP_FAILED:
+                    case HStatisticUsers.ERROR_CODE_EX.NOT_CONNECT_CONFIGDB_EX: //@"Необходимо изменить параметры соединения с БД" - получено из 'Initialize'
+                        bRes = false;
+                        break;
+                    case HStatisticUsers.ERROR_CODE_EX.PROFILE_UNIT_NOT_ALLOWED: //@"Пользователю не разрешено использовать задачу" - получено из 'Initialize'
+                        Logging.Logg ().Warning (msgError, Logging.INDEX_MESSAGE.NOT_SET);
+                        break;
+                    default:
+                        //Успех... пост-инициализация
+                        s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
+
+                        #region Создать панель - дабавить ее на форму
+                        //ctorInfo = typeof (P).GetConstructors (System.Reflection.BindingFlags.Public | BindingFlags.Instance);
+                        //if ((ctorInfo.Length > 0)
+                        //    && !(ctorInfo.Length > 2)) {
+                        //    ctorInfoMain = ctorInfo.Length == 1 ? ctorInfo[0] : null;
+                        //    if (Equals (ctorInfoMain, null) == true) {
+                        //        ctorInfoMain = (from c in ctorInfo where typeof (IContainer).IsAssignableFrom (c.GetParameters () [0].ParameterType) == false select c).FirstOrDefault();
+                        //    } else
+                        //        ;
+                        //    ctorParameterInfo = ctorInfoMain.GetParameters ();
+
+                        //    switch (ctorParameterInfo.Length) {
+                        //        case 2: // стандартный конструктор
+                        //            m_panel = (P)
+                        //                //Activator.CreateInstance (typeof (P), SystemColors.ControlText, SystemColors.Control)
+                        //                ctorInfoMain.Invoke (new object [] { SystemColors.ControlText, SystemColors.Control })
+                        //                ;
+                        //            break;
+                        //        case 3:
+                        //            if (typeof (IEnumerable<TEC>).IsAssignableFrom (ctorParameterInfo [0].ParameterType) == true)
+                        //                m_panel = (P)ctorInfoMain.Invoke (new object [] { DbTSQLConfigDatabase.DbConfig ().InitTEC(true, new int [] { 0, (int)TECComponent.ID.LK }, false)
+                        //                    , SystemColors.ControlText
+                        //                    , SystemColors.Control });
+                        //            else
+                        //                ;
+                        //            break;
+                        //        case 4:
+                        //            if ((typeof (IEnumerable<TEC>).IsAssignableFrom (ctorParameterInfo [0].ParameterType) == true)
+                        //                && (Equals(typeof(string), ctorParameterInfo [1].ParameterType) == true))
+                        //                m_panel = (P)ctorInfoMain.Invoke (new object [] { DbTSQLConfigDatabase.DbConfig ().InitTEC (true, new int [] { 0, (int)TECComponent.ID.LK }, false)
+                        //                    , EventAppConfigValue?.Invoke()
+                        //                    , SystemColors.ControlText
+                        //                    , SystemColors.Control });
+                        //            else
+                        //                ;
+                        //            break;
+                        //        default:
+                        //            break;
+                        //    }
+                        //} else
+                        //    throw new Exception($"FormMainStyatisticClient::initialize () - FormMain=<{Text}>, для типа панели <{typeof(P).Name}> определен более, чем два <{ctorInfo.Length}> конструктора...");
+
+                        m_panel = createPanelStatistic (DbTSQLConfigDatabase.DbConfig ().InitTEC(true, HStatisticUsers.ArrayIdAreas.ToArray(), new int [] { 0, (int)TECComponent.ID.LK }, false), EventAppConfigValue?.Invoke());
+                        #endregion
+
+                        if (Equals (m_panel, null) == false) {
+                            ((IHPanelCommon)m_panel).SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
+                            ((IHPanelCommon)m_panel).Start ();
+
+                            #region Добавить рабочую панель на форму
+                            this._panelMain.SuspendLayout ();
+                            _panelMain.Controls.Add (this.m_panel as PanelStatistic);
+                            this._panelMain.ResumeLayout (false);
+                            this._panelMain.PerformLayout ();
+                            #endregion
+                        } else
+                            //// сообщение при использовании динамического создания обйекта панели
+                            //throw new Exception ($"FormMainStyatisticClient::initialize () - FormMain=<{Text}>, для типа панели <{typeof (P).Name}> не определен ни один конструктор с <{ctorParameterInfo.Length}> числом параметров"
+                            //    + $"{Environment.NewLine}, либо типы параметров не соответсвуют известным шаблонам ...");
+                            throw new Exception ($"FormMainStyatisticClient::initialize () - FormMain=<{Text}>, наследуемая форма не возвратила объект дочерней панели...");
+                        break;
+                }
+
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
+            }
+            else
+            {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
+                msgError = @"Необходимо изменить параметры соединения с БД конфигурации";
+
+                bRes = false;
+            }
+
+            return bRes;
+        }
+
+        //protected virtual P createPanelStatistic ()
+        //{
+        //    return (P)
+        //        //Activator.CreateInstance (typeof (P), SystemColors.ControlText, SystemColors.Control)
+        //        ctorInfoMain.Invoke (new object [] { SystemColors.ControlText, SystemColors.Control })
+        //        ;
+        //}
+
+        protected abstract P createPanelStatistic (IEnumerable<TEC> listTEC, object appConfigValue);
+
+        /// <summary>
+        /// Инициализация параметров соединения с БД_конфигурации
+        /// </summary>
+        /// <param name="modeRegistration">Режим регистрации</param>
+        /// <param name="idMenuItemTab">Идентификатор элемента профиля пользователя - пункт меню вкладки/задачи</param>
+        /// <param name="msgError">Сообщение об ошибке (при наличии)</param>
+        /// <returns>Признак выполнения функции</returns>
+        private HStatisticUsers.ERROR_CODE_EX validateUser(HUsers.MODE_REGISTRATION modeRegistration, HStatisticUsers.ID_ALLOWED idMenuItemTab, out string msgError)
+        {
+            HStatisticUsers.STATE state;
+            HStatisticUsers.ERROR_CODE_EX? errorCodeEx = null;
+            msgError = string.Empty;
+            HUsers.MODE_REGISTRATION modeReg = modeRegistration;
+
+            //Проверить наличие пользователя в БД_конфигурации
+            if (HStatisticUsers.Initialized == false) {
+                // установить режим проверки авторизации
+                try {
+                    if ((int)modeRegistration == 0)
+                        modeReg = (HUsers.MODE_REGISTRATION)Enum.Parse (typeof (HUsers.MODE_REGISTRATION), formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MODE_REGISTRATION].ToString (), true);
+                    else
+                        modeReg = modeRegistration;
+
+                    errorCodeEx = HStatisticUsers.ERROR_CODE_EX.Ok;
+                } catch (Exception e) {
+                    errorCodeEx = HStatisticUsers.ERROR_CODE_EX.UNKNOWN; // общая (неизвестная) ошибка
+                    msgError = e.Message;
+                }
+
+                if (errorCodeEx == HStatisticUsers.ERROR_CODE_EX.Ok)
+                    //Создать И удалить объект с пользовательскими настройками (заполнить статические члены)
+                    using (HStatisticUsers users = new HStatisticUsers(DbTSQLConfigDatabase.DbConfig ().ListenerId, modeReg, true)) { ; }
+                else
+                    ;
+                
+            } else
+            //Пользователь и его профиль были уже ранее получены из БД
+                ;
+
+            if (HStatisticUsers.IsVerified == true) {
+                HStatisticUsers.Validate (idMenuItemTab);
+
+                errorCodeEx = HStatisticUsers.State.Code;
+                msgError = HStatisticUsers.State.Message;
+            } else
+                ;
+
+            //TODO: проверить возвращение 'null'
+            return errorCodeEx.GetValueOrDefault();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void updateParametersSetup()
+        {
+            //Параметры записи сообщений лог-а...
+            Logging.UpdateMarkDebugLog();
+
+            //Параметры обновления "основной панели"...
+            PanelStatistic.POOL_TIME = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
+            PanelStatistic.ERROR_DELAY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]);
+
+            //Параметры перехода на сезонное времяисчисление...
+            AdminRDG.SeasonDateTime = DateTime.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_DATETIME]);
+            AdminRDG.SeasonAction = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_ACTION]);
+
+            //Параметры обработки запросов к БД...
+            Constants.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
+            Constants.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
+            Constants.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
+
+            //Параметры валидности даты/времени получения данных СОТИАССО...
+            TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
+
+            //Параметрвы для ALARM...
+        }
+
+        /// <summary>
+        /// Обработчик события выбора п. главного меню "Файл-Выход"
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
+        protected void fMenuItemExit_Click(object obj, EventArgs ev)
+        {
+            Close();
+        }
+
+        /// <summary>
+        /// Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
+        protected void fMenuItemDBConfig_Click(object obj, EventArgs ev)
+        {
+            bool bAbort = false;
+            string msg = string.Empty; ;
+            //Получить рез-т отображения окна с настройками параметров соединения
+            DialogResult dlgRes = s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].ShowDialog();
+
+            if ((dlgRes == DialogResult.OK)
+                || (dlgRes == DialogResult.Yes))
+            {
+                //??? Остановить панель
+                (m_panel as PanelStatistic)?.Stop();
+
+                bAbort = initialize(out msg);
+            }
+            else
+                ;
+            //Проверить наличие сообщения об ошибке
+            if (msg.Equals(string.Empty) == false)
+                //Отобразить сообщение/завершить работу приложения (в ~ от 'bAbort')
+                Abort(msg, bAbort);
+            else
+                //Продолжить работу
+                this.Activate();
+        }
+
+        /// <summary>
+        /// Обработчик события выбора п. главного меню "Помощь-О программе"
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
+        protected void fMenuItemAbout_Click(object obj, EventArgs ev)
+        {
+            using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
+            {
+                formAbout.ShowDialog(this);
+            }
+        }
+
+        protected override void UpdateActiveGui(int type)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void timer_Start()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int UpdateStatusString()
+        {
+            int have_msg = 0;
+
+            return have_msg;
+        }
+
+        protected override void HideGraphicsSettings()
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

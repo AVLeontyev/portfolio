@@ -1,0 +1,276 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASUTP.PlugIn</name>
+    </assembly>
+    <members>
+        <member name="M:ASUTP.PlugIn.HDataHost.OnEvtDataRecievedHost(System.Object)">
+            <summary>
+            Обработчик события ответа от главной формы
+            </summary>
+            <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInMenuItem.register(System.Int32,System.Type,System.String,System.String)">
+            <summary>
+            Зарегистрировать тип объекта в библиотеке, для отображения при обработке п. меню
+            </summary>
+            <param name="key">Идентификатор типа (панели)</param>
+            <param name="type">Тип панели</param>
+            <param name="nameMenuItemOwner">Текст родительского п. мен.</param>
+            <param name="nameMenuItem">Текст п. меню</param>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInMenuItem.OnClickMenuItem(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик выбора пункта меню для плюг'ина
+            </summary>
+            <param name="obj">объект-инициатор события</param>
+            <param name="ev">параметры события</param>
+        </member>
+        <member name="T:ASUTP.PlugIn.HPlugIns.STATE_DLL">
+            <summary>
+            Перечисление состояний библиотеки
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.HPlugIns.m_appDomain">
+            <summary>
+            Домен для загрузки плюгИнов
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.HPlugIns.m_proxyAppDomain">
+            <summary>
+            Домен-посредник для загрузки плюгИнов
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.HPlugIns.s_domEvidence">
+            <summary>
+            Объект с параметрами безопасности для создания домена (для загрузки плюгИнов)
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.HPlugIns.s_domSetup">
+            <summary>
+            Объект с параметрами среды окружения для создания домена (для загрузки плюгИнов)
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.HPlugIns.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+            <param name="fClickMenuItem">Делегат обработки сообщения - ваыбор п. меню</param>
+        </member>
+        <member name="M:ASUTP.PlugIn.HPlugIns.Register(ASUTP.PlugIn.IPlugIn)">
+            <summary>
+            Установить взамосвязь
+            </summary>
+            <param name="plug">Загружаемый плюгИн</param>
+            <returns>Признак успешности загрузки</returns>
+        </member>
+        <member name="P:ASUTP.PlugIn.HPlugIns.isInitPluginAppDomain">
+            <summary>
+            Признак инициализации домена для загрузки в него плюгИнов
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.HPlugIns.initPluginDomain(System.String,System.UnhandledExceptionEventHandler)">
+            <summary>
+            Инициализация домена для загрузки в него плюгИнов
+            </summary>
+            <param name="name">Наименование плюгИна</param>
+            <param name="delegateSeparateAppDomain_UnhandledException">Обработчик необработанных секциями try/catch исключений</param>
+        </member>
+        <member name="M:ASUTP.PlugIn.HPlugIns.UnloadPlugIn">
+            <summary>
+            Выгрузить из памяти загруженные плюгИны
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.HPlugIns.load(System.String,System.UnhandledExceptionEventHandler,System.Int32@)">
+            <param name="iRes">Результат загрузки (код ошибки)</param>
+            <returns>Загруженный плюгИн</returns>
+        </member>
+        <member name="T:ASUTP.PlugIn.EventArgsDataHost">
+            <summary>
+            Класс для обмена данными между объектами клиент-сервер
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.EventArgsDataHost.id_main">
+            <summary>
+            Идентификатор объекта-клиента, отправляющего сообщение
+             , сервер обязательно должен "знать" этот идентификатор
+             , а по нему определить объект-клиент для отправления ответа
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.EventArgsDataHost.reciever">
+            <summary>
+            Объект-клиент, получатель запрашиваемых данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.EventArgsDataHost.par">
+            <summary>
+            Массив аргументов, детализирующие сообщение
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.EventArgsDataHost.#ctor(System.Int32,System.Int32,System.Object[])">
+            <summary>
+            Конструктор - основной (с параметрами)
+            </summary>
+            <param name="id_">Идентификатор объекта</param>
+            <param name="arObj">Массив аргументов сообщения</param>
+        </member>
+        <member name="M:ASUTP.PlugIn.EventArgsDataHost.#ctor(ASUTP.PlugIn.IDataHost,System.Object[])">
+            <summary>
+            Конструктор - дополнительный (с параметрами)
+            </summary>
+            <param name="objReciever">Объект-клиент, получатель запрашиваемых данных</param>
+            <param name="arObj">Массив аргументов сообщения</param>
+        </member>
+        <member name="T:ASUTP.PlugIn.ID_DATA_ASKED_HOST">
+            <summary>
+            Перечисление идентификаторов-типов сообщений
+            </summary>
+        </member>
+        <member name="T:ASUTP.PlugIn.ID_HEAD_ASKED_HOST">
+            <summary>
+            Перечисление дополнительных идентификаторов-типов сообщений
+             , передавать в том же массиве аргументов для указания направления сообщения
+             (запросить, подтвердить получение)
+            </summary>
+        </member>
+        <member name="E:ASUTP.PlugIn.IDataHost.EvtDataAskedHost">
+            <summary>
+            Событие запроса данных для плюг'ина из главной формы
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.IDataHost.DataAskedHost(System.Object)">
+            <summary>
+            Отиравить запрос на получение данных
+            </summary>
+            <param name="par">Аргумент с детализацией запрашиваемых данных</param>
+        </member>
+        <member name="M:ASUTP.PlugIn.IDataHost.OnEvtDataRecievedHost(System.Object)">
+            <summary>
+            Обработчик события ответа от главной формы
+            </summary>
+            <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        </member>
+        <member name="T:ASUTP.PlugIn.IPlugInHost">
+            <summary>
+            Интерфейс для контейнера 'плюгинов'
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.IPlugInHost.Register(ASUTP.PlugIn.IPlugIn)">
+            <summary>
+            Регистрировать 'плюгин'
+            </summary>
+            <param name="plug">Регистрируемый 'плюгин'</param>
+            <returns>Результат регистрации</returns>
+        </member>
+        <member name="F:ASUTP.PlugIn.PlugInBase._host">
+            <summary>
+            Объект интерфейса подписчика
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.PlugInBase._types">
+            <summary>
+            Массив зарегистрированных типов плюгИна
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.PlugInBase._objects">
+            <summary>
+            Массив созданных
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.PlugInBase._Id">
+            <summary>
+            Идентификатор плюгина
+            </summary>
+        </member>
+        <member name="F:ASUTP.PlugIn.PlugInBase._dictDataHostCounter">
+            <summary>
+            Счетчик полученных команд/сообщений от подписчика по индексу
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.registerType(System.Int32,System.Type)">
+            <summary>
+            Зарегистрировать тип объекта библиотеки
+            </summary>
+            <param name="key">Ключ регистрируемого типа объекиа</param>
+            <param name="type">Регистрируемый тип</param>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.GetListRegisterNameTypes">
+            <summary>
+            Возвратить список наименований зарегистрированных типов библиотек
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.GetRegisterTypes">
+            <summary>
+            Возвратить словарь зарегистрированных типов библиотек
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.IsRegistred(System.Int32)">
+            <summary>
+            Возвратить признак регистрации типа библиотеки по ее идентификатору
+            </summary>
+            <param name="key">Ключ-идентификатор типа библиотеки</param>
+            <returns>Признак регистрации типа библиотеки</returns>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.createObject(System.Int32)">
+            <summary>
+            Создание объекта(объектов) библиотеки
+            </summary>
+            <returns>признак создания</returns>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.GetObject(System.Int32)">
+            <summary>
+            Возвратить объект 'плюгина'
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.GetTypeObject(System.Int32)">
+            <summary>
+            Возвратить тип объекта 'плюгина'
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.GetKeyType(System.Type)">
+            <summary>
+            Возвратить идентификатор одного из зарегистрированных типов объекта 'плюгина'
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.GetKeyType(System.String)">
+            <summary>
+            Возвратить идентификатор одного из зарегистрированных типов объекта 'плюгина'
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.DataAskedHost(System.Object)">
+            <summary>
+            Отправить данные получателю (подписчику)
+            </summary>
+            <param name="par">Объект с передаваемыми данными (может быть массивом объектов)</param>
+        </member>
+        <member name="P:ASUTP.PlugIn.PlugInBase.KeySingleton">
+            <summary>
+            Ключ(идентификатор) единственного зарегистрированного типа в объекте библиотеки
+            </summary>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.OnEvtDataRecievedHost(System.Object)">
+            <summary>
+            Обработчик события ответа от главной формы
+            </summary>
+            <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.SetDataHostMark(System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Установить принудительно признак использования элемента в объекте библиотеки
+            </summary>
+            <param name="id_obj">Идентификатор типа библиотеки</param>
+            <param name="key">Идентификатор элемента(??? экземпляр подкласса) в объекте библиотеки</param>
+            <param name="val">Признак использования</param>
+        </member>
+        <member name="M:ASUTP.PlugIn.PlugInBase.isDataHostMarked(System.Int32,System.Int32)">
+            <summary>
+            Возвратить признак использования элемента в объекте библиотеки
+            </summary>
+            <param name="id_main">Идентификтор типа объекта библиотеки</param>
+            <param name="id_detail">Идентификатор элемента в объекте библиотеки</param>
+            <returns>Признак использования элемента</returns>
+        </member>
+    </members>
+</doc>

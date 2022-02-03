@@ -1,0 +1,1363 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>StatisticAlarm</name>
+    </assembly>
+    <members>
+        <member name="F:StatisticAlarm.AdminAlarm.MSEC_ALARM_TIMERUPDATE">
+            <summary>
+            Интервал времени (милисекунды) между опросами по проверке выполнения условий сигнализаций
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.MSEC_ALARM_EVENTRETRY">
+            <summary>
+            Период времени (милисекунды) от даты/времени регистрации события сигнализации
+             , в течение которого (только в случае подтверждения) выполнение условия сигнализации
+             не является основанием для его регистрации с новым идентификатором.
+             В противном случае (НЕподтверждения) пользователь оповещается повторно.
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.MSEC_ALARM_TIMERBEEP">
+            <summary>
+            Интервал времени (милисекунды) при периодическом воспроизведении звукового файла
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP">
+            <summary>
+            Строка - наименование (звукового) файла
+             , воспроизводящегося при оповещении пользователя оо событии сигнализации
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.onEventReg(StatisticAlarm.TecViewAlarm.AlarmTecViewEventArgs)">
+            <summary>
+            Обработчик события - регистрация события сигнализации от 'TecView'
+            </summary>
+            <param name="obj">Объект, зарегистрировавший событие сигнализации</param>
+            <param name="ev">Аргумент события сигнализации</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.tgConfirm(System.Int32,StatisticCommon.TG.INDEX_TURNOnOff)">
+            <summary>
+            Изменить состояние ТГ (вкл./выкл.)
+            </summary>
+            <param name="id_tg">Идентификатор ТГ</param>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.Mode">
+            <summary>
+            Режим работы вкладки
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.s_strDateTimeFormat">
+            <summary>
+            Шаблон для сохранения/обновления даты/времени в БД
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.AdminAlarm.AlarmDbEventArgs">
+            <summary>
+            Класс для хранения значений о событии сигнализации
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.AlarmDbEventArgs.m_id">
+            <summary>
+            Идентификатор ...
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.AlarmDbEventArgs.m_id_user_registred">
+            <summary>
+            Идентификаторы пользователя зарегистрировавшего/подтвердившего/снявшего событие с оповещения
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.AlarmDbEventArgs.m_id_user_fixed">
+            <summary>
+            Идентификаторы пользователя зарегистрировавшего/подтвердившего/снявшего событие с оповещения
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.AlarmDbEventArgs.m_id_user_confirm">
+            <summary>
+            Идентификаторы пользователя зарегистрировавшего/подтвердившего/снявшего событие с оповещения
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.AlarmDbEventArgs.m_dtFixed">
+            <summary>
+            Дата/время подтверждения и снятия события с оповещения
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.AlarmDbEventArgs.m_dtConfirm">
+            <summary>
+            Дата/время подтверждения и снятия события с оповещения
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.AlarmDbEventArgs.#ctor(System.Data.DataRow)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="rowEvt">Строка таблицы со значенями для инициализации полей/свойств</param>
+        </member>
+        <member name="T:StatisticAlarm.AdminAlarm.StatesMachine">
+            <summary>
+            Перечисление - индексы известных для обработки состояний
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.m_dictAlarmObject">
+            <summary>
+            Объект для учета событий сигнализации и их состояний
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.AdminAlarm.AlarmDbEventHandler">
+            <summary>
+            Тип функции - для обработки события регистрации события (случая) сигнализаций из БД
+            </summary>
+            <param name="ev">Аргумент ...</param>
+        </member>
+        <member name="E:StatisticAlarm.AdminAlarm.EventAdd">
+            <summary>
+            События для оповещения панели
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.AdminAlarm.EventRetry">
+            <summary>
+            События для оповещения панели
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.AdminAlarm.EventReg">
+            <summary>
+            Событие регистрации события (случая) сигнализаций из БД
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.m_mEvtAlarmDbEventUpdated">
+            <summary>
+            Признак актуальности зарегистрированных событий сигнализаций из БД
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.m_timerView">
+            <summary>
+            Таймер для запроса актуального перечня событий сигнализаций
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.AdminAlarm.DatetimeCurrentEventHandler">
+            <summary>
+            Тип делегата обработчика события по изменению текущей даты/диапазона_часов опроса событий зарегистрированных в БД
+            </summary>
+            <param name="ev">Аргумент при вызове метода</param>
+        </member>
+        <member name="T:StatisticAlarm.AdminAlarm.DatetimeCurrentEventArgs">
+            <summary>
+            Класс для объекта аргумента события
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.DatetimeCurrentEventArgs.Date">
+            <summary>
+            Дата, округленная до "полуночи"
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.DatetimeCurrentEventArgs.HourBegin">
+            <summary>
+            Номер часа(ов)
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.DatetimeCurrentEventArgs.HourEnd">
+            <summary>
+            Номер часа(ов)
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.DatetimeCurrentEventArgs.#ctor(System.DateTime,System.Int32,System.Int32)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="date">Дата, округленная до "полуночи"</param>
+            <param name="iHourBegin">Номер часа начала</param>
+            <param name="iHourEnd">Номер часа окончания</param>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.m_bWorkChecked">
+            <summary>
+            Признак вкл./выкл. объекта
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.AdminAlarm.HandlerDb">
+            <summary>
+            Класс для получения данных из БД
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.AdminAlarm.HandlerDb.StatesMachine">
+            <summary>
+            Перечисление
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.HandlerDb.m_connSett">
+            <summary>
+            Параметры соединения с БД_значений
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.AdminAlarm.HandlerDb.IdListener">
+            <summary>
+            Идентификатор установленного, активного соединения с БД_значений
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.AdminAlarm.HandlerDb.INDEX_SYNC_STATECHECKRESPONSE">
+            <summary>
+            Перечисление - индексы объектов синхронизации для обмена данными (результатом) обработки событий
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.HandlerDb.m_arSyncStateCheckResponse">
+            <summary>
+            Объекты синхронизации для обмена данными (результатом) обработки событий
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.HandlerDb.m_tableResponse">
+            <summary>
+            Таблица для обмена данными (результатом) обработки событий
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.HandlerDb.m_dtCurrent">
+            <summary>
+            Дата/время (дата) запроса списка событий
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.HandlerDb.m_dtServer">
+            <summary>
+            Дата/время (дата) запроса списка событий
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.HandlerDb.m_iHourBegin">
+            <summary>
+            Индекс часа начала периода запроса списка событий в сутках
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.HandlerDb.m_iHourEnd">
+            <summary>
+            Индекс часа начала периода запроса списка событий в сутках
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.HandlerDb.m_objIntermediateValue">
+            <summary>
+            Идентификатор записи в таблице БД_значений о событии сигнализации
+            </summary>        
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.HandlerDb.m_objArgument">
+            <summary>
+            Информация о событии сигнализации
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.GetCurrentTimeRequest">
+            <summary>
+            Выполнить запрос даты/времени на сервере
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.GetCurrentTimeResponse(System.Data.DataTable)">
+            <summary>
+            Обработать рез-т получения даты/времени на сервере
+            </summary>
+            <param name="tableRes"></param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.GetListEventsRequest">
+            <summary>
+            Выполнить запрос для получения перечня событий сигнализаций
+             за указанный период времени (дата/часы начала/окончания)
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.GetInsertEventMainRequest">
+            <summary>
+            Сформировать содержимое запроса к БД и отправить для выполнения
+             , по сложивжейся традиции, несмотря на 'Get', тип возвращаемого значения 'void'
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.GetInsertEventMainResponse(System.Object)">
+            <summary>
+            Обработать (промежуточный) рез-т запроса вставки записи - основная информация о событии сигнализации
+             , получить идентификатор вставленной записи
+            </summary>
+            <param name="obj"></param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.GetInsertEventDetailRequest">
+            <summary>
+            Выполнить запрос на вставку дополнительной информации для события сигнализаций
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.GetUpdateEventFixedRequest">
+            <summary>
+            Выполнить запрос по обновлению информации о событии сигнализаций
+             обновление даты/времени ФИКСАЦИИ события
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.GetUpdateEventConfirmRequest">
+            <summary>
+            Выполнить запрос по обновлению информации о событии сигнализаций
+             обновление даты/времени ПОДТВЕРЖДЕНИЯ события
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.Refresh(System.DateTime,System.Int32,System.Int32)">
+            <summary>
+            Выполнить запрос (группу запросов) для получения актуального списка событий сигнализаций
+             за указанную дату и часы (начало/окончание)
+            </summary>
+            <param name="dtCurrent">Дата для запроса</param>
+            <param name="iHourBegin">Номер часа начала</param>
+            <param name="iHourEnd">Номер часа окончания</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.refresh">
+            <summary>
+            Сформировать группу состояний для актуализации списка событий сигнализаций
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.Detail(System.Object)">
+            <summary>
+            Сформировать группу состояний для получения дополнительной информации о
+             событии сигнализаций
+            </summary>
+            <param name="id">Идентификатор события сигнализаций</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.Insert(StatisticAlarm.TecViewAlarm.AlarmTecViewEventArgs)">
+            <summary>
+            Сформировать группу состояний для вставки основной информации о
+             событии сигнализаций
+            </summary>
+            <param name="ev">Информация о событии сигнализаций</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.Fixed(StatisticAlarm.AlarmNotifyEventArgs)">
+            <summary>
+            Сформировать группу состояний для обновлнеия основной информации о
+             событии оповещения (ФИКСАЦИЯ)
+            </summary>
+            <param name="ev">Информация о событии оповещния</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.HandlerDb.Confirm(System.Object)">
+            <summary>
+            Сформировать группу состояний для обновлнеия основной информации о
+             событии сигнализаций (ПОДТВЕРЖДЕНИЕ)
+            </summary>
+            <param name="id">Идентификатор события сигнализаций</param>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.m_handlerDb">
+            <summary>
+            Объект для получения данных из БД
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.AdminAlarm.EvtGetDataMain">
+            <summary>
+            Событие для отправки списка событий/детализации сигнализаций клиентам
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.AdminAlarm.EvtGetDataDetail">
+            <summary>
+            Событие для отправки списка событий/детализации сигнализаций клиентам
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.AdminAlarm.m_threadNotifyResponse">
+            <summary>
+            Объект потока для обработки рез-та запроса
+             на получение списка событий сигнализаций
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.#ctor(ASUTP.Database.ConnectionSettings,StatisticAlarm.MODE,StatisticAlarm.AdminAlarm.DatetimeCurrentEventArgs,System.Boolean)">
+            <summary>
+            Конструктор - основной (с параметрами)
+            </summary>
+            <param name="connSett">Параметры соединения с БД_значений</param>
+            <param name="mode">Режим работы объекта</param>
+            <param name="ev">Инициализация значений даты, часов начало, окончания запроса списка событий</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.OnWorkCheckedChanged(System.Boolean)">
+            <summary>
+            Обработчик события изменение признака "Включено/отключено"
+            </summary>
+            <param name="bChecked">Новое состояние приложения - выполнять/не_выполнять регистрацию событий</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.pushList">
+            <summary>
+            Поставить в очередь обработки событие - запрос перечня событий сигнализаций из БД
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.pushNotify">
+            <summary>
+            Поставить в очередь обработки событие - запрос перечня событий сигнализаций из БД - текущих (для оповещения)!!!
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.fTimerView_Tick(System.Object)">
+            <summary>
+            Метод обратного вызова для таймера обновления значений в таблице
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.OnEventDatetimeChanged(StatisticAlarm.AdminAlarm.DatetimeCurrentEventArgs)">
+            <summary>
+            Обработчик события - изменение даты, номера часа начала и окончания
+            </summary>
+            <param name="ev"></param>
+        </member>
+        <member name="P:StatisticAlarm.AdminAlarm.isToday">
+            <summary>
+            Признак постановки в очередь обработки событий - запроса на получение списка собтий сигнализаций
+             по заданной пользователем дате
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.fThreadNotifyResponse_DoWork(System.Object,System.ComponentModel.DoWorkEventArgs)">
+            <summary>
+            Потоковая функция обработки результата запроса списка событий сигнализаций
+            </summary>
+            <param name="obj">Объект, инициировавший событие (??? поток)</param>
+            <param name="ev">Аргумент события начала выполнения потока</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.fThreadNotifyResponse_RunWorkerCompleted(System.Object,System.ComponentModel.RunWorkerCompletedEventArgs)">
+            <summary>
+            Обработчик события - завершения выполнения потоковой функции по обработке
+             результатов запроса списка событий сигнализаций
+            </summary>
+            <param name="obj">Объект, инициировавший событие (??? поток)</param>
+            <param name="ev">Аргумент события окончанмя выполнения потоковой функции</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.GetListEventsResponse(ASUTP.Helper.HHandlerQueue.ItemQueue,System.Data.DataTable)">
+            <summary>
+            Функция обработки результатов запроса по указанной дате/часам
+            </summary>
+            <param name="itemQueue">Объект - аргумент очередного события в очереди обработки событий</param>
+            <param name="tableRes">Таблица - результат запроса</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.GetNotifyResponse(ASUTP.Helper.HHandlerQueue.ItemQueue,System.Data.DataTable)">
+            <summary>
+            Функция обработки результатов запроса текущих!!! событий сигнализаций
+            </summary>
+            <param name="itemQueue">Объект - аргумент очередного события в очереди обработки событий</param>
+            <param name="tableRes">Таблица - результат запроса</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.onEventReg(StatisticAlarm.AdminAlarm.AlarmDbEventArgs)">
+            <summary>
+            Обработчик события регистрации события из БД
+            </summary>
+            <param name="ev">Аргумент события - описание события сигнализации</param>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.StateCheckResponse(System.Int32,System.Boolean@,System.Object@)">
+            <summary>
+            Получить результат запроса для события
+            </summary>
+            <param name="state">Идентификатор события</param>
+            <param name="error">Признак получения результата запроса</param>
+            <param name="table">Результат запроса - таблица ('DataTable')</param>
+            <returns>Признак выполнения операции</returns>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.StateRequest(System.Int32)">
+            <summary>
+            Отправить запрос для события
+            </summary>
+            <param name="state">Идентификатор состояния</param>
+            <returns>Результат отправления запроса</returns>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.StateResponse(System.Int32,System.Object)">
+            <summary>
+            Обработать результат запроса для состояния
+            </summary>
+            <param name="state">Идентификатор состояния</param>
+            <param name="obj">Результат выполнения запроса</param>
+            <returns>Признак обработки результата запроса</returns>
+        </member>
+        <member name="M:StatisticAlarm.AdminAlarm.OnEvtDataAskedHost(System.Object)">
+            <summary>
+            Обработчик запросов на получение данных от 'PanelAlarm'
+             в котором реализован интерфейс 'IDataHost'
+            </summary>
+            <param name="obj">Аргумент, детализирующий выполнение запрос</param>
+        </member>
+        <member name="T:StatisticAlarm.FormMain">
+            <summary>
+            Класс главной формы приложения "Журнал событий сигнализаций"
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.FormMain._state">
+            <summary>
+            Состояние формы (признак выполнения очередной операции: 0 - без ошибок)
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.FormMain.formParameters">
+            <summary>
+            Объект с параметрами приложения (из БД_конфигурации)
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.FormMain.handlerCmd">
+            <summary>
+            Класс обработки "своих" команд
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.handlerCmd.#ctor(System.String[])">
+            <summary>
+            Конструктор - основной (с параметрами)
+            </summary>
+            <param name="args">Массив аргументов командной строки</param>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.handlerCmd.RunCmd">
+            <summary>
+            Обработка "своих" команд
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.WndProc(System.Windows.Forms.Message@)">
+            <summary>
+            Перехват нажатия на кнопку свернуть
+            </summary>
+            <param name="m">Событие Eindows</param>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.FormMain_Load(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - загрузка формы завершена
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.Initialize(System.String@)">
+            <summary>
+            Инициализация данных формы
+            </summary>
+            <param name="msgError">Сообщение об ошибке (при наличии)</param>
+            <returns>Признак выполнения функции</returns>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.validateUser(System.String@)">
+            <summary>
+            Инициализация параметров соединения с БД_конфигурации
+            </summary>
+            <param name="msgError">Сообщение об ошибке (при наличии)</param>
+            <returns>Признак выполнения функции</returns>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.FormMain_Activated(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - активация формы
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.FormMain_Deactivated(System.Object,System.EventArgs)">
+            <summary>
+            ??? - обязательно - Обработчик события - деактивация формы
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.fMenuItemAbout_Click(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события выбора п. главного меню "Помощь-О программе"
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.FormMain_FormClosing(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - перед закрытием формы
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.timer_Start">
+            <summary>
+            ??? Функция при 1-м событии запуска таймера
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.fMenuItemExit_Click(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события выбора п. главного меню "Файл-Выход"
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.fMenuItemDBConfig_Click(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="F:StatisticAlarm.FormMain._panelMain">
+            <summary>
+            Панель - единственная дочерняя по отношению к главной форме
+             , и единственная родительская по отношению к рабочей панели
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.FormMain.components">
+            <summary>
+            Требуется переменная конструктора.
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.Dispose(System.Boolean)">
+            <summary>
+            Освободить все используемые ресурсы.
+            </summary>
+            <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        </member>
+        <member name="M:StatisticAlarm.FormMain.InitializeComponent">
+            <summary>
+            Обязательный метод для поддержки конструктора - не изменяйте
+            содержимое данного метода при помощи редактора кода.
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.MessageBoxAlarmEvent">
+            <summary>
+            Класс для окна с сообщением о событии сигнализации
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.MessageBoxAlarmEvent.EventActivateTabPage">
+            <summary>
+            Событие - после квитирования - активация вкладки
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.MessageBoxAlarmEvent.EventFixed">
+            <summary>
+            Событие - пользователь зафиксировал(квитировал) сообщение
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.INDEX_TYPE_ALARM">
+            <summary>
+            Перечисление - индексы для типов сигнализаций
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.INDEX_STATES_ALARM">
+            <summary>
+            Перечисление - индексы для состояний события сигнализации
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.INDEX_STATES_ALARM.REGISTRING">
+            <summary>
+            Событие поставлено в очередь для оповещения
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.AlarmNotifyEventHandler">
+            <summary>
+            Тип функции - для обработки события оповещения панели о событии сигнализаций (новое/повтор)
+            </summary>
+            <param name="ev">Аргумент события оповещения</param>
+        </member>
+        <member name="T:StatisticAlarm.AlarmNotifyEventArgs">
+            <summary>
+            Класс для описания события оповещения
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.AlarmNotifyEventArgs.type">
+            <summary>
+            Индекс типа сигнализации
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.DictAlarmObject">
+            <summary>
+            Класс для учета событий сигнализации и их состояний
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.DictAlarmObject.DEPTH_HOUR_OBJECTALRM">
+            <summary>
+            Период - глубина (в часах) хранения объектов с описанием событий сигнализаций
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.DictAlarmObject._dictAlarmObject">
+            <summary>
+            Словарь с составным ключом (идентификатор компонента + дата/врремя/регитсрации)
+             объектов событий сигнализаций
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.DictAlarmObject.ALARM_OBJECT">
+            <summary>
+            Класс объекта события сигнализации
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.INDEX_DATETIME_REGISTRED">
+            <summary>
+            Перечисление - индексы значений даты/времени регистрации/повторения события сигнализаций
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.DictAlarmObject.ALARM_OBJECT._cnt">
+            <summary>
+            Счетчик кол-ва возникновений/повторения события
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.FirstDTRegistred">
+            <summary>
+            Дата/время первичной регистрации события (как в БД) сигнализаций
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.Fixing">
+            <summary>
+            Установить состояние объекта в "находится на оповещении"
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.Fixed(System.Nullable{System.DateTime})">
+            <summary>
+            Установить состояние объекта в "зафиксирован"
+            </summary>
+            <param name="dt">Дата/время фиксации</param>
+        </member>
+        <member name="P:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.FIXED">
+            <summary>
+            Признак объекта: находится ли он в состоянии "зафиксирован"
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.Confirming">
+            <summary>
+            Установить состояние объекта "находится на подтверждении"
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.Confirmed(System.Nullable{System.DateTime})">
+            <summary>
+            Установить состояние объекта в "подтвержден"
+            </summary>
+            <param name="dt"></param>
+        </member>
+        <member name="P:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.CONFIRMED">
+            <summary>
+            Признак подтверждения события сигнализации
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.RETRY">
+            <summary>
+            Признак превышения интервала времени установленному в БД_конфигурации
+             между текущими датой/временем И датой/времени_регистрации ИЛИ крайней датой/времени_фиксации
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.HISTORY">
+            <summary>
+            Признак устаревания объекта сигнализаций (от момента подтверждения)
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.DictAlarmObject.ALARM_OBJECT._arDTRegistred">
+            <summary>
+            Дата/время регистрации
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.DictAlarmObject.ALARM_OBJECT._dtFixed">
+            <summary>
+            Дата/время фиксации/подтверждения
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.DictAlarmObject.ALARM_OBJECT._dtConfirmed">
+            <summary>
+            Дата/время фиксации/подтверждения
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.DictAlarmObject.ALARM_OBJECT._state">
+            <summary>
+            Текущее состояние события сигнализации
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.ALARM_OBJECT.IsNotify">
+            <summary>
+            Возвратить признак необходимости опопвещения пользователя о событии сигнализаций
+            </summary>
+            <param name="obj">Объект события сигнализаций</param>
+            <returns>Признак необходимости опопвещения</returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.#ctor">
+            <summary>
+            Конструктор основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.find(System.Int32,System.DateTime)">
+            <summary>
+            Найти объект сигнализации по указанным частям составного ключа
+            </summary>
+            <param name="id_comp">Составная часть ключа: идентификатор ГТП</param>
+            <param name="dtReg">Составная часть ключа: дата/время_регистрации события</param>
+            <returns>Объект сигнализации</returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.find(System.Int32)">
+            <summary>
+            Найти объект с указанным иднтификатором (частью составного ключа)
+             , если объектов больше, чем 1 - вернуть такой
+             , у которого разница текущих дата/времени и дата_регистрации минимальна (самый новый)
+            </summary>
+            <param name="id_comp">Идентификаторр для поиска</param>
+            <returns>РОбъект - результат поиска</returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.TGAlarmDatetimeReg(System.Int32,System.DateTime)">
+            <summary>
+            Получить дату/время регистрации события сигнализации для ТГ
+            </summary>
+            <param name="id_comp">Составная часть ключа: идентификатор ГТП</param>
+            <param name="id_tg">Составная часть ключа: идентификатор ТГ</param>
+            <returns></returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.Fixing(System.Int32,System.DateTime)">
+            <summary>
+            Установить признак - событие сигнализаций "ожидание фиксации"
+            </summary>
+            <param name="id_comp">Часть составного ключа: идентификтор компонента ТЭЦ (ГТП, ТГ)</param>
+            <param name="dtReg">Часть составного ключа: дата/время регистрации события сигнализаций</param>
+            <returns>Результат выполнения операции</returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.Fixed(System.Int32,System.DateTime,System.DateTime)">
+            <summary>
+            Присвоить объекту по указанным частям составного ключа признак "зафиксирован"
+            </summary>
+            <param name="id_comp">Часть составного ключа: идентификатор компонента</param>
+            <param name="dtReg">Часть составного ключа: идентификатор даты/времени_регистрации</param>
+            <param name="dtFixed">Дата/время фиксации события</param>
+            <returns>Признак выполнения функции</returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.Confirmed(System.Int32,System.DateTime,System.DateTime)">
+            <summary>
+            Присвоить объекту по указанным частям составного ключа признак "подтвержден"
+            </summary>
+            <param name="id_comp">Часть составного ключа: идентификатор компонента</param>
+            <param name="dtReg">Часть составного ключа: идентификатор даты/времени_регистрации</param>
+            <param name="dtConfirmed">Дата/время подтверждения события</param>
+            <returns>Признак выполнения функции</returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.Confirming(System.Int32,System.DateTime)">
+            <summary>
+            Установить признак - событие сигнализаций "ожидается подтверждение"
+            </summary>
+            <param name="id_comp">Часть составного ключа: идентификтор компонента ТЭЦ (ГТП, ТГ)</param>
+            <param name="dtReg">Часть составного ключа: дата/время регистрации события сигнализаций</param>
+            <returns>Результат выполнения операции</returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.IsConfirmed(System.Int32,System.DateTime)">
+            <summary>
+            Возвратить признак подтверждения события
+             по указанным частям составного ключа
+            </summary>
+            <param name="id_comp">Часть составного ключа: идентификтор компонента ТЭЦ (ГТП, ТГ)</param>
+            <param name="dtReg">Часть составного ключа: дата/время регистрации события сигнализаций</param>
+            <returns>Результат выполнения операции</returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.Registred(StatisticAlarm.TecViewAlarm.AlarmTecViewEventArgs@)">
+            <summary>
+            Зарегистрировать событие в режиме "выполнение_приложения"
+            </summary>
+            <param name="ev">Аргумент события</param>
+            <returns>Результат регистрации (-1 - ошибка, 0 - ничего_не_делать, 1 - новый_объект, 2 - повторное_событие)</returns>
+        </member>
+        <member name="M:StatisticAlarm.DictAlarmObject.Registred(StatisticAlarm.AdminAlarm.AlarmDbEventArgs,StatisticAlarm.MODE)">
+            <summary>
+            Зарегистрировать событие от БД
+            </summary>
+            <param name="ev">Аргумент события</param>
+            <returns>Результат регистрации (см. пред. обработчик для 'TecViewAlarm.AlarmTecViewEventArgs')</returns>
+        </member>
+        <member name="T:StatisticAlarm.MODE">
+            <summary>
+            Перечисление для режимов работы вкладки
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm">
+            <summary>
+            Класс панели для отображения с списка событий
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm.m_list_tec">
+            <summary>
+            Список объектов ТЭЦ
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm.m_listIdTECComponents">
+            <summary>
+            Список идентификаторов компонентов ТЭЦ (ГТП), отображающихся в списке 'Компоненты ТЭЦ'
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm.m_adminAlarm">
+            <summary>
+            Объект проверки условий выполнения сигнализаций типов "Мощность ГТП", "ТГ вкл./откл."
+             , чтения/записи списка событий в БД
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm.delegateDatetimeChanged">
+            <summary>
+            Событие изменения даты, начала и окончания для запроса списка событий сигнализаций
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm.delegateWorkCheckedChanged">
+            <summary>
+            Делегат для обработки события установка/снятие признака "Включено"
+             для всех режимов работы (SERVICE, ADMIN, VIEW)
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.PanelAlarm.EventGUIReg">
+            <summary>
+            Событие для оповещения пользователя о событии сигнализаций (новое/повтор)
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm._widthPanelManagement">
+            <summary>
+            Ширина панели для размещения активных элементов управления
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.#ctor(ASUTP.Core.HMark,StatisticAlarm.MODE,System.Drawing.Color,System.Drawing.Color)">
+            <summary>
+            Конструктор - основной (с параметрами)
+            </summary>
+            <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
+            <param name="mode">Режим работы панели</param>
+            <param name="backColor">Цвет фона панели и всех дочерних элементов управления</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.#ctor(System.ComponentModel.IContainer,ASUTP.Core.HMark,StatisticAlarm.MODE,System.Drawing.Color,System.Drawing.Color)">
+            <summary>
+            Конструктор - дополнительный (с параметрами)
+            </summary>
+            <param name="container">См. документацию на 'Control'</param>
+            <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
+            <param name="mode">Режим работы панели</param>
+            <param name="foreColor">Цвет шрифта</param>
+            <param name="backColor">Цвет фона</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.initialize(ASUTP.Core.HMark,StatisticAlarm.MODE)">
+            <summary>
+            Инициализация собственных параметров
+            </summary>
+            <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
+            <param name="mode">Режим работы панели</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.Start">
+            <summary>
+            Запустить на выполнение 
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.startAdminAlarm">
+            <summary>
+            Запустить на выполнение объект регистрации выполнения условий сигнализаций
+             , чтения/записи/обновления списка событий в БД
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.Stop">
+            <summary>
+            Остановить панель, и все связанные с ней объекты
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.Activate(System.Boolean)">
+            <summary>
+            Активировать/деактивировать панель
+            </summary>
+            <param name="activate">Признак активации/деактивации</param>
+            <returns>Признак результата выполнения операции (Изменено/не_изменено стостояние)</returns>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.initializeLayoutStyle(System.Int32,System.Int32)">
+            <summary>
+            Инициалировать параметры контэйнеров-столбцов, контэйнеров-строк
+            </summary>
+            <param name="cols">Количество контэйнеров-столбцов</param>
+            <param name="rows">Количество контэйнеров-строк</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.initAdminAlarm(ASUTP.Database.ConnectionSettings,StatisticAlarm.MODE,ASUTP.Core.HMark,System.Boolean)">
+            <summary>
+            Инициализация объекта регистрации выполнения условий сигнализаций
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.OnViewAlarm_EventAdd(StatisticAlarm.AlarmNotifyEventArgs)">
+            <summary>
+            Обработчик события - регистрация события сигнализации из БД!!!
+            </summary>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.OnViewAlarm_EventRetry(StatisticAlarm.AlarmNotifyEventArgs)">
+            <summary>
+            Обработчик события - повтор регистрации события сигнализации из БД!!!
+            </summary>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.OnEventFixed(System.Object)">
+            <summary>
+            Обработчик события - снятие с отображения 'MessageBox'
+             информации о событии сигнализаций
+            </summary>
+            <param name="obj">Аргумент события - описание события оповещения</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.OnEventConfirm(System.Object)">
+            <summary>
+            Обработчик события - подтверждение события сигнализаций
+            </summary>
+            <param name="obj">Идентификатор события сигнализаций в БД</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.dgvJournal_OnSelectionChanged(System.Object)">
+            <summary>
+            Обработчик события изменения выбора строки в таблице
+             со списком событий сигнализаций
+            </summary>
+            <param name="obj">Идентификатор события сигнализаций в БД</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.fTECComponent_OnItemCheck(System.Object,System.Windows.Forms.ItemCheckEventArgs)">
+            <summary>
+            Обработчик события снятия признака "использовать компонент ТЭЦ" в списке "Компоненты ТЭЦ"
+            </summary>
+            <param name="obj">Объект, иницировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.findGTPOfID(System.Int32)">
+            <summary>
+            Найти объект-'компонент ТЭЦ' по идентификатору в локальном списке компонентов ТЭЦ
+            </summary>
+            <param name="id">Идентификатор для поиска</param>
+            <returns>Объект-'компонент ТЭЦ'</returns>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.cbxWork_OnCheckedChanged(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события изменение признака "Включено/отключено"
+            </summary>
+            <param name="obj">Объект, иницировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.fTECComponent_OnSelectedIndexChanged(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - выбор элемента в списке компонентов ТЭЦ
+            </summary>
+            <param name="obj">Объект, инициировавший событие (CheckListBox)</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.setNudnKoeffAlarmCurPowerValue">
+            <summary>
+            Отобразить значение коэффициента для выбранного элемента в списке "Компоненты ТЭЦ"
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.setNudnKoeffAlarmCurPowerValue(System.Decimal)">
+            <summary>
+            Отобразить значение коэффициента для выбранного элемента в списке "Компоненты ТЭЦ"
+            </summary>
+            <param name="value">Значение для отображения</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.NudnKoeffAlarmCurPower_ValueChanged(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - изменение значения коэффициента для компонента ТЭЦ
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.find(StatisticAlarm.PanelAlarm.INDEX_CONTROL)">
+            <summary>
+            Найти дочерний элемент управления по идентификатору
+            </summary>
+            <param name="indx">Идентификатор элемента управления</param>
+            <returns>Дочерний элемент управления</returns>
+        </member>
+        <member name="P:StatisticAlarm.PanelAlarm.DateCurrent">
+            <summary>
+            Текущая (выбранная дата) в элементе управления 'MonthCalendar'
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.PanelAlarm.HourBegin">
+            <summary>
+            Текущий (установленный) индекс часа начала периода в указанные сутки
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.PanelAlarm.HourEnd">
+            <summary>
+            Текущий (установленный) индекс часа окончания периода в указанные сутки
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.btnRefresh_OnClick(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - нажатие на кнопку "Обновить"
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.UpdateGraphicsCurrent(System.Int32)">
+            <summary>
+            Применить изменения графического оформления
+            </summary>
+            <param name="type">Тип изменений графического оформления</param>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.INDEX_FILTER">
+            <summary>
+            Тип фильтра(ограничений)
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm.INDEX_FILTER.NOT">
+            <summary>
+            Ограничения не устновлены
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.Filter">
+            <summary>
+            Класс для описания фильтра(ограничений) выбранных компонентов ТЭЦ
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm.DataGridViewAlarmBase.delegateOnGetData">
+            <summary>
+            Делегат обновления значений в таблице
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm.DataGridViewAlarmBase.m_filter">
+            <summary>
+            Объект фильтра отображаемых записей
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmBase.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmBase.InitializeComponent">
+            <summary>
+            Установить параметры визуализации
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmBase.OnEvtGetData(System.Object)">
+            <summary>
+            Обработчик события "Получение данных для отображения"
+            </summary>
+            <param name="obj">Объект - таблица с данными для отображения</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmBase.onEvtGetData(System.Object)">
+            <summary>
+            Отобразить полученные данные
+            </summary>
+            <param name="obj">Объект - таблица с данными для отображения</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmBase.OnEventFilter(System.Object)">
+            <summary>
+            Обработчик события - применить фильтр для строк в таблице
+            </summary>
+            <param name="obj">Параметры фильтра ([0] - тип, [1] - значения)</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmBase.SetFilter(StatisticAlarm.PanelAlarm.INDEX_FILTER,System.Object)">
+            <summary>
+            Установить фильтр для отображаемых значений
+            </summary>
+            <param name="indxFilter">Тип фильтра</param>
+            <param name="objFilter">Значения для фильтра указанного типа</param>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.ViewAlarmBase">
+            <summary>
+            Класс для описания события сигнализаций (для отображения в таблице)
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.ViewAlarmJournal">
+            <summary>
+            Класс для описания события сигнализаций (для отображения в таблице основной информации о событии)
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal">
+            <summary>
+            Класс с таблицей отображения списка событий сигнализаций
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.EventConfirmed">
+            <summary>
+            Событие для инициирования процессса подтверждения события сигнализаций
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.EventSelected">
+            <summary>
+            Событие для инициирования процессса подтверждения события сигнализаций
+            </summary>
+        </member>
+        <member name="E:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.EventFixed">
+            <summary>
+            Событие фиксации зарегистрированного события (только в режиме 'SERVICE')
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal._mode">
+            <summary>
+            Режим работы "родительской" панели
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.iINDEX_COLUMN">
+            <summary>
+            Перечисление для индексов столбцов в таблице
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.InitializeComponent">
+            <summary>
+            Установить параметры визуализации
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.isRecEnabled(System.Int32)">
+            <summary>
+            Возвратить признак доступности кнопки в столбце "Подтверждение"
+            </summary>
+            <param name="iRow">Индекс строки</param>
+            <returns></returns>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.onEvtGetData(System.Object)">
+            <summary>
+            Отобразить полученные данные
+            </summary>
+            <param name="obj">Объект - таблица с данными для отображения</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.OnEventFilter(System.Object)">
+            <summary>
+            Обработчик события - применить фильтр для строк в таблице
+            </summary>
+            <param name="obj">Параметры фильтра ([0] - тип, [1] - значения)</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.findIndexRowToSelected(System.Int32)">
+            <summary>
+            Поиск индекса строки для указания ее в качестве выбранной
+             , единственный критерий - выбранная строка не может имет признак "не отображать"
+            </summary>
+            <param name="indxRowNotVisible">Индекс строки, получившей признак "не отображать"</param>
+            <returns>Индекс строки (-1, если не найдена)</returns>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.UpdateRec(System.Object[])">
+            <summary>
+            Метод для обновления значения (дата/время фиксации/подтверждения) одной записи
+            </summary>
+            <param name="pars">Аргумент- массив с идентификатором события, датой/временем фиксации/подтверждения</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.onCellClick(System.Object,System.Windows.Forms.DataGridViewCellEventArgs)">
+            <summary>
+            Обработчик события нажатия кнопки в столбце "Подтверждение"
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmJournal.onSelectionChanged(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события изменения выбора строки в таблице
+            </summary>
+            <param name="obj">Объект, инициировавший событие (??? this)</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.ViewAlarmDetail">
+            <summary>
+            Структура для передачи значений для отображения
+             в таблицу детализации события сигнализации
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.DataGridViewAlarmDetail">
+            <summary>
+            Класс для описания таблицы представления списка событий сигнализаций
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.DataGridViewAlarmDetail.iINDEX_COLUMN">
+            <summary>
+            Перечисление для индексов столбцов в таблице
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmDetail.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmDetail.InitializeComponent">
+            <summary>
+            Установить параметры визуализации
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataGridViewAlarmDetail.OnEventFilter(System.Object)">
+            <summary>
+            Обработчик события - применить фильтр для строк в таблице
+            </summary>
+            <param name="obj">Параметры фильтра ([0] - тип, [1] - значения)</param>
+        </member>
+        <member name="T:StatisticAlarm.PanelAlarm.INDEX_CONTROL">
+            <summary>
+            Перечисление идентификаторов дочерних элементов управления
+            </summary>
+        </member>
+        <member name="F:StatisticAlarm.PanelAlarm.components">
+            <summary>
+            Требуется переменная конструктора.
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.Dispose(System.Boolean)">
+            <summary> 
+            Освободить все используемые ресурсы.
+            </summary>
+            <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        </member>
+        <member name="E:StatisticAlarm.PanelAlarm.EvtDataAskedHost">
+            <summary>
+            Событие запроса данных для плюг'ина из главной формы
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.DataAskedHost(System.Object)">
+            <summary>
+            Отиравить запрос на получение данных
+            </summary>
+            <param name="par">Аргумент с детализацией запрашиваемых данных</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.OnEvtDataRecievedHost(System.Object)">
+            <summary>
+            Обработчик события ответа от главной формы
+            </summary>
+            <param name="res">Объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        </member>
+        <member name="M:StatisticAlarm.PanelAlarm.InitializeComponent">
+            <summary>
+            Обязательный метод для поддержки конструктора - не изменяйте
+            содержимое данного метода при помощи редактора кода.
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.Program.Main">
+            <summary>
+            Главная точка входа для приложения.
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.TecViewAlarm">
+            <summary>
+            Класс объект для обращения к данным
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.TecViewAlarm.AlarmTecViewEventArgs">
+            <summary>
+            Класс для описания аргумента при возникновении события - сигнализация
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.TecViewAlarm.AlarmTecViewEventArgs.EventDetail">
+            <summary>
+            Структура для описания элемента при детализации
+             случая выполнения условий сигнализаций
+            </summary>
+        </member>
+        <member name="T:StatisticAlarm.TecViewAlarm.AlarmTecViewEventHandler">
+            <summary>
+            Делегат - тип обработчика события 'EventReg'
+             регистрации случая выполнения условия сигнализаций
+            </summary>
+            <param name="ev">Аргумент при возникновении события</param>        
+        </member>
+        <member name="E:StatisticAlarm.TecViewAlarm.EventReg">
+            <summary>
+            Событие для регистрации случая выполнения условия сигнализаций
+             в режиме "выполнения_приложения"
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.TecViewAlarm.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Конструктор - основной (параметры - базового класа)
+            </summary>
+            <param name="typePanel">Тип панели к которой принадлежит объект класс</param>
+            <param name="indxTEC">Индекс ТЭЦ в списке</param>
+            <param name="indx_comp">??? Индекс компонента</param>
+        </member>
+        <member name="M:StatisticAlarm.TecViewAlarm.threadGetRDGValues(System.Object)">
+            <summary>
+            Поток запроса значений для 'TecViewAlarm'
+            </summary>
+            <param name="synch">Объект для синхронизации</param>
+        </member>
+        <member name="M:StatisticAlarm.TecViewAlarm.getRDGValues">
+            <summary>
+            Запросить значения для 'TecViewAlarm'
+            </summary>
+        </member>
+        <member name="M:StatisticAlarm.TecViewAlarm.GetRDGValues(System.Int32,System.DateTime)">
+            <summary>
+            Добавить состояния для запроса получения значений 'TecViewAlarm'
+            </summary>
+            <param name="indx">Индекс компонента</param>
+            <param name="date">Дата запрашиваемых значений</param>
+        </member>
+        <member name="M:StatisticAlarm.TecViewAlarm.AlarmRegistred(System.Int32,System.Int32)">
+            <summary>
+            Функция проверки выполнения условий сигнализаций (для одного ГТП)
+            </summary>
+            <param name="curHour">Текущий час</param>
+            <param name="curMinute">Текущий интервал (1-мин) - текущая минута указанного часа</param>
+            <returns>Признак выполнения функции</returns>
+        </member>
+        <member name="T:StatisticAlarm.Properties.Resources">
+            <summary>
+              Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.Properties.Resources.ResourceManager">
+            <summary>
+              Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
+            </summary>
+        </member>
+        <member name="P:StatisticAlarm.Properties.Resources.Culture">
+            <summary>
+              Перезаписывает свойство CurrentUICulture текущего потока для всех
+              обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
+            </summary>
+        </member>
+    </members>
+</doc>

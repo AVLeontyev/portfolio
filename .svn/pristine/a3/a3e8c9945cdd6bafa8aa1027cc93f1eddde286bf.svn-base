@@ -1,0 +1,374 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Text;
+using ASUTP;
+using ASUTP.Database;
+using ASUTP.Core;
+using System.Threading.Tasks;
+using System.Reflection;
+using System.ComponentModel;
+using System.ServiceModel.Dispatcher;
+using StatisticCommon.Communication;
+using StatisticCommon.Contract;
+
+namespace StatisticCommon
+{
+    public abstract class Service : StatisticCommon.Contract.IService, IDisposable
+    {
+        public TimeSpan OverDate
+        {
+            get;
+
+            private set;
+        }
+
+        public TimeSpan FetchWaking
+        {
+            get;
+
+            private set;
+        }
+
+        public Service ()
+            : base()
+        {
+            Logging.SetMode (Logging.LOG_MODE.FILE_DESKTOP);
+
+            create (true);
+
+            _instanceContext = OperationContext.Current?.InstanceContext;
+            _channel = _instanceContext.IncomingChannels.FirstOrDefault ();
+            _contextChannel = OperationContext.Current?.Channel;
+            _endPointDispatcher = OperationContext.Current?.EndpointDispatcher;
+
+            _callback = OperationContext.Current?.GetCallbackChannel<IServiceCallback> ();
+
+            _host = ((IHost)OperationContext.Current.Host);
+            _host.Register (new Client () { _service = this, _operationContext = OperationContext.Current });
+        }
+
+        protected abstract void create (bool bForced);
+
+        protected virtual bool preInitialize (ConnectionSettings connSettDbConfig, int iMainSourceData, TimeSpan tsOverDate, TimeSpan tsFetchWaking)
+        {
+            //??? как проверить
+            bool bRes = true;
+
+            ASUTP.Forms.FormMainBase.s_iMainSourceData = iMainSourceData;
+
+            OverDate = tsOverDate;
+            FetchWaking = tsFetchWaking;
+
+            create (false);
+
+            try {
+                ////??? для создания статического 'OICDAC.DbSources' = 'DbSources'
+                //StatisticCommon.OICDAC.DbSources.Sources ();
+                ////??? для создания статического 'DbMCSources' = 'DbSources'
+                //DbMCSources.Sources ();
+
+                DbSources.Sources ();
+
+                new DbTSQLConfigDatabase (connSettDbConfig);
+                DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings (connSettDbConfig);
+                DbTSQLConfigDatabase.DbConfig ().Register ();
+            } catch {
+                //??? вероятно, недостижимый код
+                bRes = false;
+            }
+
+            return bRes;
+        }
+
+        /// <summary>
+        /// Создать объект для записи в БД ИС Статистика
+        /// </summary>
+        /// <param name="modeTECComponent">Режим списка компонентов ТЭЦ</param>
+        /// <param name="listID_TECNotUse">Список идентификаторов ТЭЦ, не использующихся при операциях сохранения</param>
+        /// <returns>Признак успеха окончания инициализации</returns>
+        protected virtual bool postInitialize (FormChangeMode.MODE_TECCOMPONENT modeTECComponent
+            , List<int> listID_TECNotUse)
+        {
+            bool bRes = false;
+
+            //Callback?.Raise (-1);
+
+            setDelegateWait ();
+            setDelegateReport ();
+
+            setDelegateForceDate ();
+
+            setDelegateData ();
+            setDelegateSaveComplete ();
+
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
+
+            bRes = IsValidate ();
+
+            report<string> (IdPseudoDelegate.ReportAction, $@"StatisticCommon.Service::postInitialize () - результат: <{bRes}>...");
+
+            return bRes;
+        }
+
+        #region ??? Не имеют смысла-использования
+        private System.ServiceModel.Channels.IChannel _channel { get; set; }
+        private IHost _host { get; }
+        private IContextChannel _contextChannel { get; set; }
+        private InstanceContext _instanceContext { get; set; }
+        private EndpointDispatcher _endPointDispatcher { get; set; }
+        #endregion
+
+        private IServiceCallback _callback;
+        public IServiceCallback Callback
+        {
+            get
+            {
+                return
+                    //OperationContext.Current?.GetCallbackChannel<IServiceCallback> ()
+                    _callback
+                    ;
+            }
+        }
+
+        public virtual void Start ()
+        {
+            Started ();
+        }
+
+        public virtual void Stop ()
+        {
+            Stopped ();
+        }
+
+        protected void callbackRaise (ServiceCallbackResultEventArgs ev)
+        {
+            try {
+                Callback?.Raise (ev);
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $"StatisticCommon.Service.Service::delegate^ (id={ev.Id.ToString ()}) - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+        }
+
+        public void Started ()
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.Started;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id));
+        }
+
+        public void Stopped ()
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.Stopped;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id));
+        }
+
+        public virtual void Dispose ()
+        {
+            try {
+                _host.UnRegister (OperationContext.Current.SessionId);
+            } catch {
+            }
+        }
+
+        public virtual void Close ()
+        {
+            close ();
+
+            //Closed ();
+        }
+
+        private void close ()
+        {
+            try {
+                //_endPointDispatcher?.ChannelDispatcher.Close ();
+                //_contextChannel?.Close ();
+                //_instanceContext?.Close ();
+
+                if (_channel.State == CommunicationState.Opened)
+                    _channel.Close ();
+                else
+                    Logging.Logg ().Warning ($"StatisticCommon.Service.ServicetransModes::close (State={_channel.State}) - closing channel/context/instance...", Logging.INDEX_MESSAGE.NOT_SET);
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $"StatisticCommon.Service.ServicetransModes::close () - closing channel/context/instance...", Logging.INDEX_MESSAGE.NOT_SET);
+            } finally {
+                _callback = null;
+            }
+        }
+
+        public abstract void Activate (bool actived, int index = -1);
+
+        protected abstract void setDelegateWait ();
+
+        protected abstract void setDelegateReport ();
+
+        protected abstract void setDelegateForceDate ();
+
+        protected abstract void setDelegateData ();
+
+        protected abstract void setDelegateSaveComplete ();
+
+        #region Делегаты
+        protected void delegateStartWait ()
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.WaitStart;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id));
+        }
+
+        protected void delegateStopWait ()
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.WaitStop;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id));
+        }
+
+        protected void delegateStatus ()
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.WaitStatus;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id));
+        }
+
+        protected void delegateErrorReport (string message)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.ReportError;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id, message));
+        }
+
+        protected void delegateWarningReport (string message)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.ReportWarning;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id, message));
+        }
+
+        protected void delegateActionReport (string message)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.ReportAction;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id, message));
+        }
+
+        protected void delegateClearReport (bool bClear)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.ClearReport;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id, bClear));
+        }
+
+        protected virtual void delegateRequestDone (int iState)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.Request;
+
+            report<int> (id, iState);
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id, iState));
+        }
+
+        protected virtual void delegateSuccessResult (DateTime datetime, bool bSuccess)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.Ready;
+
+            report<bool> (id, bSuccess);
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id, bSuccess));
+        }
+
+        protected virtual void delegateStateSuccessResult (int iState, object arg, bool bSuccess)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.Ready;
+
+            report<int, bool> (id, iState, bSuccess);
+
+            // arg [object], bSuccess [bool] - пока не передаем: нет конструктора + механизма обмена универсальных объектов + механизма передачи дополнительных значений
+            callbackRaise (new ServiceCallbackResultEventArgs (id, iState));
+        }
+
+        protected void delegateErrorResult (int iState)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.Error;
+
+            report<int> (id, iState);
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id, iState));
+        }
+
+        protected void delegateSaveCompleted (int iState)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.SaveCompleted;
+
+            report<int> (id, iState);
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id, iState));
+        }
+
+        protected void delegateForceDatetime (DateTime datetime)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.SetForceDate;
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id, datetime));
+        }
+        #endregion
+
+        public abstract bool IsValidate ();
+
+        public abstract bool IsValidate (int index = -1);
+
+        public virtual bool IsServiceOnEvent
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        public abstract int AdminCount
+        {
+            get;
+        }
+
+        /// <summary>
+        ///  Отобразить сообщение о действии, инициированного клиентом
+        /// </summary>
+        /// <typeparam name="T1">Тип 1-го аргумента</typeparam>
+        /// <param name="id">Идентификатор действия</param>
+        /// <param name="arg1">Значение аргумента</param>
+        protected void report<T1> (IdPseudoDelegate id, object arg1)
+        {
+            _host.Report (_contextChannel.SessionId, id, (T1)arg1);
+        }
+
+        /// <summary>
+        ///  Отобразить сообщение о действии, инициированным клиентом
+        /// </summary>
+        /// <typeparam name="T1">Тип 1-го аргумента</typeparam>
+        /// <typeparam name="T2">Тип 2-го аргумента</typeparam>
+        /// <param name="id">Идентификатор действия</param>
+        /// <param name="arg1">Значение аргумента</param>
+        /// <param name="arg2">Значение аргумента</param>
+        protected void report<T1, T2> (IdPseudoDelegate id, object arg1, object arg2)
+        {
+            _host.Report (_contextChannel.SessionId, id, (T1)arg1, (T2)arg2);
+        }
+
+        /// <summary>
+        ///  Отобразить сообщение о действии, инициированным клиентом
+        /// </summary>
+        /// <typeparam name="T1">Тип 1-го аргумента</typeparam>
+        /// <typeparam name="T2">Тип 2-го аргумента</typeparam>
+        /// <typeparam name="T3">Тип 3-го аргумента</typeparam>
+        /// <param name="id">Идентификатор действия</param>
+        /// <param name="arg1">Значение аргумента</param>
+        /// <param name="arg2">Значение аргумента</param>
+        /// <param name="arg3">Значение аргумента</param>
+        protected void report<T1, T2, T3> (IdPseudoDelegate id, object arg1, object arg2, object arg3)
+        {
+            _host.Report (_contextChannel.SessionId, id, (T1)arg1, (T2)arg2, (T3)arg3);
+        }
+    }
+}

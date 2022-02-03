@@ -1,0 +1,422 @@
+using System;
+using System.Windows.Forms;
+using System.IO;
+using System.Data;
+using System.Collections.Generic;
+using System.Threading;
+using System.Drawing; //Color
+using System.Globalization; //...CultureInfo
+
+//using HClassLibrary;
+using StatisticCommon;
+using ASUTP;
+using ASUTP.Core;
+
+namespace StatisticAlarm
+{
+    /// <summary>
+    /// Класс объект для обращения к данным
+    /// </summary>
+    public class TecViewAlarm : StatisticCommon.TecView
+    {
+        /// <summary>
+        /// Класс для описания аргумента при возникновении события - сигнализация
+        /// </summary>
+        public class AlarmTecViewEventArgs : AlarmNotifyEventArgs
+        {
+            /// <summary>
+            /// Структура для описания элемента при детализации
+            ///  случая выполнения условий сигнализаций
+            /// </summary>
+            public struct EventDetail
+            {
+                public int id;
+                public double value;
+                public DateTime last_changed_at;
+                public int id_tm;
+
+                public string ValuesToString()
+                {
+                    return @"value=" + value.ToString(@"F3", CultureInfo.InvariantCulture)
+                        + @", last_changed_at=" + last_changed_at.ToString(@"dd.MM.yyyy HH.mm.ss.fff");
+                }
+            }
+
+            public int Id { get { return
+                //m_id_tg < 0 ? m_id_gtp : m_id_tg
+                m_id_comp
+                ; } }
+
+            public List<EventDetail> m_listEventDetail;
+
+            public AlarmTecViewEventArgs(int id_comp, EventReason r, DateTime dtReg, int s, List<EventDetail> listEventDetail)
+                : base(id_comp, r, dtReg, s)
+            {
+                m_listEventDetail = listEventDetail;
+            }
+        }
+        /// <summary>
+        /// Делегат - тип обработчика события 'EventReg'
+        ///  регистрации случая выполнения условия сигнализаций
+        /// </summary>
+        /// <param name="ev">Аргумент при возникновении события</param>        
+        public delegate void AlarmTecViewEventHandler (AlarmTecViewEventArgs ev);
+        /// <summary>
+        /// Событие для регистрации случая выполнения условия сигнализаций
+        ///  в режиме "выполнения_приложения"
+        /// </summary>
+        public event AlarmTecViewEventHandler EventReg;
+        /// <summary>
+        /// Конструктор - основной (параметры - базового класа)
+        /// </summary>
+        /// <param name="key">Ключ элемента</param>
+        public TecViewAlarm (FormChangeMode.KeyDevice key)
+            : base(key, TECComponentBase.TYPE.ELECTRO)
+        {
+            updateGUI_Fact = new IntDelegateIntIntFunc (AlarmRegistred);
+        }
+
+        public override void ChangeState()
+        {
+            new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
+
+            //base.ChangeState(); //Run
+        }
+
+        /// <summary>
+        /// Поток запроса значений для 'TecViewAlarm'
+        /// </summary>
+        /// <param name="synch">Объект для синхронизации</param>
+        private void threadGetRDGValues(object synch)
+        {
+            int indxEv = -1;
+
+            //if (m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS].WaitOne (0, true) == false)
+            ((AutoResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS]).Set();
+            //else ;
+
+            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i++)
+                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+
+            foreach (TECComponent tc in allTECComponents)
+            {
+                if (tc.IsGTP == true)
+                {
+                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
+                        break;
+                    else
+                    {
+                        if (!(indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
+                            ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
+                        else
+                            ;
+
+                        CurrentKey = new FormChangeMode.KeyDevice () { Id = tc.m_id, Mode = tc.Mode };
+
+                        getRDGValues();
+                    }
+                }
+                else
+                    ; //Это не ГТП
+            }
+        }
+        /// <summary>
+        /// Запросить значения для 'TecViewAlarm'
+        /// </summary>
+        private void getRDGValues()
+        {
+            GetRDGValues(CurrentKey, DateTime.Now);
+
+            Run(@"TecView::GetRDGValues () - ...");
+        }
+        /// <summary>
+        /// Добавить состояния для запроса получения значений 'TecViewAlarm'
+        /// </summary>
+        /// <param name="key">Ключ компонента</param>
+        /// <param name="date">Дата запрашиваемых значений</param>
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
+        {
+            m_prevDate = m_curDate;
+            m_curDate = date.Date;
+
+            ClearStates();
+
+            adminValuesReceived = false;
+
+            if ((m_tec.m_bSensorsStrings == false))
+            {
+                AddState((int)StatesMachine.InitSensors);
+            }
+            else ;
+
+            if (currHour == true)
+                AddState((int)StatesMachine.CurrentTimeView);
+            else
+                ;
+
+            //??? а где AISKUE+SOTIASSO
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+                AddState((int)StatesMachine.Hours_Fact);
+            else
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO))
+                    AddState((int)StatesMachine.Hours_TM);
+                else
+                    ;
+
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                AddState((int)StatesMachine.CurrentMins_Fact);
+            else
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO))
+                    AddState((int)StatesMachine.CurrentMins_TM);
+                else
+                    ;
+
+            if (m_bLastValue_TM_Gen == true)
+                AddState((int)StatesMachine.LastValue_TM_Gen);
+            else
+                ;
+
+            AddState((int)StatesMachine.PPBRValues);
+            AddState((int)StatesMachine.AdminValues);
+        }
+        /// <summary>
+        /// Функция проверки выполнения условий сигнализаций (для одного ГТП)
+        /// </summary>
+        /// <param name="curHour">Текущий час</param>
+        /// <param name="curMinute">Текущий интервал (1-мин) - текущая минута указанного часа</param>
+        /// <returns>Признак выполнения функции</returns>
+        public int AlarmRegistred(int curHour, int curMinute)
+        {
+            //return EventAlarmDetect(m_tec.m_id, curHour, curMinute);
+
+            //Признак выполнения функции
+            int iRes = (int)ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
+                , iDebug = -1 //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
+                , cntTGTurnOn = 0 // кол-во вкл. ТГ
+                , cntTGTurnUnknown = allTECComponents.Find(comp => comp.m_id == CurrentKey.Id).ListLowPointDev.Count // кол-во ТГ с неизвестным состоянием
+                , cntPower_TMValues = 0; //Счетчик кол-ва значений тек./мощн. ТГ в общем значении мощности для ГТП
+            //Константы
+            double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
+                , NOT_VALUE = -2F //НЕТ значения
+                , power_TM = NOT_VALUE;
+            //Признак состояния для сигнализации "ТГ вкл./откл." - исходный
+            StatisticCommon.TG.INDEX_TURNOnOff curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN;
+            //Список объектов, детализирующих событие сигнализации
+            List<TecViewAlarm.AlarmTecViewEventArgs.EventDetail> listEventDetail = new List<TecViewAlarm.AlarmTecViewEventArgs.EventDetail>();
+
+            #region Код для отладки
+            if (!(iDebug < 0))
+                Console.WriteLine(@" - curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
+            else
+                ;
+            #endregion Окончание блока кода для отладки
+
+            //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
+            if (((curHour == 24) || (m_markWarning.IsMarked((int)INDEX_WARNING.LAST_HOUR) == true))
+                || ((curMinute == 0) || (m_markWarning.IsMarked((int)INDEX_WARNING.LAST_MIN) == true)))
+            {
+                Logging.Logg().Error(@"TecView::AlarmEventRegistred (" + m_tec.name_shr + @"[KeyComponent=" + CurrentKey + @"])"
+                        + @" - curHour=" + curHour + @"; curMinute=" + curMinute
+                    , Logging.INDEX_MESSAGE.NOT_SET);
+            }
+            else
+            {
+                foreach (StatisticCommon.TG tg in allTECComponents.Find(comp => comp.m_id == CurrentKey.Id).ListLowPointDev)
+                {
+                    curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN;
+
+                    #region Код для отладки
+                    if (!(iDebug < 0))
+                        Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM);
+                    else
+                        ;
+                    #endregion Окончание блока кода для отладки
+
+                    if (m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM < 1F)
+                        //??? проверять ли значение на '< 0F'
+                        if (!(m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM < 0F))
+                            curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
+                        else
+                            ; //??? неопределенное состояние ТГ
+                    else
+                    {//Больше ИЛИ равно 1F
+                        curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.ON;
+                        // подготовить значение                        
+                        if (power_TM == NOT_VALUE) power_TM = 0F; else ;
+                        // учесть в общем значении мощности ГТП, текущую мощность ТГ
+                        power_TM += m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM;
+                        // увеличить счетчик 
+                        cntPower_TMValues ++;
+                    }
+                    //??? неизвестный идентификатор источника значений СОТИАССО (id_tm = -1)
+                    listEventDetail.Add(new TecViewAlarm.AlarmTecViewEventArgs.EventDetail()
+                    {
+                        id = tg.m_id
+                        , value = m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
+                        , last_changed_at = m_dictValuesLowPointDev[tg.m_id].m_dtCurrent_TM
+                        , id_tm = m_dictValuesLowPointDev[tg.m_id].m_id_TM
+                    });
+
+                    #region Код для отладки
+                    //Имитирование - изменяем состояние
+                    if (iDebug == 1)
+                        if (!(tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN))
+                        {
+                            if (curTurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
+                            {// имитация - ТГ выкл.
+                                //Учесть мощность выключенного ТГ в значении для ГТП в целом
+                                power_TM -= m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM;
+                                //Присвоить значение для "отладки" (< 1)
+                                m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM = 0.666F;
+                                //Изменить состояние
+                                curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
+                            }
+                            else
+                                if (curTurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.OFF)
+                                {
+                                    //Присвоить значение для "отладки" (> 1)
+                                    m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM = 66.6F;
+                                    //Изменить состояние
+                                    curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.ON;
+                                }
+                                else
+                                    ;
+
+                            Console.Write(Environment.NewLine + @"Отладка:: "
+                                + tg.m_id_owner_gtp + @":" + tg.m_id + @"="
+                                + m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
+                                + Environment.NewLine);
+                        }
+                        else
+                            ;
+                    else
+                        ;
+                    #endregion Окончание блока кода для отладки
+
+                    if (! (curTurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN))
+                        if (tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN)
+                            tg.m_TurnOnOff = curTurnOnOff;
+                        else
+                            if (!(tg.m_TurnOnOff == curTurnOnOff))
+                            {
+                                //
+                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(tg.m_id, new AlarmNotifyEventArgs.EventReason() { value = listEventDetail[listEventDetail.Count - 1].value
+                                        , UDGe = m_valuesHours[curHour].valuesUDGe
+                                        , koeff = TECComponentCurrent.m_dcKoeffAlarmPcur }
+                                    , DateTime.UtcNow
+                                    , (int)curTurnOnOff
+                                    , listEventDetail));
+
+                                //Прекращаем текущий цикл...
+                                //Признак досрочного прерывания цикла для сигн. "Текущая P"
+                                power_TM = TGTURNONOFF_VALUE;
+
+                                break;
+                            }
+                            else
+                                ; //Состояние ТГ не изменилось
+                    else
+                        //Текущее состояние ТГ не удалось определить
+                        Logging.Logg().Warning (@"TecViewAlarm::AlarmRegistred (id_tg=" + tg.m_id + @") - Detail: "
+                            + listEventDetail[listEventDetail.Count - 1].ValuesToString ()
+                            , Logging.INDEX_MESSAGE.NOT_SET);
+
+                    if (! (tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN))
+                    {
+                        cntTGTurnUnknown --;
+
+                        if (tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
+                            cntTGTurnOn ++;
+                        else
+                            ;
+                    }
+                    else
+                        ;
+
+                    #region Код для отладки
+                    if (!(iDebug < 0))
+                        if ((TECComponentCurrent.ListLowPointDev.IndexOf(tg) + 1) < TECComponentCurrent.ListLowPointDev.Count)
+                            Console.Write(@", ");
+                        else
+                            ;
+                    else
+                        ;
+                    #endregion Окончание блока кода для отладки
+                }
+
+                if (!(power_TM == TGTURNONOFF_VALUE))
+                    if ((!(power_TM == NOT_VALUE)) && (!(power_TM < 1)))
+                    {
+                        int situation = 0;
+
+                        #region Код для отладки
+                        if (!(iDebug < 0))
+                        {
+                            situation = HMath.GetRandomNumber() % 2 == 1 ? -1 : 1;
+                            EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id
+                                , new AlarmNotifyEventArgs.EventReason() { value = listEventDetail[0].value
+                                    , UDGe = m_valuesHours[curHour].valuesUDGe
+                                    , koeff = TECComponentCurrent.m_dcKoeffAlarmPcur }
+                                , DateTime.UtcNow
+                                , situation
+                                , listEventDetail)); //Меньше
+                            Console.WriteLine(@"; ::AlarmEventRegistred () - EventReg [ID=" + TECComponentCurrent.m_id + @"] ...");
+                        }
+                        else
+                        #endregion Окончание блока кода для отладки
+                        {
+                            if ((cntTGTurnUnknown == 0) // кол-во ТГ с неизвестным состоянием = 0
+                                && (cntTGTurnOn == cntPower_TMValues)) // кол-во ТГ, учтенных для подсчета общего знач. тек./мощн. ГТП = кол-ву вкл. ТГ
+                            {
+                                double absDiff = Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe)
+                                 , lim = m_valuesHours[curHour].valuesUDGe * ((double)TECComponentCurrent.m_dcKoeffAlarmPcur / 100);
+                                if (absDiff > lim)
+                                {
+                                    //EventReg(allTECComponents[indxTECComponents].m_id, -1);
+                                    if (power_TM < m_valuesHours[curHour].valuesUDGe)
+                                        situation = -1; //Меньше
+                                    else
+                                        situation = 1; //Больше
+
+                                    EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id
+                                        , new AlarmNotifyEventArgs.EventReason () { value = power_TM 
+                                            , UDGe = m_valuesHours[curHour].valuesUDGe
+                                            , koeff = TECComponentCurrent.m_dcKoeffAlarmPcur }
+                                        , DateTime.UtcNow
+                                        , situation
+                                        , listEventDetail));
+                                }
+                                else
+                                    ; //EventUnReg...
+                            }
+                            else
+                                // обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП
+                                Logging.Logg().Warning(@"TecViewAlarm::AlarmRegistred (id=" + CurrentKey.Id + @") - обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП", Logging.INDEX_MESSAGE.NOT_SET);
+                        }
+                    }
+                    else
+                        ; //Нет значений ИЛИ значения ограничены 1 МВт
+                else
+                    iRes = -102; //(int)INDEX_WAITHANDLE_REASON.BREAK;
+
+                #region Код для отладки
+                if (!(iDebug < 0))
+                    Console.WriteLine();
+                else
+                    ;
+
+                ////Отладка
+                //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
+                //    Console.WriteLine(@"valuesFact[" + i.ToString() + @"]=" + m_valuesHours.valuesFact[i]);
+                #endregion Окончание блока кода для отладки
+            }
+
+            return iRes;
+        }
+    }
+}

@@ -1,0 +1,248 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using StatisticCommon;
+using StatisticTransModes;
+using System.Collections.ObjectModel;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using Modes;
+using ModesApiExternal;
+
+using ASUTP;
+using System.Threading;
+using StatisticTrans.Contract.ModesCentre;
+using StatisticTrans.Contract;
+using StatisticTrans;
+using ASUTP.Core;
+using System.Globalization;
+using ASUTP.Database;
+
+namespace STrans.Service.TransTG
+{
+    class AdminTG : AdminTS
+    {
+        public List<RDGStruct[]> m_listCurTimezoneOffsetRDGExcelValues;
+
+        private List<bool>[] m_listTimezoneOffsetHaveDates;
+
+        public AdminTG(bool[] arMarkPPBRValues)
+            : base(arMarkPPBRValues, TECComponentBase.TYPE.ELECTRO)
+        {
+            InitializeAdminTransTG();
+        }
+
+        private void InitializeAdminTransTG()
+        {
+            m_listTimezoneOffsetHaveDates = new List<bool>[(int)StatisticCommon.CONN_SETT_TYPE.PBR + 1];
+            for (int i = 0; i < (int)StatisticCommon.CONN_SETT_TYPE.PBR + 1; i++)
+            {
+                m_listTimezoneOffsetHaveDates[i] = new List<bool>();
+            }
+
+            m_listCurTimezoneOffsetRDGExcelValues = new List<RDGStruct[]>();
+        }
+
+        protected override void clearDates(StatisticCommon.CONN_SETT_TYPE type)
+        {
+            base.clearDates(type);
+
+            int i = 1;
+
+            m_listTimezoneOffsetHaveDates[(int)type].Clear();
+            for (i = 0;
+                i <
+                    //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                    ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                    ;
+                i++)
+            {
+                m_listTimezoneOffsetHaveDates[(int)type].Add(false);
+            }
+
+        }
+
+        protected override int GetDatesResponse(StatisticCommon.CONN_SETT_TYPE type, DataTable table, DateTime date)
+        {
+            DateTime dateTimezoneOffsetRDGExcel = date.AddHours(-1 *
+                //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                );
+            //bool bIsHourTimezoneOffsetRDGExcel = false;
+
+            for (int i = 0, hour; i < table.Rows.Count; i++)
+            {
+                try
+                {
+                    //TimeSpan dateDiff = ((DateTime)table.Rows[i][0]) - date;
+
+                    hour = ((DateTime)table.Rows[i][0]).Hour;
+                    if ((hour == 0) && (!(((DateTime)table.Rows[i][0]).Day == date.Day))/* && (!(dateTimezoneOffsetRDGExcel.Day == date.Day))*/)
+                        hour = 24;
+                    else
+                        ;
+
+                    if ((!(dateTimezoneOffsetRDGExcel.Day == ((DateTime)table.Rows[i][0]).Day)) && (hour > 0))
+                        m_arHaveDates[(int)type, hour - 1] = Convert.ToInt32(table.Rows[i][1]); //true;
+                    else
+                    {
+                        hour = hour == 0 ? 24 : hour;
+                        m_listTimezoneOffsetHaveDates[(int)type][hour - 1 - (24 + (-1 *
+                            //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                            HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                            ))] = true;
+                    }
+                }
+                catch { }
+            }
+
+            return 0;
+        }
+
+        protected override void GetAdminDatesRequest(DateTime date)
+        {
+            if (m_curDate.Date > date.Date)
+            {
+                date = m_curDate.Date;
+            }
+            else
+                ;
+
+            if (IsCanUseTECComponents == true)
+                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
+                Request(m_dictIdListeners[CurrentDevice.tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getAdminDatesQuery(date/*, m_typeFields*/, CurrentDevice as TECComponent));
+            else
+                throw new InvalidOperationException("AdminTransTG::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
+        }
+
+        protected override void getPPBRDatesRequest(DateTime date)
+        {
+            if (m_curDate.Date > date.Date)
+            {
+                date = m_curDate.Date;
+            }
+            else
+                ;
+
+            if (IsCanUseTECComponents == true)
+                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
+                Request(m_dictIdListeners[CurrentDevice.tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getPBRDatesQuery(date/*, m_typeFields*/, CurrentDevice as TECComponent));
+            else
+                throw new InvalidOperationException("AdminTransTG::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
+        }
+
+        //Из 'TEC.cs'
+        private string getAdminDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
+        {
+            string strRes = string.Empty;
+
+            //switch (mode)
+            //{
+            //    case AdminTS.TYPE_FIELDS.STATIC:
+            //        strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)mode] + " WHERE " +
+            //              @"DATE > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
+            //              @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+            //              @"' ORDER BY DATE ASC";
+            //        break;
+            //    case AdminTS.TYPE_FIELDS.DYNAMIC:
+            strRes = @"SELECT DATE, ID FROM " + FindTECComponent(CurrentKey).tec.m_strNameTableAdminValues/*[(int)mode]*/ + " WHERE" +
+                    @" ID_COMPONENT = " + comp.m_id +
+                  @" AND DATE > '" + dt.AddHours(-1 *
+                    //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                    HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                    ).ToString("yyyyMMdd HH:mm:ss") +
+                  @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+                  @"' ORDER BY DATE ASC";
+            //        break;
+            //    default:
+            //        break;
+            //}
+
+            return strRes;
+        }
+
+        //Из 'TEC.cs'
+        private string getPBRDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
+        {
+            string strRes = string.Empty;
+
+            //switch (mode)
+            //{
+            //    case AdminTS.TYPE_FIELDS.STATIC:
+            //        strRes = @"SELECT DATE_TIME, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] +
+            //                @" WHERE " +
+            //                @"DATE_TIME > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
+            //                @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+            //                @"' ORDER BY DATE_TIME ASC";
+            //        break;
+            //    case AdminTS.TYPE_FIELDS.DYNAMIC:
+            strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + FindTECComponent(CurrentKey).tec.m_strNameTableUsedPPBRvsPBR/*[(int)mode]*/ + @"]" +
+                    @" WHERE" +
+                    @" ID_COMPONENT = " + comp.m_id + "" +
+                    @" AND DATE_TIME > '" + dt.AddHours(-1 *
+                        //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                        HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                        ).ToString("yyyyMMdd HH:mm:ss") +
+                    @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+                    @"' ORDER BY DATE_TIME ASC";
+            //        break;
+            //    default:
+            //        break;
+            //}
+
+            return strRes;
+        }
+
+        /// <summary>
+        /// Подготовить список идентификаторов ГТП для формирования запроса на получение данных
+        ///  , ??? копия AdminTS_KomDisp
+        /// </summary>
+        /// <returns>Ключ 0-го оборудования из списка</returns>
+        public override FormChangeMode.KeyDevice PrepareActionRDGValues()
+        {
+            List<FormChangeMode.KeyDevice> listKey;
+
+            listKey = GetListKeyTECComponent(FormChangeMode.MODE_TECCOMPONENT.TG, true);
+
+            if (_listTECComponentKey == null)
+                _listTECComponentKey = new List<FormChangeMode.KeyDevice>();
+            else
+                ;
+
+            try
+            {
+                // проверить на наличие дубликатов
+                if (listKey.Count - listKey.Distinct().Count() == 0)
+                {
+                    _listTECComponentKey.Clear();
+                    listKey.ForEach((key) => {
+                        if (_listTECComponentKey.Contains(key) == false)
+                            _listTECComponentKey.Add(key);
+                        else
+                            Logging.Logg().Error(string.Format("trans_mc.AdminMC::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", key.ToString()), Logging.INDEX_MESSAGE.NOT_SET);
+                    });
+
+                    //TODO:
+                    // аварийно прекратить выполнение предыдущей операции сохранения ПБР-значений
+                }
+                else
+                    Logging.Logg().Error(string.Format("trans_mc.AdminMC::PrepareExportRDGValues () - в переданном списке <{0}> есть дубликаты...", string.Join(",", listKey.Select(key => key.ToString()).ToArray()))
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                Logging.Logg().Action($"trans_mc.AdminMC::PrepareExportRDGValues () - подготовлен список для опроса: <{string.Join(", ", _listTECComponentKey.ConvertAll<string>(key => key.Id.ToString()).ToArray())}>..."
+                    , Logging.INDEX_MESSAGE.NOT_SET);
+            }
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, string.Format("trans_mc.AdminMC::PrepareExportRDGValues () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            return base.PrepareActionRDGValues();
+        }
+
+    }
+}

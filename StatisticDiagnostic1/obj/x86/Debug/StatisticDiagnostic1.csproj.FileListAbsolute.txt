@@ -1,0 +1,17 @@
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\StatisticDiagnostic1.exe.config
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\StatisticDiagnostic1.exe
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\StatisticDiagnostic1.pdb
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\HClassLibrary.dll
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\StatisticCommon.dll
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\MySql.Data.dll
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\ZedGraph.dll
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\GemBox.Spreadsheet.dll
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\Microsoft.Office.Interop.Excel.dll
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\StatisticCommon.pdb
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\obj\x86\Debug\StatisticDiagnostic.FormMain.resources
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\obj\x86\Debug\StatisticDiagnostic1.Properties.Resources.resources
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\obj\x86\Debug\StatisticDiagnostic1.csproj.GenerateResource.Cache
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\obj\x86\Debug\StatisticDiagnostic1.exe
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\obj\x86\Debug\StatisticDiagnostic1.pdb
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\bin\Debug\stdole.dll
+D:\My Project's\C.Net\Statistic\StatisticDiagnostic1\obj\x86\Debug\StatisticDiagnostic1.csprojResolveAssemblyReference.cache

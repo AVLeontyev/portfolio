@@ -1,0 +1,210 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASUTP.Network</name>
+    </assembly>
+    <members>
+        <member name="M:ASUTP.Network.TcpClientAsync.#ctor(System.Net.IPAddress,System.Int32)">
+            <summary>
+            Конструктор по известному IP-адресу
+            </summary>
+            <param name="address">The IP Address of the server</param>
+            <param name="port">The port of the server</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.#ctor(System.Net.IPAddress[],System.Int32)">
+            <summary>
+            Construct a new client where multiple IP Addresses for
+            the same client are known.
+            </summary>
+            <param name="addresses">The array of known IP Addresses</param>
+            <param name="port">The port of the server</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.#ctor(System.String,System.Int32)">
+            <summary>
+            Конструктор по IP-адресу или сетевому имени компьютера
+            известному в домене.
+            </summary>
+            <param name="hostNameOrAddress">Сетевое имя или IP-адрес</param>
+            <param name="port">Номер порт для подключения к серверу</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.#ctor(System.Int32)">
+            <summary>
+            Защищенный конструктор для других конструкторов
+            общий для нескольких операций.
+            </summary>
+            <param name="port"></param>
+        </member>
+        <member name="P:ASUTP.Network.TcpClientAsync.m_Encoding">
+            <summary>
+            Объект, использующийся для кодировки/декодировки отправляемых/получаемых сообщений.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.Connect">
+            <summary>
+            Попытка соединения по какому-либо из заданных IP-адресов
+            </summary>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.Write(System.String)">
+            <summary>
+            Запись строки в поток с использованием кодировки по умолчанию.
+            </summary>
+            <param name="data">Строка для записи</param>
+            <returns>A WaitHandle может использоваться для определения
+            завершения операции записи.</returns>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.Write(System.Byte[])">
+            <summary>
+            Запись массива байтов в поток записи открытого соединения
+            </summary>
+            <param name="bytes">Массив для записи</param>
+            <returns>WaitHandle может использоваться для определения
+            завершения операции записи.</returns>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.WriteCallback(System.IAsyncResult)">
+             <summary>
+            Функция возврата для операции записи
+             </summary>
+             <param name="result">The AsyncResult object</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.ConnectCallback(System.IAsyncResult)">
+            <summary>
+            Функция возврата для операции соединения
+            </summary>
+            <param name="result">The AsyncResult object</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.ReadCallback(System.IAsyncResult)">
+            <summary>
+            Callback for Read operation
+            </summary>
+            <param name="result">The AsyncResult object</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpClientAsync.GetHostAddressesCallback(System.IAsyncResult)">
+            <summary>
+            Callback for Get Host Addresses operation
+            </summary>
+            <param name="result">The AsyncResult object</param>
+        </member>
+        <member name="F:ASUTP.Network.TCPServer.WAIT_TIME_MS">
+            <summary>
+            Милисекунды, ожидание завершения операции записи
+            </summary>
+        </member>
+        <member name="T:ASUTP.Network.TcpServerAsync">
+            <summary>
+            An Asynchronous TCP Server that makes use of system managed threads
+            and callbacks to stop the server ever locking up.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.#ctor(System.Net.IPAddress,System.Int32)">
+            <summary>
+            Constructor for a new server using an IPAddress and Port
+            </summary>
+            <param name="localaddr">The Local IP Address for the server.</param>
+            <param name="port">The port for the server.</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.#ctor(System.Net.IPEndPoint)">
+            <summary>
+            Constructor for a new server using an end point
+            </summary>
+            <param name="localEP">The local end point for the server.</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.#ctor">
+            <summary>
+            Private constructor for the common constructor operations.
+            </summary>
+        </member>
+        <member name="P:ASUTP.Network.TcpServerAsync.Encoding">
+            <summary>
+            The encoding to use when sending / receiving strings.
+            </summary>
+        </member>
+        <member name="P:ASUTP.Network.TcpServerAsync.TcpClients">
+            <summary>
+            An enumerable collection of all the currently connected tcp clients
+            </summary>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.Start">
+            <summary>
+            Starts the TCP Server listening for new clients.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.Stop">
+            <summary>
+            Stops the TCP Server listening for new clients and disconnects
+            any currently connected clients.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.Write(System.Net.Sockets.TcpClient,System.String)">
+            <summary>
+            Writes a string to a given TCP Client
+            </summary>
+            <param name="tcpClient">The client to write to</param>
+            <param name="data">The string to send.</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.Write(System.String)">
+            <summary>
+            Writes a string to all clients connected.
+            </summary>
+            <param name="data">The string to send.</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.Write(System.Byte[])">
+            <summary>
+            Writes a byte array to all clients connected.
+            </summary>
+            <param name="bytes">The bytes to send.</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.Write(System.Net.Sockets.TcpClient,System.Byte[])">
+            <summary>
+            Writes a byte array to a given TCP Client
+            </summary>
+            <param name="tcpClient">The client to write to</param>
+            <param name="bytes">The bytes to send</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.WriteCallback(System.IAsyncResult)">
+            <summary>
+            Callback for the write opertaion.
+            </summary>
+            <param name="result">The async result object</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.AcceptTcpClientCallback(System.IAsyncResult)">
+            <summary>
+            Callback for the accept tcp client opertaion.
+            </summary>
+            <param name="result">The async result object</param>
+        </member>
+        <member name="M:ASUTP.Network.TcpServerAsync.ReadCallback(System.IAsyncResult)">
+            <summary>
+            Callback for the read opertaion.
+            </summary>
+            <param name="result">The async result object</param>
+        </member>
+        <member name="T:ASUTP.Network.Client">
+            <summary>
+            Internal class to join the TCP client and buffer together
+            for easy management in the server
+            </summary>
+        </member>
+        <member name="M:ASUTP.Network.Client.#ctor(System.Net.Sockets.TcpClient,System.Byte[])">
+            <summary>
+            Constructor for a new Client
+            </summary>
+            <param name="tcpClient">The TCP client</param>
+            <param name="buffer">The byte array buffer</param>
+        </member>
+        <member name="P:ASUTP.Network.Client.TcpClient">
+            <summary>
+            Gets the TCP Client
+            </summary>
+        </member>
+        <member name="P:ASUTP.Network.Client.Buffer">
+            <summary>
+            Gets the Buffer.
+            </summary>
+        </member>
+        <member name="P:ASUTP.Network.Client.NetworkStream">
+            <summary>
+            Gets the network stream
+            </summary>
+        </member>
+    </members>
+</doc>

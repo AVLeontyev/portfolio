@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<configuration>
+  <configSections>
+    <section name="ServiceSettings" type="strans.ConfigSectionServiceSettings, strans" allowDefinition="Everywhere"/>
+    <section name="ModesTrans" type="strans.ConfigSectionModesTrans, strans"/>
+  </configSections>
+  <ServiceSettings>
+    <logging prefix="-services"/>
+    <settings tassembly="STrans.Service">
+      <add contract="StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" cassembly="StatisticTrans" type="STrans.Service.ModesTerminale.ServiceModesTerminale" tassembly="STrans.Service" nameendpoint="EndPointServiceTransModesTerminale"/>
+      <add contract="StatisticTrans.Contract.ModesCentre.IServiceModesCentre" cassembly="StatisticTrans" type="STrans.Service.ModesCentre.ServiceModesCentre" tassembly="STrans.Service" nameendpoint="EndPointServiceTransModesCentre"/>
+    </settings>
+  </ServiceSettings>
+  <ModesTrans>
+    <logging prefix="-modes-client"/>
+    <settings>
+      <season stamp="2014-10-21 03:00" action="-1"/>
+      <add nameendpoint="EndPointServiceTransModesTerminale">
+        <add key="iapp" value="TRANS_MODES_TERMINALE"/>
+        <add key="conn-sett" value="connsett_mt.ini"/>
+        <add key="SetPBRQuery LogPBRNumber" value="False"/>
+        <add key="SetPBRQuery LogQuery" value="True"/>
+        <add key="Main DataSource" value="671"/>
+        <add key="turn" value="true"/>
+        <add key="debug" value="False"/>
+        <add key="ModeMashine" value="SERVICE_PERIOD"/>
+        <add key="ОкноНазначение" value="Конвертер (Модес-Терминал)"/>
+        <add key="ID_TECNotUse" value="11"/>
+        <add key="ОпросСохранениеППБР" value="True,True"/>
+        <add key="ОпросСохранениеАдминЗнач" value="False,False"/>
+        <add key="ИгнорДатаВремя-ModesTerminale" value="False"/>
+        <add key="ИгнорДатаВремя-techsite" value="False"/>
+        <add key="OverDate" value="HH:mm:ss;01:02:03"/>
+      </add>
+      <add nameendpoint="EndPointServiceTransModesCentre">
+        <add key="iapp" value="TRANS_MODES_CENTRE"/>
+        <add key="conn-sett" value="connsett_mc.ini"/>
+        <add key="MCServiceHost" value="ne1843.ne.ru"/>
+        <add key="SetPBRQuery LogPBRNumber" value="False"/>
+        <add key="SetPBRQuery LogQuery" value="False"/>
+        <add key="Main DataSource" value="671"/>
+        <add key="turn" value="false"/>
+        <add key="debug" value="False"/>
+        <add key="ModeMashine" value="SERVICE_TO_DATE"/>
+        <add key="ОкноНазначение" value="Конвертер (Модес-Центр)"/>
+        <add key="ID_TECNotUse" value="6,11"/>
+        <add key="ОпросСохранениеППБР" value="True,True"/>
+        <add key="ОпросСохранениеАдминЗнач" value="False,False"/>
+        <add key="ИгнорДатаВремя-ModesCentre" value="False"/>
+        <add key="ИгнорДатаВремя-techsite" value="False"/>
+        <!---<add key="mode" value="service-on_event" />-->
+        <add key="JEventListener" value="{&quot;OnData53500Modified&quot;:false,&quot;OnMaket53500Changed&quot;:false,&quot;OnPlanDataChanged&quot;:true,&quot;OnModesEvent&quot;:false}"/>
+        <add key="OverDate" value="HH:mm:ss;01:02:03"/>
+        <add key="FetchWaking" value="HH:mm:ss;00:47:47"/>
+      </add>
+    </settings>
+  </ModesTrans>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5"/>
+  </startup>
+  <runtime>
+		<assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+			<dependentAssembly>
+				<assemblyIdentity name="System.Data.SqlServerCe" publicKeyToken="89845DCD8080CC91" culture="neutral"/>
+				<bindingRedirect oldVersion="0.0.0.0-3.5.1.0" newVersion="3.5.1.0"/>
+			</dependentAssembly>
+		</assemblyBinding>
+	</runtime>
+  <system.serviceModel>
+    <bindings>
+      <wsDualHttpBinding>
+        <binding name="bindingTransModesTerminale"/>
+        <binding name="bindingTransModesCentre"/>
+      </wsDualHttpBinding>
+    </bindings>
+    <behaviors>
+      <endpointBehaviors>
+        <behavior name="behaviorTransModesTerminale">
+          <callbackDebug includeExceptionDetailInFaults="true"/>
+          <callbackTimeouts/>
+        </behavior>
+        <behavior name="behaviorTransModesCentre">
+          <callbackDebug includeExceptionDetailInFaults="true"/>
+        </behavior>
+      </endpointBehaviors>
+    </behaviors>
+    <client>
+      <endpoint address="http://localhost:8736/STrans.Service/ServiceModesTerminale" behaviorConfiguration="behaviorTransModesTerminale" binding="wsDualHttpBinding" bindingConfiguration="bindingTransModesTerminale" contract="StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" name="EndPointServiceTransModesTerminale" kind="" endpointConfiguration=""/>
+      <endpoint address="http://localhost:8735/STrans.Service/ServiceModesCentre" behaviorConfiguration="behaviorTransModesCentre" binding="wsDualHttpBinding" bindingConfiguration="bindingTransModesCentre" contract="StatisticTrans.Contract.ModesCentre.IServiceModesCentre" name="EndPointServiceTransModesCentre"/>
+    </client>
+  </system.serviceModel>
+  <appSettings>
+    <add key="ОтладкаЖурналОС" value="false"/>
+  </appSettings>
+  </configuration>

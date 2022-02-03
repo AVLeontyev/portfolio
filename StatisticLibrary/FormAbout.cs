@@ -1,0 +1,43 @@
+using ASUTP.Helper;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+
+
+/*
+Автор проекта: Лукашевич А.А. 2012 г. - 
+Разработчики: Качайло Михаил 2012 - 2013 г.
+Ревякин Е.А. (БД) 2014 г. - 
+Хряпин А.Н. 2013 г. - 
+Апельганс А.В. 2016 г.
+Пастернак А.С. 2015 - 2016 г.
+*/
+
+namespace StatisticCommon
+{
+    public partial class FormAbout : Form
+    {
+        public FormAbout(Image pic)
+        {
+            InitializeComponent();
+
+            this.pictureBox1.Image = pic;
+
+            m_lblProductVersion.Text = ProgramBase.AppProductVersion; //Application.ProductVersion; //Properties.Resources.TradeMarkVersion;
+
+            m_lblDomainMashineUserName.Text = HUsers.UserDomainName;
+        }
+
+        private void llblMailTo_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("mailto:" + ((LinkLabel)sender).Text);
+            btnClose.Select();
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+    }
+}

@@ -1,0 +1,87 @@
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.csprojResolveAssemblyReference.cache
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.FormMain.resources
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.PanelSourceData.resources
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.Properties.Resources.resources
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.csproj.GenerateResource.Cache
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.exe.config
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.exe.manifest
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.application
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.exe
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Control.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Core.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Database.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Forms.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Helper.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Logging.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.PlugIn.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\StatisticCommon.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\GemBox.Spreadsheet.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.MSExcel.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ZedGraph.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\MySql.Data.dll
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\StatisticCommon.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Control.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Control.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Core.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Core.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Database.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Database.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Forms.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Forms.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Helper.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Helper.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Logging.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Logging.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.PlugIn.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.PlugIn.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\GemBox.Spreadsheet.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.MSExcel.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\ASUTP.MSExcel.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.TrustInfo.xml
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.exe.manifest
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.application
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.exe
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.pdb
+D:\My Project's\C.Net\Statistic\StatisticTimeSync\bin\Debug\Microsoft.Office.Interop.Excel.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.exe.config
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.exe.manifest
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.application
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.exe
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\StatisticTimeSync.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\StatisticCommon.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\GemBox.Spreadsheet.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.MSExcel.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\Microsoft.Office.Interop.Excel.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ZedGraph.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\MySql.Data.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\StatisticCommon.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Control.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Control.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Core.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Core.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Database.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Database.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Forms.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Forms.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Helper.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Helper.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Logging.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.Logging.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.PlugIn.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.PlugIn.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\GemBox.Spreadsheet.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.MSExcel.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\bin\Debug\ASUTP.MSExcel.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.csprojAssemblyReference.cache
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.FormMain.resources
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.PanelSourceData.resources
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.Properties.Resources.resources
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.csproj.GenerateResource.cache
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.csproj.CoreCompileInputs.cache
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.TrustInfo.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.exe.manifest
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.application
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.csproj.CopyComplete
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.exe
+C:\Users\Ngasta\Desktop\Statistic\StatisticTimeSync\obj\x86\Debug\StatisticTimeSync.pdb

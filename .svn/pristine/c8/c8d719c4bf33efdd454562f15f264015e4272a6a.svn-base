@@ -1,0 +1,50 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Dispatcher;
+using System.Text;
+
+namespace strans
+{
+    partial class Host
+    {
+        class HookChannelInitializer : IChannelInitializer
+        {
+            private enum REASON_DISCONNECT { UNKNOWN = -1,  NORMAL, FAULTED }
+
+            internal static int ConnectedClientCount = 0;
+
+            public void Initialize (IClientChannel channel)
+            {
+                //TODO:
+                ConnectedClientCount++;
+                debug (channel, "initialized", channel.RemoteAddress.Uri.ToString());
+                channel.Closed += delegate (object sender, EventArgs e) {
+                    disconnected (sender, REASON_DISCONNECT.NORMAL);
+                };
+                channel.Faulted += delegate (object sender, EventArgs e) {
+                    disconnected (sender, REASON_DISCONNECT.FAULTED);
+                };
+            }
+
+            static void disconnected (object sender, REASON_DISCONNECT reason)
+            {
+                //TODO:
+                debug ((IClientChannel)sender, "disconnected"
+                    , reason == REASON_DISCONNECT.NORMAL ? "closed"
+                        : reason == REASON_DISCONNECT.FAULTED ? "faulted"
+                            : "unknown");
+                ConnectedClientCount--;
+            }
+
+            static void debug (IClientChannel channel, params string [] sense_messages)
+            {
+                //TODO:
+                itssAUX.PrintDebugMessage (string.Format("client <{1}, {2}:{3}>", Environment.NewLine, DateTime.Now.ToString("HH:mm:ss.fff")
+                    , channel.SessionId, sense_messages [0], sense_messages [1]));
+                ConnectedClientCount--;
+            }
+        }
+    }
+}

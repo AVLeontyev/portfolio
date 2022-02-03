@@ -1,0 +1,182 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using StatisticCommon;
+using ASUTP.Core;
+
+namespace StatisticGrasp
+{
+    public partial class PanelGrasp : PanelStatistic
+    {
+        public enum MODE { Unknown, Server, Client }
+
+        private StatisticCommon.OICDAC.Admin _admin;
+
+        private List<TreeViewGrasp> _treeViewValues;
+
+        private static readonly Size _size = new Size(12, 12);
+
+        public enum ModeShowDevice { Unknown = -1, Compact = 1, Full }
+
+        public static string FormatValueFrequency { get; set; } = "##.0000";
+        public static string FormatValueAPower { get; set; } = "###.00";
+
+        public static string [] StatusText = { "NAN",  "норма", "предупр.", "ошибка" };
+        public static Color[] StatusColors = { Color.LightGray, Color.Green, Color.Yellow, Color.Red };
+
+        private int ColumnValuesCount
+        {
+            get
+            {
+                return _treeViewValues.Count;
+            }
+        }
+
+        private DelegateStringFunc errorReport
+            , warningReport
+            , actionReport;
+        private DelegateBoolFunc reportClear;
+
+        public PanelGrasp (IContainer container, List<StatisticCommon.TEC> tec, string alias, Color foreColor, Color backColor, StatisticCommon.OICDAC.DbInterface.MODE mode)
+            : this (tec, alias, foreColor, backColor, mode)
+        {
+            container.Add (this);
+        }
+
+        public PanelGrasp (List<StatisticCommon.TEC> tec, string alias, Color foreColor, Color backColor, StatisticCommon.OICDAC.DbInterface.MODE mode = StatisticCommon.OICDAC.DbInterface.MODE.Client | StatisticCommon.OICDAC.DbInterface.MODE.MSSQL)
+            : base (MODE_UPDATE_VALUES.ACTION, foreColor, backColor)
+        {
+            StatisticCommon.OICDAC.Admin.ModeWrite = StatisticCommon.OICDAC.Admin.MODE_WRITE.STYLE_2008 | StatisticCommon.OICDAC.Admin.MODE_WRITE.Current /*| StatisticCommon.OICDAC.Admin.MODE_WRITE.Archive*/;
+            _admin = new StatisticCommon.OICDAC.Admin (alias, mode);
+            _admin.InitTEC (tec);
+
+            _treeViewValues = new List<TreeViewGrasp> ();
+            InitializeComponent ();
+
+            initTreeViewValues (tec); // _admin.AllKeys
+        }
+
+        /// <summary>
+        /// Назначить делегаты по отображению сообщений в строке статуса
+        /// </summary>
+        /// <param name="ferr">Делегат для отображения в строке статуса ошибки</param>
+        /// <param name="fwar">Делегат для отображения в строке статуса предупреждения</param>
+        /// <param name="fact">Делегат для отображения в строке статуса описания действия</param>
+        /// <param name="fclr">Делегат для удаления из строки статуса сообщений</param>
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            errorReport = ferr;
+            warningReport = fwar;
+            actionReport = fact;
+            reportClear = fclr;
+
+            _admin.SetDelegateReport (ferr, fwar, fact, fclr);
+        }
+
+        private void newTreeViewValues ()
+        {
+            IEnumerable<Area> areas;
+            areas = (from t in _admin.m_list_tec select t.Area);
+
+            _treeViewValues.Add(new TreeViewGrasp (ForeColor
+                , new Color [] { BackColor == SystemColors.Control ? SystemColors.Window : BackColor, Color.Yellow, Color.Red }
+                , areas.GroupBy(a => a.m_id).Select(g => g.First()))
+            );
+        }
+
+        private void initTreeViewValues (IEnumerable<TEC> listTEC)
+        {
+            int iColumnValuesCount = ColumnValuesCount
+                , indxColumnValues = -1;
+
+            _admin.EventNewOIRequestResult += _treeViewValues [iColumnValuesCount - 1].OnUpdateValue;
+
+            Controls.Add (_treeViewValues [iColumnValuesCount - 1], (iColumnValuesCount - 1) * _size.Height / iColumnValuesCount, (iColumnValuesCount - 1) * _size.Height / iColumnValuesCount);
+            this.SetColumnSpan (_treeViewValues [iColumnValuesCount - 1], _size.Height / iColumnValuesCount);
+            this.SetRowSpan (_treeViewValues [iColumnValuesCount - 1], _size.Width / iColumnValuesCount);
+
+            //_dgvValues [iColumnValuesCount - 1].EventOverflowRows += dgvValues_EventOverflowRows;
+
+            listTEC.ToList ().ForEach (tec => {
+                if (_treeViewValues [iColumnValuesCount - 1].AddTec (tec) == false)
+                    return;
+                else
+                    ;
+            });
+
+            _treeViewValues[iColumnValuesCount - 1].ExpandAll ();
+
+            #region Проверка необходимости оформления новой колонки (нового представления)
+            //if (keys.Count () < _treeViewValues [iColumnValuesCount - 1].RowCount) {
+            //    // переразместить старые
+            //    this.SetColumnSpan (_treeViewValues [iColumnValuesCount - 1], _size.Height / (iColumnValuesCount + 1));
+            //    this.SetRowSpan (_treeViewValues [iColumnValuesCount - 1], _size.Width / (iColumnValuesCount + 1));
+
+            //    newDgvValues ();
+            //    initDgvValues (keys.Skip(_treeViewValues [iColumnValuesCount - 1].RowCount));
+            //} else
+            //    ;
+            #endregion
+        }
+
+        private void onEventFrequencyStatusChanged (string signal, SAlarm.Service.AdminAlarm.STATUS status)
+        {
+            DelegateStringFunc func = null;
+
+            switch (status) {
+                case SAlarm.Service.AdminAlarm.STATUS.ERROR:
+                    func = errorReport;
+                    break;
+                case SAlarm.Service.AdminAlarm.STATUS.WARNING:
+                    func = warningReport;
+                    break;
+                case SAlarm.Service.AdminAlarm.STATUS.NORMAL:
+                    func = actionReport;
+                    break;
+                case SAlarm.Service.AdminAlarm.STATUS.NAN:
+                    //TODO:
+                    break;
+            }
+
+            func?.Invoke ($"Для сигнала <{signal}> новый статус: <{status}>...");
+        }
+
+        public override bool Activate (bool active)
+        {
+            bool bRes = base.Activate (active);
+
+            ASUTP.Logging.Logg ().Debug($@"PanelGrasp::Activate (active={active}) - Result={bRes}...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+            if (bRes == true)
+                _admin.Activate (active);
+            else
+                ;
+
+            return bRes;
+        }
+
+        public override void Start ()
+        {
+            base.Start ();
+
+            _admin.Start ();
+        }
+
+        public override void Stop ()
+        {
+            _admin.Stop ();
+
+            base.Stop ();
+        }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            return;
+        }
+    }
+}

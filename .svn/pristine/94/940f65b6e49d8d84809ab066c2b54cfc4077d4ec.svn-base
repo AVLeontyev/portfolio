@@ -1,0 +1,265 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration.Install;
+using System.Diagnostics;
+using System.Linq;
+using System.ServiceProcess;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Assignment
+{
+    public abstract class Service : ServiceBase, ICreator
+    {
+        private IDeployment _host;
+
+        private static EventLog _serviceEventLog;
+        public static EventLog ServiceEventLog
+        {
+            get
+            {
+                return _serviceEventLog;
+            }
+
+            private set
+            {
+                _serviceEventLog = value;
+            }
+        }
+
+        public Service (MODE mode, string name, Type typeNameEndPoint)
+        {
+            this.ServiceName = name;
+            this.CanStop = true;
+            this.CanPauseAndContinue = false;
+            this.AutoLog = false;
+
+            ((ISupportInitialize)this.EventLog).BeginInit ();
+            if (EventLog.SourceExists (this.ServiceName) == false) {
+                EventLog.CreateEventSource (this.ServiceName, "Application");
+            } else
+                ;
+            ((ISupportInitialize)this.EventLog).EndInit ();
+
+            this.EventLog.Source = this.ServiceName;
+            this.EventLog.Log = "Application";
+
+            _serviceEventLog = this.EventLog;
+            _host = createHost(mode);
+
+            if (CmdArg.Default == true)
+            // старт средствами ОС (оснастка, в т.ч. в ~ от настраиваемых действий при сбоях)
+                ;
+            else if (mode.HasFlag (MODE.Start) == true)
+            // старт из командной строки
+                start (this.ServiceName);
+            else if (mode.HasFlag (MODE.Install) == true)
+            // зарегистрировать службу в ОС
+                install (this.ServiceName);
+            else if (mode.HasFlag (MODE.Remove) == true)
+            // отметить службу к удалению
+                remove (this.ServiceName);
+            else if (mode.HasFlag (MODE.Stop) == true)
+            // стоп из командной строки
+                stop (this.ServiceName);
+            else if (mode.HasFlag (MODE.Restart) == true) {
+            // стоп/старт из командной строки
+                // TODO: ???
+                stop(this.ServiceName);
+
+                start (this.ServiceName);
+            } else
+                itssAUX.PrintErrorMessage ($"Service::ctor () - неизвестный режим...");
+        }
+
+        protected override void Dispose (bool disposing)
+        {
+            _serviceEventLog = null;
+
+            base.Dispose (disposing);
+        }
+
+        protected override void OnSessionChange (SessionChangeDescription changeDescription)
+        {
+            base.OnSessionChange (changeDescription);
+        }
+
+        public ERROR Error
+        {
+            get;
+
+            private set;
+        }
+
+        private void start (string name)
+        {
+            foreach (ServiceController sc in ServiceController.GetServices ()) {
+                if (sc.ServiceName == name) {
+                    if ((sc.Status.Equals (ServiceControllerStatus.Stopped))
+                        || (sc.Status.Equals (ServiceControllerStatus.StopPending))) {
+                        try {
+                            sc.Start ();
+                            sc.WaitForStatus (ServiceControllerStatus.Running);
+                        } catch (Exception e) {
+                            itssAUX.PrintErrorMessage (e.Message + Environment.NewLine + e.StackTrace);
+                        }
+                    }
+                    return;
+                }
+            }
+            itssAUX.PrintErrorMessage ("Служба не установлена. Воспользуйтесь ключом -install");
+        }
+
+        private void stop (string name)
+        {
+            foreach (ServiceController sc in ServiceController.GetServices ()) {
+                if (sc.ServiceName == name) {
+                    if ((!sc.Status.Equals (ServiceControllerStatus.Stopped))
+                      && (!sc.Status.Equals (ServiceControllerStatus.StopPending))) {
+                        sc.Stop ();
+                        sc.WaitForStatus (ServiceControllerStatus.Stopped);
+                    }
+                    return;
+                }
+            }
+        }
+
+        public void Start (object obj = null)
+        {
+            try {
+                //itssAUX.PrintActionMessage ($"::Start () - ...");
+
+                _host.Start (obj);
+            } catch (Exception e) {
+                Error = ERROR.Host;
+
+                itssAUX.PrintErrorMessage ($"::Start: {e.Message}{Environment.NewLine}{e.StackTrace}");
+            }
+        }
+
+        protected override void OnStart (string []args)
+        {
+            //itssAUX.PrintActionMessage ("Started...");
+
+            base.OnStart (args);
+
+            ThreadPool.QueueUserWorkItem (new WaitCallback (Start));
+
+            itssAUX.PrintActionMessage ($"Служба (вер.{ASUTP.Helper.ProgramBase.AppProductVersion}) запущена.", true);
+        }
+
+        protected override void OnStop ()
+        {
+            try {
+                //itssAUX.PrintActionMessage ("Stoped...");
+
+                _host.Stop ();
+
+                base.OnStop ();
+
+                itssAUX.PrintActionMessage ("Служба остановлена.", true);
+            } catch (Exception e) {
+                Error = ERROR.Host;
+            }
+        }
+
+        protected override void OnPause ()
+        {
+            base.OnPause ();
+            try {
+                _host.Stop ();
+            } catch (Exception e) {
+                ASUTP.Logging.Logg ().Exception (e, "strans,Service::OnPause () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            }
+        }
+
+        protected override void OnContinue ()
+        {
+            base.OnContinue ();
+            try {
+                Start ();
+            } catch (Exception e) {
+                ASUTP.Logging.Logg().Exception (e, "strans,Service::OnContinue () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            }
+        }
+
+        protected override void OnShutdown ()
+        {
+        }
+
+        protected override void OnCustomCommand (int cmd)
+        {
+        }
+
+        private static void install (string name)
+        {
+            using (ServiceInstaller pi = new ServiceInstaller (name)) {
+                IDictionary savedState = new Hashtable ();
+                try {
+                    pi.Context = new InstallContext ();
+                    pi.Context.Parameters.Add ("assemblypath", Process.GetCurrentProcess ().MainModule.FileName);
+                    foreach (Installer i in pi.Installers)
+                        i.Context = pi.Context;
+                    pi.Install (savedState);
+                    pi.Commit (savedState);
+                } catch (Exception ex) {
+                    itssAUX.PrintErrorMessage (ex.Message);
+                    pi.Rollback (savedState);
+                }
+            }
+        }
+
+        private static void remove (string name)
+        {
+            using (ServiceInstaller pi = new ServiceInstaller (name)) {
+                try {
+                    pi.Context = new InstallContext ();
+                    pi.Context.Parameters.Add ("assemblypath", Process.GetCurrentProcess ().MainModule.FileName);
+                    foreach (Installer i in pi.Installers)
+                        i.Context = pi.Context;
+                    pi.Uninstall (null);
+                } catch (Exception ex) {
+                    itssAUX.PrintErrorMessage (ex.Message);
+                }
+            }
+        }
+
+        protected abstract IDeployment createHost (MODE mode);
+    }
+
+    [RunInstaller (true)]
+    public class ServiceInstaller : System.Configuration.Install.Installer
+    {
+        private System.ServiceProcess.ServiceProcessInstaller serviceProcessInstaller1;
+        private System.ServiceProcess.ServiceInstaller serviceInstaller1;
+
+        public ServiceInstaller (string sc_name, params string[]options)
+        {
+            serviceProcessInstaller1 = new System.ServiceProcess.ServiceProcessInstaller ();
+            serviceProcessInstaller1.Account = System.ServiceProcess.ServiceAccount.LocalService;
+            serviceProcessInstaller1.Password = null;
+            serviceProcessInstaller1.Username = null;
+
+            serviceInstaller1 = new System.ServiceProcess.ServiceInstaller ();
+            serviceInstaller1.ServiceName = sc_name;
+            serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Manual;
+            serviceInstaller1.Description = options.Length > 0 ? options[0] : sc_name;
+            serviceInstaller1.DisplayName = options.Length > 1 ? options [1] : sc_name;
+            //serviceInstaller1.ServicesDependedOn = new string [] { "winmgmt" };
+
+            this.Installers.AddRange (new System.Configuration.Install.Installer [] {
+                this.serviceProcessInstaller1,
+                this.serviceInstaller1});
+        }
+
+        //protected override void OnAfterInstall (System.Collections.IDictionary savedState)
+        //{
+        //    WindowsServiceHelper.ChangeInteractiveState (CommonData.GlobalServiceName, true);
+
+        //    base.OnAfterInstall (savedState);
+        //}
+    }
+}

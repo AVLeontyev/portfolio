@@ -1,0 +1,208 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Text;
+using STrans.Service.ModesCentre;
+using StatisticCommon;
+using StatisticTrans;
+using ASUTP;
+using StatisticTransModes;
+using ASUTP.Database;
+using StatisticTrans.Contract.ModesCentre;
+using StatisticTrans.Contract;
+using ASUTP.Core;
+using System.Threading.Tasks;
+using System.Reflection;
+using System.ComponentModel;
+using System.ServiceModel.Dispatcher;
+using StatisticCommon.Communication;
+using StatisticCommon.Contract;
+
+namespace STrans.Service
+{
+    static class ArrayHAdminExtensions
+    {
+        public static AdminRDG Item(this HAdmin[] target, StatisticTrans.CONN_SETT_TYPE index)
+        {
+            return target [(int)index] as AdminRDG;
+        }
+    }
+
+    public abstract class ServiceTrans : Service, StatisticTrans.Contract.IServiceTrans, IDisposable
+    {
+        public ServiceTrans ()
+            : base()
+        {
+        }
+
+        public int CountHoursOfDate (DateTime datetime)
+        {
+            return StatisticCommon.AdminRDG.CountHoursOfDate (datetime);
+        }
+
+        public void GetRDGValues (StatisticTrans.CONN_SETT_TYPE indx, FormChangeMode.KeyDevice key, DateTime date)
+        {
+            try {
+                _arrayAdmin.Item (CurrentIndex = indx).GetRDGValues (key, date);
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, "", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+        }
+
+        public StatisticCommon.AdminRDG.RDGStruct [] GetRDGValues (StatisticTrans.CONN_SETT_TYPE indx)
+        {
+            return _arrayAdmin.Item (indx).m_curRDGValues;
+        }
+
+        public void ClearRDGValues (StatisticTrans.CONN_SETT_TYPE indx, DateTime date)
+        {
+            ((AdminTS)_arrayAdmin.Item (indx)).ClearRDGValues (date);
+        }
+
+        /// <summary>
+        /// Создать объект для записи в БД ИС Статистика
+        /// </summary>
+        /// <param name="modeTECComponent">Режим списка компонентов ТЭЦ</param>
+        /// <param name="listID_TECNotUse">Список идентификаторов ТЭЦ, не использующихся при операциях сохранения</param>
+        /// <returns>Признак успеха окончания инициализации</returns>
+        protected override bool postInitialize (FormChangeMode.MODE_TECCOMPONENT modeTECComponent
+            , List<int> listID_TECNotUse)
+        {
+            ASUTP.Core.HMark markQueries = new ASUTP.Core.HMark (new int [] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR });
+
+            try {
+                _arrayAdmin [(int)StatisticTrans.CONN_SETT_TYPE.DEST] = new AdminTS_Modes (new bool [] { false, true });
+                _arrayAdmin [(int)StatisticTrans.CONN_SETT_TYPE.DEST].InitTEC (modeTECComponent, markQueries, new int [] { 0, (int)TECComponent.ID.LK }, HStatisticUsers.Area.m_id);
+                removeTEC (_arrayAdmin.Item (StatisticTrans.CONN_SETT_TYPE.DEST), listID_TECNotUse);
+            } catch (Exception e) {
+                Logging.Logg().Exception(e, $"ServiceTrans::postInitialize (ModeTECComponent=<{modeTECComponent}>) - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            return base.postInitialize (modeTECComponent, listID_TECNotUse);
+        }
+
+        public void SetIgnoreDate (StatisticTrans.CONN_SETT_TYPE indx, bool bIgnoreDate)
+        {
+            _arrayAdmin.Item (indx).m_ignore_date = bIgnoreDate;
+        }
+
+        public void SaveRDGValues (StatisticTrans.CONN_SETT_TYPE indx, StatisticTrans.Contract.PARAMToSaveRDGValues param)
+        {
+            ((AdminTS)_arrayAdmin.Item (CurrentIndex = indx)).SaveRDGValues (((PARAMToSaveRDGValues)param).key, ((PARAMToSaveRDGValues)param).date, ((PARAMToSaveRDGValues)param).bCallback);
+        }
+
+        public FormChangeMode.KeyDevice PrepareActionRDGValues (StatisticTrans.CONN_SETT_TYPE indx)
+        {
+            return _arrayAdmin.Item (indx).PrepareActionRDGValues ();
+        }
+
+        public void CopyRDGValues (StatisticTrans.CONN_SETT_TYPE indxSource, StatisticTrans.CONN_SETT_TYPE indxDest)
+        {
+            _arrayAdmin.Item (indxDest).getCurRDGValues (_arrayAdmin.Item (indxSource));
+        }
+
+        //public void SetCurrentRDGValues (StatisticTrans.CONN_SETT_TYPE indxDest, HAdmin.RDGStruct [] valuesSource)
+        //{
+        //    ((AdminModes)m_arAdmin [(int)indxDest]).setCurrentRDGValues (valuesSource);
+        //}
+
+        public void SetCurrentRDGValue (StatisticTrans.CONN_SETT_TYPE indxDest, int iHour, AdminRDG.RDGStruct valueSource)
+        {
+            _arrayAdmin.Item (indxDest).SetCurrentRDGValue (iHour, valueSource);
+        }
+
+        public void CopyCurToPrevRDGValues (StatisticTrans.CONN_SETT_TYPE indx)
+        {
+            _arrayAdmin.Item (indx).CopyCurToPrevRDGValues ();
+        }
+
+        //public string GetPBRNumber (StatisticTrans.CONN_SETT_TYPE indx, int iHour)
+        //{
+        //    return _arAdmin [(int)(CurrentIndex = indx)].m_curRDGValues [iHour].pbr_number;
+        //}
+
+        public void TECComponentComplete (StatisticTrans.CONN_SETT_TYPE indx, int iState, bool bResult)
+        {
+            _arrayAdmin.Item (CurrentIndex = indx).TECComponentComplete (iState, bResult);
+        }
+
+        public void SetCurrentDate (StatisticTrans.CONN_SETT_TYPE indx, DateTime date)
+        {
+            _arrayAdmin.Item (indx).m_curDate = date;
+        }
+
+        public FormChangeMode.KeyDevice GetFirstTECComponentKey (StatisticTrans.CONN_SETT_TYPE indx)
+        {
+            return _arrayAdmin.Item (indx).FirstTECComponentKey;
+        }
+
+        public FormChangeMode.KeyDevice GetCurrentKey (StatisticTrans.CONN_SETT_TYPE indx)
+        {
+            return _arrayAdmin.Item (indx).CurrentKey;
+        }
+
+        public bool GetAllowRequested (StatisticTrans.CONN_SETT_TYPE indx)
+        {
+            return GetCurrentDevice(indx).ListMCentreId.Count > 0;
+        }
+
+        public IDevice GetCurrentDevice (StatisticTrans.CONN_SETT_TYPE indx)
+        {
+            return _arrayAdmin.Item (indx).CurrentDevice;
+        }
+
+        public string GetFormatDatetime (StatisticTrans.CONN_SETT_TYPE indx, int iHour)
+        {
+            return _arrayAdmin.Item (indx).GetFmtDatetime (iHour);
+        }
+
+        public int GetSeasonHourOffset (StatisticTrans.CONN_SETT_TYPE indx, int iHour)
+        {
+            return _arrayAdmin.Item (indx).GetSeasonHourOffset (iHour);
+        }
+
+        public List<FormChangeMode.KeyDevice> GetListKeyTECComponent (StatisticTrans.CONN_SETT_TYPE indx, FormChangeMode.MODE_TECCOMPONENT mode, bool bLimitLK)
+        {
+            return _arrayAdmin.Item (indx).GetListKeyTECComponent (mode, bLimitLK);
+        }
+
+        public string GetNameTECComponent (StatisticTrans.CONN_SETT_TYPE indx, FormChangeMode.KeyDevice key, bool bWithNameTECOwner)
+        {
+            return ((AdminTS)_arrayAdmin.Item (indx)).GetNameTECComponent (key, bWithNameTECOwner);
+        }
+
+        public ConnectionSettings GetConnectionSettingsByKeyDeviceAndType (StatisticTrans.CONN_SETT_TYPE indx, FormChangeMode.KeyDevice key, StatisticCommon.CONN_SETT_TYPE type)
+        {
+            return _arrayAdmin.Item (indx).FindTECComponent (key)?.tec.connSetts [(int)type];
+        }
+
+        protected void removeTEC (AdminRDG admin, List<int> listID_TECNotUse)
+        {
+            foreach (int id in listID_TECNotUse) {
+                admin.RemoveTEC (id);
+            }
+        }
+
+        protected override void delegateSuccessResult (DateTime datetime, bool bSuccess)
+        {
+            IdPseudoDelegate id = IdPseudoDelegate.Ready;
+
+            base.delegateSuccessResult (datetime, bSuccess);
+
+            callbackRaise (new ServiceCallbackResultEventArgs (id
+                , datetime
+                , bSuccess
+                , bSuccess == true ? _arrayAdmin.Item (CurrentIndex)?.m_curRDGValues.ToList () : null
+            ));
+        }
+
+        //public void Closed ()
+        //{
+        //    IdPseudoDelegate id = IdPseudoDelegate.Closed;
+
+        //    callbackRaise (new ServiceCallbackResultEventArgs (id));
+        //}
+    }
+}

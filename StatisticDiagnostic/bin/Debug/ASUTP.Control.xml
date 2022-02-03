@@ -1,0 +1,888 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASUTP.Control</name>
+    </assembly>
+    <members>
+        <member name="T:ASUTP.Control.DropDownButton">
+            <summary>
+            Класс для граф./элемента - кнопка с возможностью инициирования нескольких действий
+            (по аналогии со списком)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DropDownButton.#ctor">
+            <summary>
+            Конструктор - основной (без аргументов)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DropDownButton.OnPaint(System.Windows.Forms.PaintEventArgs)">
+            <summary>
+            Обработчик события(переопределенный) - "прорисовка" объекта
+            </summary>
+            <param name="pevent">Аргумент события(контекст)</param>
+        </member>
+        <member name="M:ASUTP.Control.DropDownButton.OnMouseDown(System.Windows.Forms.MouseEventArgs)">
+            <summary>
+            Обработчик события - нажатие кнопки
+            </summary>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="T:ASUTP.Control.CalendarColumn">
+            <summary>
+            Тип объекта - календарь для размещения в один из столбцов 'DataGridView'
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.CalendarColumn.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.CalendarColumn.CellTemplate">
+            <summary>
+            Шаблон для ячейки в столбце-каледаре
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.CalendarCell">
+            <summary>
+            Класс для ячейки представления с внедренным календарем
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.CalendarCell.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.CalendarCell.InitializeEditingControl(System.Int32,System.Object,System.Windows.Forms.DataGridViewCellStyle)">
+            <summary>
+            Инициализация элемента интерфейса
+            </summary>
+            <param name="rowIndex">Номер/индекс строки</param>
+            <param name="initialFormattedValue">Объект правила для форматирования</param>
+            <param name="dataGridViewCellStyle">Стиль для оформления ячейки</param>
+        </member>
+        <member name="M:ASUTP.Control.CalendarCell.Paint(System.Drawing.Graphics,System.Drawing.Rectangle,System.Drawing.Rectangle,System.Int32,System.Windows.Forms.DataGridViewElementStates,System.Object,System.Object,System.String,System.Windows.Forms.DataGridViewCellStyle,System.Windows.Forms.DataGridViewAdvancedBorderStyle,System.Windows.Forms.DataGridViewPaintParts)">
+            <summary>
+            Обработчик события(переопределенный) - "прорисовка" объекта
+            </summary>
+            <param name="graphics">Контекст устройства для рисования</param>
+            <param name="clipBounds">Область для рисования</param>
+            <param name="cellBounds">Область для рисования</param>
+            <param name="rowIndex">Индекс строки</param>
+            <param name="cellState">Состояние ячейки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="formattedValue">Правила для форматирования ???текста</param>
+            <param name="errorText">Строка сообщения при ошибке ввода</param>
+            <param name="cellStyle">Стиль для отображения ячейки</param>
+            <param name="advancedBorderStyle">Дополнительные стили для отображения границ ячейки</param>
+            <param name="paintParts">Дополн. стили для отдельных частей элемента</param>
+        </member>
+        <member name="P:ASUTP.Control.CalendarCell.GetControl">
+            <summary>
+            ??? Свойство - объект "кнопка"
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.CalendarCell.EditType">
+            <summary>
+            Свойство(переопределенное) - тип объекта в ячейке представления
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.CalendarCell.ValueType">
+            <summary>
+            Свойство(переопределенное) - тип значения в ячейке представления
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.CalendarCell.DefaultNewRowValue">
+            <summary>
+            Свойство(переопределенное) - значение по умолчанию в ячейке представления
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.DataGridViewPasswordTextBoxCell">
+            <summary>
+            Ячейка представления "текстовое поле" с возможностью маскирования(скрытия) вводимой информации
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewPasswordTextBoxCell.#ctor">
+            <summary>
+            Конструктор - основной (без аргументов)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewPasswordTextBoxCell.Paint(System.Drawing.Graphics,System.Drawing.Rectangle,System.Drawing.Rectangle,System.Int32,System.Windows.Forms.DataGridViewElementStates,System.Object,System.Object,System.String,System.Windows.Forms.DataGridViewCellStyle,System.Windows.Forms.DataGridViewAdvancedBorderStyle,System.Windows.Forms.DataGridViewPaintParts)">
+            <summary>
+            Обработчик события(переопределенный) - "прорисовка" объекта
+            </summary>
+            <param name="graphics">Контекст устройства для рисования</param>
+            <param name="clipBounds">Область для рисования</param>
+            <param name="cellBounds">Область для рисования</param>
+            <param name="rowIndex">Индекс строки</param>
+            <param name="cellState">Состояние ячейки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="formattedValue">Правила для форматирования ???текста</param>
+            <param name="errorText">Строка сообщения при ошибке ввода</param>
+            <param name="cellStyle">Стиль для отображения ячейки</param>
+            <param name="advancedBorderStyle">Дополнительные стили для отображения границ ячейки</param>
+            <param name="paintParts">Дополн. стили для отдельных частей элемента</param>
+        </member>
+        <member name="P:ASUTP.Control.DataGridViewPasswordTextBoxCell.GetControl">
+            <summary>
+            ??? Свойство - объект ячейки
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.DataGridViewPasswordTextBoxCell.EditType">
+            <summary>
+            Свойство(переопределенное) - тип объекта в ячейке представления
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.DataGridViewPasswordTextBoxCell.ValueType">
+            <summary>
+            Свойство(переопределенное) - тип значения в ячейке представления
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.DataGridViewPasswordTextBoxCell.DefaultNewRowValue">
+            <summary>
+            Свойство(переопределенное) - значение по умолчанию в ячейке представления
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewPasswordTextBoxCell.SetValue">
+            <summary>
+            Установить значение, связанное с ячейкой
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.DataGridViewDisableButtonCell">
+            <summary>
+            Ячейка представления "кнопка" с возможностью включения/отключения
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.DataGridViewDisableButtonCell.Enabled">
+            <summary>
+            Признак вкл./выкл. элемент граф./интерфейса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewDisableButtonCell.Clone">
+            <summary>
+            Override the Clone method so that the Enabled property is copied.
+            </summary>
+            <returns>Копия объекта</returns>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewDisableButtonCell.#ctor">
+            <summary>
+            By default, enable the button cell.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewDisableButtonCell.Paint(System.Drawing.Graphics,System.Drawing.Rectangle,System.Drawing.Rectangle,System.Int32,System.Windows.Forms.DataGridViewElementStates,System.Object,System.Object,System.String,System.Windows.Forms.DataGridViewCellStyle,System.Windows.Forms.DataGridViewAdvancedBorderStyle,System.Windows.Forms.DataGridViewPaintParts)">
+            <summary>
+            Обработчик события(переопределенный) - "прорисовка" объекта
+            </summary>
+            <param name="graphics">Контекст устройства для рисования</param>
+            <param name="clipBounds">Область для рисования</param>
+            <param name="cellBounds">Область для рисования</param>
+            <param name="rowIndex">Индекс строки</param>
+            <param name="elementState">Состояние ячейки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="formattedValue">Правила для форматирования ???текста</param>
+            <param name="errorText">Строка сообщения при ошибке ввода</param>
+            <param name="cellStyle">Стиль для отображения ячейки</param>
+            <param name="advancedBorderStyle">Дополнительные стили для отображения границ ячейки</param>
+            <param name="paintParts">Дополн. стили для отдельных частей элемента</param>
+        </member>
+        <member name="T:ASUTP.Control.DataGridViewDisableButtonColumn">
+            <summary>
+            Столбец для представления с типом ячеек "кнопка", с возможностью включения/отключения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewDisableButtonColumn.#ctor">
+            <summary>
+            Конструктор - основной (без аргументов)
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.DataGridViewPressedButtonCell">
+            <summary>
+            Ячейка представления "кнопка" с возможностью фиксации состояния "нажата"
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.DataGridViewPressedButtonCell.pressedValue">
+            <summary>
+            Признак состояния нажата/не_нажата
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.DataGridViewPressedButtonCell.Pressed">
+            <summary>
+            Признак состояния нажата/не_нажата
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewPressedButtonCell.Clone">
+            <summary>
+            Override the Clone method so that the Enabled property is copied.
+            </summary>
+            <returns>Копия ячейки</returns>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewPressedButtonCell.#ctor">
+            <summary>
+            By default, not pressed the button cell
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewPressedButtonCell.Paint(System.Drawing.Graphics,System.Drawing.Rectangle,System.Drawing.Rectangle,System.Int32,System.Windows.Forms.DataGridViewElementStates,System.Object,System.Object,System.String,System.Windows.Forms.DataGridViewCellStyle,System.Windows.Forms.DataGridViewAdvancedBorderStyle,System.Windows.Forms.DataGridViewPaintParts)">
+            <summary>
+            Обработчик события(переопределенный) - "прорисовка" объекта
+            </summary>
+            <param name="graphics">Контекст устройства для рисования</param>
+            <param name="clipBounds">Область для рисования</param>
+            <param name="cellBounds">Область для рисования</param>
+            <param name="rowIndex">Индекс строки</param>
+            <param name="elementState">Состояние ячейки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="formattedValue">Правила для форматирования ???текста</param>
+            <param name="errorText">Строка сообщения при ошибке ввода</param>
+            <param name="cellStyle">Стиль для отображения ячейки</param>
+            <param name="advancedBorderStyle">Дополнительные стили для отображения границ ячейки</param>
+            <param name="paintParts">Дополн. стили для отдельных частей элемента</param>
+        </member>
+        <member name="F:ASUTP.Control.DataGridViewPressedButtonCell.delegatePressChanged">
+            <summary>
+            Делегат обработки события - изменение состояния
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.DataGridViewPressedButtonColumn">
+            <summary>
+            Столбец для представления с типом ячеек "кнопка", с возможностью фиксации состояния "нажата"
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.DataGridViewPressedButtonColumn.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.HLabel">
+            <summary>
+            Подпись, наследуется от 'Label'
+            </summary>
+            <summary>
+            Подпись, наследуется от 'Label'
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HLabel.components">
+            <summary>
+            Требуется переменная конструктора.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HLabel.Dispose(System.Boolean)">
+            <summary> 
+            Освободить все используемые ресурсы.
+            </summary>
+            <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        </member>
+        <member name="M:ASUTP.Control.HLabel.InitializeComponent">
+            <summary>
+            Обязательный метод для поддержки конструктора - не изменяйте
+            содержимое данного метода при помощи редактора кода.
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.HLabel.TYPE_HLABEL">
+            <summary>
+            Перечисление - типы элементов управления (подписей)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HLabel.TYPE_HLABEL.UNKNOWN">
+            <summary>
+            Не известный
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HLabel.m_type">
+            <summary>
+            Тип подписи (из перечисления 'TYPE_HLABEL')
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HLabel.#ctor(System.Drawing.Point,System.Drawing.Size,System.Drawing.Color,System.Drawing.Color,System.Single,System.Drawing.ContentAlignment)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="pt">Позиция для размещения</param>
+            <param name="sz">Размер подписи</param>
+            <param name="foreColor">Цвет шрифта текста</param>
+            <param name="backColor">Цвет фона</param>
+            <param name="szFont">Размер шрифта</param>
+            <param name="align">Признак для выравнивания текста</param>
+        </member>
+        <member name="M:ASUTP.Control.HLabel.#ctor(ASUTP.Control.HLabelStyles)">
+            <summary>
+            Конструктор - дополнительный (с аргументом)
+            </summary>
+            <param name="prop">Стиль подписи</param>
+        </member>
+        <member name="M:ASUTP.Control.HLabel.#ctor(System.ComponentModel.IContainer,System.Drawing.Point,System.Drawing.Size,System.Drawing.Color,System.Drawing.Color,System.Single,System.Drawing.ContentAlignment)">
+            <summary>
+            Конструктор - дополнительный (с аргументами)
+            </summary>
+            <param name="container">Родительский контейнер для подписи</param>
+            <param name="pt">Позиция для размещения</param>
+            <param name="sz">Размер подписи</param>
+            <param name="foreColor">Цвет шрифта текста</param>
+            <param name="backColor">Цвет фона</param>
+            <param name="szFont">Размер шрифта</param>
+            <param name="align">Признак для выравнивания текста</param>
+        </member>
+        <member name="M:ASUTP.Control.HLabel.#ctor(System.ComponentModel.IContainer,ASUTP.Control.HLabelStyles)">
+            <summary>
+            Конструктор - основной ()
+            </summary>
+            <param name="container">Контейнер родительский для элемента</param>
+            <param name="prop"></param>
+        </member>
+        <member name="M:ASUTP.Control.HLabel.createLabel(System.String,ASUTP.Control.HLabelStyles)">
+            <summary>
+            Создать объект "Подпись"
+            </summary>
+            <param name="name">Текст подписи</param>
+            <param name="prop">Стиль подриси</param>
+            <returns>Объект "Подпись"</returns>
+        </member>
+        <member name="M:ASUTP.Control.HLabel.FitFont(System.Drawing.Graphics,System.String,System.Drawing.SizeF,System.Drawing.SizeF,System.Single)">
+            <summary>
+            Подобрать размер шрифта для подписи в ~ от ее размеров
+            </summary>
+            <param name="g">Контекст для рисованяи</param>
+            <param name="text">Текст подписи</param>
+            <param name="szCtrl">Размер элемента управления (??? подписи)</param>
+            <param name="szMargin">Расстояние от границ элемента до текста</param>
+            <param name="fSzStep">Шаг при подборе</param>
+            <returns></returns>
+        </member>
+        <member name="T:ASUTP.Control.HLabelStyles">
+            <summary>
+            Стиль для подписи
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HLabelStyles.m_foreColor">
+            <summary>
+            Цвета для шрифта(текст), фона
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HLabelStyles.m_backColor">
+            <summary>
+            Цвета для шрифта(текст), фона
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HLabelStyles.m_align">
+            <summary>
+            Признак размещения(выравнивания текста) содержания подписи
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HLabelStyles.m_szFont">
+            <summary>
+            Размер шрифта
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HLabelStyles.m_pt">
+            <summary>
+            Точка/позиция для размещения
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HLabelStyles.m_sz">
+            <summary>
+            Размер элемента
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HLabelStyles.#ctor(System.Drawing.Color,System.Drawing.Color,System.Single,System.Drawing.ContentAlignment)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="foreColor">Цвет шрифта текста</param>
+            <param name="backColor">Цвет фона</param>
+            <param name="szFont">Размер шрифта</param>
+            <param name="align">Признак размещения(выравнивания текста) содержания подписи</param>
+        </member>
+        <member name="M:ASUTP.Control.HLabelStyles.#ctor(System.Drawing.Point,System.Drawing.Size,System.Drawing.Color,System.Drawing.Color,System.Single,System.Drawing.ContentAlignment)">
+            <summary>
+            Конструктор - дополнительный (с аргументами)
+            </summary>
+            <param name="pt">Точка/позиция для размещения</param>
+            <param name="sz">Размер элемента</param>
+            <param name="foreColor">Цвет шрифта текста</param>
+            <param name="backColor">Цвет фона</param>
+            <param name="szFont">Размер шрифта</param>
+            <param name="align">Признак размещения(выравнивания текста) содержания подписи</param>
+        </member>
+        <member name="T:ASUTP.Control.HPanelCommon">
+            <summary>
+            Класс панели с макетом размещения дочерних элементов управления
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HPanelCommon.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="iColumnCount">Количество столбцов</param>
+            <param name="iRowCount">Количество строк</param>
+        </member>
+        <member name="M:ASUTP.Control.HPanelCommon.#ctor(System.ComponentModel.IContainer,System.Int32,System.Int32)">
+            <summary>
+            Конструктор - дополнительный (с аргументами)
+            </summary>
+            <param name="container">Родительский контейнер для элемента интерфейса</param>
+            <param name="iColumnCount">Количество столбцов</param>
+            <param name="iRowCount">Количество строк</param>
+        </member>
+        <member name="F:ASUTP.Control.HPanelCommon.iActive">
+            <summary>
+            Признак активности панели
+             (-1 - исходное, 0 - старт, 1 - активная)
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.HPanelCommon.Actived">
+            <summary>
+            Признак активности панели
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.HPanelCommon.Started">
+            <summary>
+            Признак выполнения запуска (вызов метода 'Start')
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.HPanelCommon.IsFirstActivated">
+            <summary>
+            Признак 
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HPanelCommon.Start">
+            <summary>
+            Запустить на выполнение панель
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HPanelCommon.Stop">
+            <summary>
+            Остановить панель
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HPanelCommon.Activate(System.Boolean)">
+            <summary>
+            Активировать/деактивировать панель
+            </summary>
+            <param name="active">Признак активации/деактивации</param>
+            <returns>Признак изменения состояния элемента управления</returns>
+        </member>
+        <member name="M:ASUTP.Control.HPanelCommon.initializeLayoutStyle(System.Int32,System.Int32)">
+            <summary>
+            Инициализировать размеры/пропорции ячеек объекта
+            </summary>
+            <param name="cols">Количество столбцов в макете/сетке</param>
+            <param name="rows">Количество строк в макете/сетке</param>
+        </member>
+        <member name="M:ASUTP.Control.HPanelCommon.initializeLayoutStyleEvenly(System.Int32,System.Int32)">
+            <summary>
+            Инициализировать размеры/пропорции ячеек объекта
+             (равномерное распределение)
+            </summary>
+            <param name="cols">Количество столбцов в макете/сетке</param>
+            <param name="rows">Количество строк в макете/сетке</param>
+        </member>
+        <member name="P:ASUTP.Control.HPanelCommon.IndexLastRowControl">
+            <summary>
+            Индекс строки в [0]-ой ячейке которой не размещен ни один из элементов управления
+             (для размещения очередного элемента управления)
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.HPanelCommon.OptionFindControl">
+            <summary>
+            Опции при поиске
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HPanelCommon.OptionFindControl.Name">
+            <summary>
+            Поиск осуществляется в поле 'Name' элемента управления
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HPanelCommon.OptionFindControl.Tag">
+            <summary>
+            Поиск осуществляется в поле 'Tag' элемента управления
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HPanelCommon.findControl(System.String,ASUTP.Control.HPanelCommon.OptionFindControl,System.Boolean)">
+            <summary>
+            Найти элемент управления на панели идентификатору
+            </summary>
+            <param name="id">Идентификатор-строка элемента управления</param>
+            <param name="opt">Опция при поиске: в каком поле искать идентификатор</param>
+            <param name="bSearchAllChildren">True - если требуется найти все дочерние элементы</param>
+            <returns>Элемент управления на панели, если не найден null</returns>
+        </member>
+        <member name="T:ASUTP.Control.HTabCtrlEx">
+            <summary>
+            Класс для элемента управления "Контейнер для вкладок"
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx.ALLOW_DROP">
+            <summary>
+            Признак разрешения изменения порядка следования вкладок
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.HTabCtrlEx.TYPE_TAB">
+            <summary>
+            Перечисление - типы вкладок (фиксированные, плавающие)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED">
+            <summary>
+            Фиксированная
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.HTabCtrlEx.PropertyTab">
+            <summary>
+            Структура для хранения свойств вкладки
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.PropertyTab.#ctor(System.Int32,ASUTP.Control.HTabCtrlEx.TYPE_TAB)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="id">Идентификатор вкладки</param>
+            <param name="type">Тип вкладки из перечисления 'TYPE_TAB'</param>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx.PropertyTab.id">
+            <summary>
+            Идентификатор вкладки
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx.PropertyTab.type">
+            <summary>
+            Тип вкладки
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx.m_listPropTabs">
+            <summary>
+            Список объектов со свойствами вкладок
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx._propTabLastRemoved">
+            <summary>
+            Свойства крайней закрытой вкладки
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx.s_rectPositionImg">
+            <summary>
+            Параметры для позиционирования пиктогамм на заголовке вкладки
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.HTabCtrlEx.INDEX_BITMAP">
+            <summary>
+            Перечисление - индексы пиктограмм, размещаемых на заголовкее вкладки
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.HTabCtrlEx.INDEX_STATE_BITMAP">
+            <summary>
+            Перечисление - индексы возможных состояний пиктограмм
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx.m_arBitmap">
+            <summary>
+            Массив пиктограмм для отображения на заголовке вкладки
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.HTabCtrlEx.DelegateHTabCtrlEx">
+            <summary>
+            Тип делегата для событий/обработки
+            </summary>
+            <param name="sender">Объект, инициировавший событие</param>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="E:ASUTP.Control.HTabCtrlEx.EventHTabCtrlExClose">
+            <summary>
+            Событие - закрыть вкладку
+            </summary>
+        </member>
+        <member name="E:ASUTP.Control.HTabCtrlEx.EventHTabCtrlExFloat">
+            <summary>
+            Событие - Отделить вкладку от главного окна
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.HTabCtrlEx.PrevSelectedIndex">
+            <summary>
+            Индекс вкладки, бывшей активной, перед текущей активной вкладкой
+            </summary>
+        </member>
+        <member name="E:ASUTP.Control.HTabCtrlEx.EventPrevSelectedIndexChanged">
+            <summary>
+            Событие - изменение индекса предыдущей активной вкладки
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.#ctor(System.ComponentModel.IContainer)">
+            <summary>
+            Конструктор - дополню (с параметрами)
+            </summary>
+            <param name="container">Родительский для элемента контейнер</param>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.getBitmap(ASUTP.Control.HTabCtrlEx.INDEX_BITMAP,ASUTP.Control.HTabCtrlEx.INDEX_STATE_BITMAP)">
+            <summary>
+            Возвратить пиктограмму для отображения по ее типу и состоянию
+            </summary>
+            <param name="indx">Тип пиктограммы</param>
+            <param name="state">Состояние пиктограммы</param>
+            <returns>Пиктограмма для отображения</returns>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.OnDrawItem(System.Windows.Forms.DrawItemEventArgs)">
+            <summary><span class="code-SummaryComment">override to draw</span>
+            <span class="code-SummaryComment"> the close button</span></summary>
+            <span class="code-SummaryComment"><param name="e">Аргумент события</param></span>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.GetContentFromResource(System.String)">
+            <summary><span class="code-SummaryComment">Get the stream of the</span>
+            <span class="code-SummaryComment"> embedded bitmap image</span></summary>
+            <span class="code-SummaryComment"><param name="filename"></param></span>
+            <span class="code-SummaryComment"><returns>Поток внедренного ресурса</returns></span>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.OnMouseMove(System.Windows.Forms.MouseEventArgs)">
+            <summary>
+            Обработчик события - движение курсора "мыши"
+            </summary>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.OnMouseDown(System.Windows.Forms.MouseEventArgs)">
+            <summary>
+            Обработчик события - нажатие кнопки "мыши"
+            </summary>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.AddTabPage(System.Windows.Forms.Control,System.String,System.Int32,ASUTP.Control.HTabCtrlEx.TYPE_TAB)">
+            <summary>
+            Добавить вкладку
+            </summary>
+            <param name="tab">Объект вкладки</param>
+            <param name="name">Наименование(заголовок) вкладки</param>
+            <param name="id">Идентификатор вкладки</param>
+            <param name="typeTab">Тип вкладки</param>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.RemoveTabPage">
+            <summary>
+            Удалить активную вкладку
+            </summary>
+            <returns>Признак выполнения операции удаления вкладки</returns>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.RemoveTabPage(System.Int32)">
+            <summary>
+            Удалить вкладку по индексу
+            </summary>
+            <param name="indx">Индекс вкладки</param>
+            <returns>Признак выполнения операции удаления вкладки</returns>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.getNameTab(System.String,ASUTP.Control.HTabCtrlEx.TYPE_TAB)">
+            <summary>
+            Возвратить строку для заголовка вкладки с учетом размещения пиктограмм
+            </summary>
+            <param name="text">Тест для заголовка</param>
+            <param name="type">Тип вкладки (количество размещаемых пиктограмм)</param>
+            <returns>Строка заголовка вкладки</returns>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.IndexOfID(System.Int32)">
+            <summary>
+            Возвратить индекс вкладки по ее идентификатору
+            </summary>
+            <param name="id">Идентификатор вкладки</param>
+            <returns>Индекс вкладки</returns>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.GetTabPageId">
+            <summary>
+            Возвратить идентификатор текущей вкладки
+            </summary>
+            <returns>Идентификатор текущей вкладки</returns>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.GetTabPageId(System.Int32)">
+            <summary>
+            Возвратить идентификатор вкладки по индексу
+            </summary>
+            <param name="indx">Индекс вкладки</param>
+            <returns>Идентификатор вкладки</returns>
+        </member>
+        <member name="P:ASUTP.Control.HTabCtrlEx.VisibleIDs">
+            <summary>
+            Возвратить строку-перечисление с идентификаторами отображаемых вкладок через разделитель ','
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx._draggedTab">
+            <summary>
+            Объект, перемещаемой вкладки
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.OnMouseUp(System.Windows.Forms.MouseEventArgs)">
+            <summary>
+            Обработчик события - освобождение ранее нажатой кнопки "мыши"
+            </summary>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.OnDragOver(System.Windows.Forms.DragEventArgs)">
+            <summary>
+            Обработчик события - перемещение вкладки
+            </summary>
+            <param name="drgEvent">Аргумент события</param>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.getPointedTab">
+            <summary>
+            Возвратить вкладку по текущей позиции курсора указателя
+            </summary>
+            <returns>Объект-вкладка</returns>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.swapTabPages(System.Windows.Forms.TabPage,System.Windows.Forms.TabPage)">
+            <summary>
+            Поменять местами индексы, объекты на вкладках
+            </summary>
+            <param name="src">Вкладка-источник</param>
+            <param name="dst">Вкладка-назначение</param>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx.components">
+            <summary>
+            Требуется переменная конструктора.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.Dispose(System.Boolean)">
+            <summary> 
+            Освободить все используемые ресурсы.
+            </summary>
+            <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.InitializeComponent">
+            <summary>
+            Обязательный метод для поддержки конструктора - не изменяйте
+            содержимое данного метода при помощи редактора кода.
+            </summary>
+        </member>
+        <member name="F:ASUTP.Control.HTabCtrlEx.HTabPageEx.components">
+            <summary>
+            Требуется переменная конструктора.
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.HTabPageEx.Dispose(System.Boolean)">
+            <summary> 
+            Освободить все используемые ресурсы.
+            </summary>
+            <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlEx.HTabPageEx.InitializeComponent">
+            <summary>
+            Обязательный метод для поддержки конструктора - не изменяйте
+            содержимое данного метода при помощи редактора кода.
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.HTabCtrlExEventArgs">
+            <summary>
+            Класс для хранения значения аргумента специального события
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.HTabCtrlExEventArgs.#ctor(System.Int32,System.Int32,System.String)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="nId"></param>
+            <param name="nTabIndex"></param>
+            <param name="text"></param>
+        </member>
+        <member name="P:ASUTP.Control.HTabCtrlExEventArgs.TabIndex">
+            <summary>
+            Get/Set the tab index value where the close button is clicked
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.HTabCtrlExEventArgs.TabHeaderText">
+            <summary>
+            Get/Set the tab index value where the close button is clicked
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.HTabCtrlExEventArgs.TabType">
+            <summary>
+            Тип вкладки
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.HTabCtrlExEventArgs.Id">
+            <summary>
+            Идентификатор вкладки
+            </summary>
+        </member>
+        <member name="T:ASUTP.Control.PanelCommonDataHost">
+            <summary>
+            Класс панели-клиента для отправки_запросов/получения_значений от 
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.PanelCommonDataHost.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Конструктор - основной (с параметрами по умолчанию)
+            </summary>
+            <param name="iColumnCount">Количество столбцов в макете панели</param>
+            <param name="iRowCount">Количество строк в макете панели</param>
+        </member>
+        <member name="M:ASUTP.Control.PanelCommonDataHost.#ctor(System.ComponentModel.IContainer,System.Int32,System.Int32)">
+            <summary>
+            Конструктор - допоплнительный (с параметрами по умолчанию)
+            </summary>
+            <param name="container">Контэйнер для панели</param>
+            <param name="iColumnCount">Количество столбцов в макете панели</param>
+            <param name="iRowCount">Количество строк в макете панели</param>
+        </member>
+        <member name="E:ASUTP.Control.PanelCommonDataHost.EvtDataAskedHost">
+            <summary>
+            Событие для запроса значений из объекта сервера
+            </summary>
+        </member>
+        <member name="M:ASUTP.Control.PanelCommonDataHost.DataAskedHost(System.Object)">
+            <summary>
+            Отправить запрос главной форме
+            </summary>
+            <param name="par">Набор параметров</param>
+        </member>
+        <member name="M:ASUTP.Control.PanelCommonDataHost.OnEvtDataRecievedHost(System.Object)">
+            <summary>
+            Обработчик события ответа от главной формы
+            </summary>
+            <param name="res">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        </member>
+        <member name="M:ASUTP.Control.PanelCommonDataHost.dataRecievedHost(System.Object)">
+            <summary>
+            Метод обратного вызова при окончании обработки события 'EvtDataAskedHost'
+            </summary>
+            <param name="res">Результат выполнения асинхронной операции обработки события</param>
+        </member>
+        <member name="M:ASUTP.Control.PanelCommonDataHost.initializeLayoutStyle(System.Int32,System.Int32)">
+            <summary>
+            Инициализировать макет для размещения дочерних элементов
+            , определить парметры "решетки"
+            </summary>
+            <param name="cols">Количество столбцов</param>
+            <param name="rows">Количество строк</param>
+        </member>
+        <member name="T:ASUTP.Control.Properties.Resources">
+            <summary>
+              Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.Properties.Resources.ResourceManager">
+            <summary>
+              Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.Properties.Resources.Culture">
+            <summary>
+              Перезаписывает свойство CurrentUICulture текущего потока для всех
+              обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.Properties.Resources.closeInActive">
+            <summary>
+              Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.Properties.Resources.closeNonActive">
+            <summary>
+              Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.Properties.Resources.floatInActive">
+            <summary>
+              Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+            </summary>
+        </member>
+        <member name="P:ASUTP.Control.Properties.Resources.floatNonActive">
+            <summary>
+              Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+            </summary>
+        </member>
+    </members>
+</doc>

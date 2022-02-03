@@ -1,0 +1,452 @@
+﻿using ASUTP;
+using StatisticCommon;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.Text;
+using System.Threading.Tasks;
+using StatisticCommon.Contract;
+using StatisticCommon.Communication;
+using Assignment;
+
+namespace Assignment
+{
+    public partial class Client
+    {
+        public interface IWorker<T>
+        {
+            void Start ();
+
+            void Stop ();
+
+            bool Initialize (IInitializeArgument arg);
+
+            T NameEndPoint { get; }
+
+            event Action<T> Interrupt
+                , Leave;
+        }
+
+        public interface IInitializeArgument
+        {
+            ASUTP.Database.ConnectionSettings m_ConnSett { get; set; }
+
+            int m_iMainSourceData { get; set; }
+
+            TimeSpan m_tsOverDate { get; set; }
+
+            TimeSpan m_tsFetchWaking { get; set; }
+
+            FormChangeMode.MODE_TECCOMPONENT m_ModeTECComponent { get; set; }
+
+            List<int> m_listID_TECNotUse { get; set; }
+        }
+
+        public class InitializeArgument : IInitializeArgument
+        {
+            public ASUTP.Database.ConnectionSettings m_ConnSett { get; set; }
+
+            public int m_iMainSourceData { get; set; }
+
+            public TimeSpan m_tsOverDate { get; set; }
+
+            public TimeSpan m_tsFetchWaking { get; set; }
+
+            public FormChangeMode.MODE_TECCOMPONENT m_ModeTECComponent { get; set; }
+
+            public List<int> m_listID_TECNotUse { get; set; }
+        }
+
+        /// <summary>
+        /// Класс для реализации работы клиента по вызовам методов объекта развернутого сервиса
+        /// </summary>
+        public abstract class Worker<T> : IWorker<T>, IDisposable
+        {
+            public struct NeedMessageDebugLogging
+            {
+                public IdPseudoDelegate Id;
+
+                public bool IsConsole;
+
+                public bool IsLogging;
+            }
+
+            private static readonly IList<NeedMessageDebugLogging> _listNeedMessageDebugLoggingDefault = new List<NeedMessageDebugLogging> () {
+                new NeedMessageDebugLogging() { Id = IdPseudoDelegate.Error, IsConsole = true, IsLogging = true }
+                , new NeedMessageDebugLogging() { Id = IdPseudoDelegate.Started, IsConsole = true, IsLogging = true }
+                , new NeedMessageDebugLogging() { Id = IdPseudoDelegate.Stopped, IsConsole = true, IsLogging = true }
+                , new NeedMessageDebugLogging() { Id = IdPseudoDelegate.Ready, IsConsole = true, IsLogging = true }
+                , new NeedMessageDebugLogging() { Id = IdPseudoDelegate.SaveCompleted, IsConsole = true, IsLogging = true }
+            };
+
+            private IList<NeedMessageDebugLogging> _listNeedMessageDebugLogging;
+
+            public T NameEndPoint { get; private set; }
+
+            protected IService __client;
+
+            private bool __interrupt;
+            protected bool _interrupt
+            {
+                get
+                {
+                    return __interrupt;
+                }
+
+                set
+                {
+                    __interrupt = value;
+
+                    if (value == true) {
+                        itssAUX.PrintErrorMessage ("аварийное завершение соединения...");
+
+                        Interrupt?.Invoke (NameEndPoint);
+                    } else
+                        ;
+                }
+            }
+
+            private TimeSpan _tsDueClient;
+
+            protected DateTime _datetimePicker;
+
+            private System.Threading.Timer _timerClient;
+
+            public event Action<T> Interrupt
+                , Leave;
+
+            public Worker (T nameEndPoint, Type contractType, Type serviceType, IEnumerable<NeedMessageDebugLogging> listNeedMessageDebugLogging = default(List<NeedMessageDebugLogging>))
+            {
+                NameEndPoint = nameEndPoint;
+
+                _tsDueClient = TimeSpan.FromMilliseconds (StatisticCommon.Constants.TIMER_SERVICE_MIN_INTERVAL);
+                _datetimePicker = DateTime.Now.Date;
+                __client = (IService)createClient();
+
+                _listNeedMessageDebugLogging = (listNeedMessageDebugLogging == default (List<NeedMessageDebugLogging>))
+                    ? _listNeedMessageDebugLoggingDefault
+                        : listNeedMessageDebugLogging.Concat(_listNeedMessageDebugLoggingDefault).ToList();
+            }
+
+            public virtual bool Initialize (IInitializeArgument arg)
+            {
+                return true;
+            }
+
+            protected abstract IService createClient ();
+
+            public virtual void Start ()
+            {
+                try {
+                    Task.Factory.StartNew (() => __client.Start ()).Wait ();
+                } catch (Exception e) {
+                    throw new Exception ("Worker::Start () - ...", e);
+                } finally {
+                }
+            }
+
+            public virtual void Stop ()
+            {
+                timerClientActivate (false);
+
+                try {
+                    // нельзя в одном методе выполнить 'OneWay=true' и 'OneWay=false'
+                    Task.Factory.StartNew (() => {
+                        __client.Stop ();
+                    })
+                    .Wait ()
+                        ;
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, "Assignment.Client.Worker::Stop () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    __client = null;
+                }
+            }
+
+            /// <summary>
+            /// Инициализация таймера для выполнения регулярных/периодических опросов
+            ///  , аналог 'FormMainTrans::InitializeTimerService'
+            /// </summary>
+            protected void initializeTimerClient ()
+            {
+                if (Equals(_timerClient, null) == true) {
+                    _timerClient =
+                        //new System.Windows.Forms.Timer ()
+                        new System.Threading.Timer(this.timerClient_Tick)
+                        ;
+                    _timerClient.Change (System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    //TODO: как определить 1-ый запуск
+                    //timerService.Interval = ProgramBase.TIMER_START_INTERVAL; //Первый запуск
+                    //timerService.Tick += new System.EventHandler (this.timerService_Tick);
+                } else
+                    ;
+            }
+
+            protected void timerClientActivate (bool bActivated)
+            {
+                _timerClient?.Change (bActivated == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            }
+
+            protected void timerClientActivate ()
+            {
+                _timerClient?.Change ((int)_tsDueClient.TotalMilliseconds, System.Threading.Timeout.Infinite);
+            }
+
+            protected virtual void timerClient_Tick (object obj)
+            {
+                int due = System.Threading.Timeout.Infinite;
+
+                try {
+                    //TODO: как определить 1-ый запуск
+
+                    trans_auto_start ();
+
+                    // отключить таймер. включить по завершению крайнего опроса
+                    _timerClient.Change (due, System.Threading.Timeout.Infinite);
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    _interrupt = true;
+                } finally {
+                }
+            }
+
+            protected virtual void trans_auto_start ()
+            {
+                trans_auto_next ();
+            }
+
+            protected virtual void trans_auto_next ()
+            {
+                if (__client.IsServiceOnEvent == false)
+                    Leave?.Invoke (NameEndPoint);
+                else
+                    ;
+            }
+
+            protected abstract void trans_auto_stop ();
+
+            protected virtual void _callback_EventRaise (ServiceCallbackResultEventArgs arg1)
+            {
+                DateTime date;
+                bool bResult = false;
+                AdminRDG.RDGStruct [] values;
+
+                Action<ServiceCallbackResultEventArgs> eventRaise = delegate (ServiceCallbackResultEventArgs arg2) {
+                    string msg = string.Empty;
+                    NeedMessageDebugLogging need;
+
+                    msg = $"::_callback_EventRaise () - NameEndPoint:{NameEndPoint}, Id:<{arg1.Id}>...";
+                    need = getNeedMessageDebugLogging (arg1.Id);
+
+                    switch (arg2.Id) {
+                        case IdPseudoDelegate.Started:
+                            delegateStartCompleted ();
+                            break;
+                        case IdPseudoDelegate.Stopped:
+                            delegateStopCompleted ();
+                            break;
+                        //case IdPseudoDelegate.Closed:
+                        //    delegateCloseCompleted ();
+                        //    break;
+                        case IdPseudoDelegate.WaitStart:
+                            delegateStartWait ();
+                            break;
+                        case IdPseudoDelegate.WaitStop:
+                            delegateStopWait ();
+                            break;
+                        case IdPseudoDelegate.WaitStatus:
+                            break;
+                        case IdPseudoDelegate.ReportError:
+                            ErrorReport ((string)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.ReportWarning:
+                            WarningReport ((string)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.ReportAction:
+                            ActionReport ((string)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.ClearReport:
+                            ReportClear ((bool)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.SetForceDate:
+                            setDatetimePicker ((DateTime)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.Ready:
+                            // возможна передача 'int' - индекса обработанного состояния
+                            if (typeof(bool).IsAssignableFrom(arg2.Data.GetType()) == true)
+                            // если 'bool' - считаем, что выполнено успешно: возвращены дата и список значений
+                                setDataGridViewAdmin (arg2.Stamp, (bool)arg2.Data, arg2.Values);
+                            else if (typeof(int).IsAssignableFrom(arg2.Data.GetType()) == true)
+                            //??? если 'int' - считаем, что выполнено успешно: ? что возвращается
+                                setDataGridViewAdmin (arg2.Stamp, true, arg2.Values);
+                            else
+                                ;
+                            break;
+                        case IdPseudoDelegate.Error:
+                            errorDataGridViewAdmin ((int)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.SaveCompleted:
+                            saveDataGridViewAdminComplete ((int)arg2.Data);
+                            break;
+                        default:
+                            ErrorReport ("неизвестный ответ от службы");
+                            break;
+                    }
+
+                    switch (arg1.Id) {
+                        case IdPseudoDelegate.ReportError:
+                        case IdPseudoDelegate.ReportWarning:
+                        case IdPseudoDelegate.ReportAction:
+                        case IdPseudoDelegate.ClearReport:
+                        case IdPseudoDelegate.Error:
+                        case IdPseudoDelegate.Ready:
+                        case IdPseudoDelegate.SaveCompleted:
+                        // ничего не делать, т.к. ф-я уже вызвана
+                            break;
+                        case IdPseudoDelegate.Started:
+                        case IdPseudoDelegate.Stopped:
+                        case IdPseudoDelegate.Request:
+                            debug (need, msg);
+                            break;
+                        default:
+                            debug (need, msg);
+                            break;
+                    }
+                };
+
+                Task.Factory.StartNew (() => eventRaise(arg1));
+            }
+
+            #region Возвращение результата длительно выполняющихся операций
+            protected abstract void setDataGridViewAdmin (DateTime date, bool bResult, IEnumerable<AdminRDG.RDGStruct> values);
+
+            protected abstract void errorDataGridViewAdmin (int iState);
+
+            /// <summary>
+            /// При [авто]режиме переход к следующему элементу списка компонентов
+            /// </summary>
+            /// <param name="iState">Текущее обрабатываемое состояние</param>
+            protected abstract void saveDataGridViewAdminComplete (int iState);
+            #endregion
+
+            private NeedMessageDebugLogging getNeedMessageDebugLogging (IdPseudoDelegate id)
+            {
+                return (from need in _listNeedMessageDebugLogging where need.Id == id select need).ElementAtOrDefault(0);
+            }
+
+            protected void debug (IdPseudoDelegate id, string mes)
+            {
+                debug (getNeedMessageDebugLogging(id), mes);
+            }
+
+            protected void debug (NeedMessageDebugLogging need, string mes)
+            {
+                if (need.IsConsole == true) itssAUX.PrintDebugMessage (mes, false); else;
+                if (need.IsLogging == true) Logging.Logg ().Debug (mes, Logging.INDEX_MESSAGE.NOT_SET); else;
+            }
+
+            protected void error (IdPseudoDelegate id, string mes)
+            {
+                error (getNeedMessageDebugLogging(id), mes);
+            }
+
+            protected void error (NeedMessageDebugLogging need, string mes)
+            {
+                if (need.IsConsole == true) itssAUX.PrintErrorMessage (mes); else;
+                if (need.IsLogging == true) Logging.Logg ().Error (mes, Logging.INDEX_MESSAGE.NOT_SET); else;
+            }
+
+            protected void warning (IdPseudoDelegate id, string mes)
+            {
+                warning (getNeedMessageDebugLogging(id), mes);
+            }
+
+            protected void warning (NeedMessageDebugLogging need, string mes)
+            {
+                if (need.IsConsole == true) itssAUX.PrintWarningMessage (mes, false); else;
+                if (need.IsLogging == true) Logging.Logg ().Warning (mes, Logging.INDEX_MESSAGE.NOT_SET); else;
+            }
+
+            #region Указания о готовности к работе/завершению работы
+            private void delegateStartCompleted ()
+            {
+            }
+
+            private void delegateStopCompleted ()
+            {
+                Action delegateClose = async () => {
+                    await Task.Factory.StartNew (() => {
+                        __client.Close ();
+                    })
+                    .ContinueWith((taskCompleted) => {
+                        __client = null;
+                    });     
+                };
+
+                delegateClose ();
+            }
+
+            //private void delegateCloseCompleted ()
+            //{
+            //    _client = null;
+            //}
+            #endregion
+
+            #region Указания о длительно выполняющейся операции
+            private void delegateStartWait ()
+            {
+            }
+
+            private void delegateStopWait ()
+            {
+            }
+            #endregion
+
+            #region Сообщения об ошибках/предупреждениях/действиях
+            private void ErrorReport (string report)
+            {
+                error (IdPseudoDelegate.ReportError, $"::ErrorReport () - NameEndPoint:{NameEndPoint}, Report: [{report}]...");
+            }
+
+            private void WarningReport (string report)
+            {
+                warning (IdPseudoDelegate.ReportWarning, $"::WarningReport () - NameEndPoint:{NameEndPoint}, Report: [{report}]...");
+            }
+
+            private void ActionReport (string report)
+            {
+                debug (IdPseudoDelegate.ReportAction, $"::ActionReport () - NameEndPoint:{NameEndPoint}, Report: [{report}]...");
+            }
+
+            private void ReportClear (bool bClear)
+            {
+                debug (IdPseudoDelegate.ClearReport, $"::ReportClear () - NameEndPoint:{NameEndPoint}, Report: [{bClear}]...");
+            }
+            #endregion
+
+            #region Возвращение результата длительно выполняющихся операций
+            private void setDatetimePicker (DateTime date)
+            {
+                _datetimePicker = date;
+            }
+
+            private void release ()
+            {
+                timerClientActivate (false);
+                _timerClient = null;
+            }
+
+            public void Dispose ()
+            {
+                release ();
+            }
+            #endregion
+        }
+    }
+}

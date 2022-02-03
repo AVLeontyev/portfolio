@@ -1,0 +1,140 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using System.Data.Common;
+
+using StatisticTrans;
+
+using StatisticCommon;
+using ASUTP.Database;
+using ASUTP.Helper;
+using ASUTP;
+using System.ServiceModel;
+using System.ServiceModel.Configuration;
+using System.Configuration;
+using System.ServiceModel.Description;
+using System.Reflection;
+using System.Threading.Tasks;
+
+namespace strans
+{
+    class Program
+    {
+        static bool g_bWriteToWinEventLog;
+
+        public static FileINI m_fileINI;
+        private static string m_strProgramNameSectionDB_INI = "Параметры соединения с БД (" + ProgramBase.AppName + @".exe" + ")";
+        private static ASUTP.Core.Crypt m_crypt;
+
+        private static string SignLogStartStop
+        {
+            get
+            {
+                return string.Concat (Enumerable.Repeat ("*", 22));
+            }
+        }
+
+        private static bool HelperProgramBaseOn = true;
+
+        private static void Main(string[] args)
+        {
+            Creator creator = null;
+            FileAppSettings.RequiredForced = true;
+
+            Action creator_OnStarted = delegate () {
+                if (creator.Error == Creator.ERROR.Ok) {
+                    itssAUX.Wait ("to shutdown press any key...");
+                } else
+                    ;
+
+                creator.Stop ();
+            };
+
+            Action creator_OnStoped = delegate () {
+                itssAUX.Wait ($"to exit program <{creator.Error}> press any key...", true, false);
+            };
+
+            Action creator_OnErrorChanged = delegate () {
+                itssAUX.PrintErrorMessage ($"error: {creator.Error}...");
+
+                if (itssAUX.IsWaiting == true)
+                    itssAUX.Cancel ();
+                else
+                    ;
+            };
+
+            // 1-ое сообщ. в журнал только после установки значения 'AppName'
+            using (CmdArg cmdArg = new CmdArg (false))
+                if (HelperProgramBaseOn == false) {
+                // вар. №1
+                    Logging.AppName = cmdArg.AppName;
+                } else if (HelperProgramBaseOn == true) {
+                // вар. №2
+                    ProgramBase.s_AppNameSuffix = cmdArg.AppName;
+                } else
+                    ;
+
+            if (HelperProgramBaseOn == false) {
+            // вар. №1
+                Logging.SetMode (Logging.LOG_MODE.FILE_EXE);
+                Logging.Logg ().PostStart ($"{SignLogStartStop}Старт{SignLogStartStop}");
+            } else if (HelperProgramBaseOn == true) {
+            // вар. №2
+                ASUTP.Helper.ProgramBase.PerformThreadException += handlerThreadException;
+                ASUTP.Helper.ProgramBase.PerformUnhandledException += handlerUnhandledException;
+                ASUTP.Helper.ProgramBase.Start (Logging.LOG_MODE.FILE_EXE, false);
+            } else
+                ;
+
+            m_fileINI = new FileINI ("setup.ini", false);
+
+            do {
+                try {
+                    creator = new Creator ();
+
+                    if (creator.Error == Creator.ERROR.Ok) {
+                        creator.Started += creator_OnStarted;
+                        creator.Stoped += creator_OnStoped;
+                        creator.ErrorChanged += creator_OnErrorChanged;
+
+                        creator.Start ();
+                    } else {
+                        itssAUX.PrintErrorMessage ($"error: {creator.Error}...");
+                    }
+                } catch (Exception e) {
+                    itssAUX.PrintErrorMessage ($"exception: {e.Message}...");
+
+                    Logging.Logg ().Exception (e, "::Main () - new Creator...", Logging.INDEX_MESSAGE.NOT_SET);
+                }
+            } while ((Equals (creator, null) == true)
+                ||((Equals (creator, null) == false)
+                    && ((!(creator.Error == Creator.ERROR.Ok))
+                        || ((creator.Error == Creator.ERROR.Ok) && (itssAUX.IsWaiting == true)))));
+
+            if (HelperProgramBaseOn == false) {
+            // вар. №1
+                Logging.Logg ().PostStop ($"{SignLogStartStop}Стоп{SignLogStartStop}");
+            } else if (HelperProgramBaseOn == true) {
+            // вар. №2
+                ASUTP.Helper.ProgramBase.Exit ();
+            } else
+                ;
+        }
+
+        private static bool handlerThreadException (object obj, System.Threading.ThreadExceptionEventArgs ev)
+        {
+            itssAUX.PrintErrorMessage (ev.Exception.Message);
+
+            return false;
+        }
+
+        private static bool handlerUnhandledException (object obj, UnhandledExceptionEventArgs ev)
+        {
+            itssAUX.PrintErrorMessage (ev.ExceptionObject.ToString());
+
+            return false;
+        }
+    }
+}

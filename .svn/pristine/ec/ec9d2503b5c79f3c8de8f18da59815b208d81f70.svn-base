@@ -1,0 +1,144 @@
+﻿using ASUTP;
+using StatisticCommon;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.Text;
+using System.Threading.Tasks;
+using StatisticCommon.Contract;
+using StatisticCommon.Communication;
+using Assignment;
+
+namespace salarm
+{
+    /// <summary>
+    /// Наименование оконечной точки при развертывании служб
+    ///  , при подключении к службам клиентов
+    /// </summary>
+    internal enum NameEndPoint {
+        Empty
+        , EndPointServiceAlarm
+    }
+
+    partial class Client<T>
+    {
+        /// <summary>
+        /// Класс для реализации работы клиента по вызовам методов объекта развернутого сервиса
+        /// </summary>
+        private class WorkerAlarm<T> : Assignment.Client.Worker<NameEndPoint>
+        {
+            public WorkerAlarm (NameEndPoint nameEndPoint, Type contractType, Type serviceType)
+                : base (nameEndPoint
+                      , contractType
+                      , serviceType
+                      , new NeedMessageDebugLogging[] {
+                          new Assignment.Client.Worker<NameEndPoint>.NeedMessageDebugLogging () { Id = IdPseudoDelegate.ReportAction, IsConsole = true, IsLogging = false }
+                      })
+            {
+            }
+
+            protected override IService createClient ()
+            {
+                return (IService)new ServiceChannelFactory <T, NameEndPoint> ()
+                    .Create(_callback_EventRaise, NameEndPoint);
+            }
+
+            public override bool Initialize(Assignment.Client.IInitializeArgument arg)
+            {
+                return Equals(__client, null) == false
+                    && base.Initialize(arg) == true
+                    && (typeof(StatisticCommon.Contract.IServiceAlarm).IsAssignableFrom(__client.GetType()) == true)
+                    && ((StatisticCommon.Contract.IServiceAlarm)__client).Initialize (arg.m_ConnSett
+                        , arg.m_iMainSourceData
+                        , TimeSpan.Zero
+                        , TimeSpan.Zero
+                        , FormChangeMode.MODE_TECCOMPONENT.TG
+                        , new int[] { }.ToList())
+                        ;
+            }
+
+            protected override void trans_auto_start ()
+            {
+                base.trans_auto_start ();
+            }
+
+            protected override void trans_auto_next ()
+            {
+                FormChangeMode.KeyDevice key = FormChangeMode.KeyDevice.Empty;
+
+                if (key.Equals (FormChangeMode.KeyDevice.Empty) == false) {
+                    //??? то же, что и выполняется в 'trans_auto_stop'
+                } else {
+                    trans_auto_stop ();
+                }
+
+                base.trans_auto_next ();
+            }
+
+            #region Возвращение результата длительно выполняющихся операций
+            protected override void setDataGridViewAdmin (DateTime date, bool bResult, IEnumerable<AdminRDG.RDGStruct> values)
+            {
+                FormChangeMode.KeyDevice key;
+
+                debug (IdPseudoDelegate.Ready, $"::setDataGridViewAdmin () - NameEndPoint:{NameEndPoint}, Date: [{date.Date}], Values(count: [{(Equals (values, null) == false ? values.Count().ToString() : "не известно")}])...");
+
+                try {
+                    if (bResult == true) {
+                       
+                    } else
+                        ;
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    _interrupt = true;
+                }
+            }
+
+            protected override void errorDataGridViewAdmin (int iState)
+            {
+                error (IdPseudoDelegate.Error, $"::errorDataGridViewAdmin () - NameEndPoint:{NameEndPoint}, State: [{iState}]...");
+
+                clientTECComponentComplete (iState, false);
+            }
+
+            /// <summary>
+            /// При [авто]режиме переход к следующему элементу списка компонентов
+            /// </summary>
+            /// <param name="iState">Текущее обрабатываемое состояние</param>
+            protected override void saveDataGridViewAdminComplete (int iState)
+            {
+                debug (IdPseudoDelegate.SaveCompleted, $"::saveDataGridViewAdminComplete () - NameEndPoint:{NameEndPoint}, State: [{iState}]...");
+
+                clientTECComponentComplete (iState, true);
+            }
+
+            private void clientTECComponentComplete (int iState, bool bResult)
+            {
+                try {
+                    
+                    trans_auto_next ();
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    _interrupt = true;
+                }
+            }
+
+            private void setDatetimePicker (DateTime date)
+            {
+                _datetimePicker = date;
+            }
+
+            protected override void trans_auto_stop ()
+            {
+                throw new NotImplementedException ();
+            }
+            #endregion
+        }
+    }
+}

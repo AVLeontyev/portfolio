@@ -1,0 +1,428 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASUTP.MSExcel</name>
+    </assembly>
+    <members>
+        <member name="T:ASUTP.MSExcel.MSExcelIO">
+            <summary>
+            Класс для описания объекта-приложения MS Excel
+            </summary>
+        </member>
+        <member name="T:ASUTP.MSExcel.MSExcelIO.TYPE_INSTANCE">
+            <summary>
+            Тип создаваемого COM-объекта
+            </summary>
+        </member>
+        <member name="F:ASUTP.MSExcel.MSExcelIO.UID">
+            <summary>
+            Строка - идентификатор приложения MS Excel
+            </summary>
+        </member>
+        <member name="F:ASUTP.MSExcel.MSExcelIO.oExcel">
+            <summary>
+            Объект - приложения MS Excel
+            </summary>
+        </member>
+        <member name="F:ASUTP.MSExcel.MSExcelIO.WorkBooks">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:ASUTP.MSExcel.MSExcelIO.WorkBook">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:ASUTP.MSExcel.MSExcelIO.WorkSheets">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:ASUTP.MSExcel.MSExcelIO.WorkSheet">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:ASUTP.MSExcel.MSExcelIO.Range">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:ASUTP.MSExcel.MSExcelIO.sheets">
+            <summary>
+            Объект - словарь листов текущей книги (ключ-наименование:значение-порядковый номер листа)
+            </summary>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.#ctor">
+            <summary>
+            КОНСТРУКТОР КЛАССА
+            </summary>
+        </member>
+        <member name="P:ASUTP.MSExcel.MSExcelIO.IsValidate">
+            <summary>
+            Признак возможности использования функционала тек./объекта
+             , иначе: установлен ли MS Excel на ПК
+            </summary>
+        </member>
+        <member name="P:ASUTP.MSExcel.MSExcelIO.Visible">
+            <summary>
+            ВИДИМОСТЬ MS EXCEL
+            </summary>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getWorkBooks">
+            <summary>
+            Получить массив всех открытых документов - книг
+            </summary>
+            <returns>Массив всех открытых документов - книг</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.addWorkBook(System.String)">
+            <summary>
+            Добавить к массиву открытых документов элемент - книгу с именем - полным путем к книге
+            </summary>
+            <param name="name">Строка - полный путь к книге</param>
+            <returns>Объект - книга MS Excel</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.openWorkBook(System.String,System.Int32@)">
+            <summary>
+            Добавить к массиву открытых документов элемент - книгу с именем - полным путем к книге
+            </summary>
+            <param name="name">Строка - полный путь к книге</param>
+            <param name="err">Признак результата выполнения метода</param>
+            <returns>Объект - книга MS Excel</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getWorkBook(System.String,System.Int32@)">
+            <summary>
+            Возвратить объект - книгу MS Excel по указанному наименованию
+            </summary>
+            <param name="name">Наименование книги (внутреннее для приложения)</param>
+            <param name="err">Признак результата выполнения метода</param>
+            <returns>Объект - книга MS Excel</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getWorkBook(System.Int32)">
+            <summary>
+            Возвратить объект - книгу MS Excel по указанному индексу
+            </summary>
+            <param name="indx">Индекс книги (по умолчанию - 1)</param>
+            <returns>Объект - книга MS Excel</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getWorkSheets">
+            <summary>
+            Получить массив всех листов текущей книги
+            </summary>
+            <returns>Массив всех листов книги</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getWorkSheet(System.Int32)">
+            <summary>
+            Получить лист книги с указанным номером (1 - по умолчанию)
+            </summary>
+            <param name="num">Номер листа (1-ый - по умолчанию)</param>
+            <returns>Лист книги MS Excel</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getRange(System.String)">
+            <summary>
+            Получить объект - диапазон ячеек с указанным адресом на текущем листе
+            </summary>
+            <param name="pos">Строка - адрес диапазона (по умолчанию "A1")</param>
+            <returns>Объект - диапазон ячеек</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getRange(System.Int32,System.Int32)">
+            <summary>
+            Получить объект - диапазон ячеек с указанным адресом на текущем листе
+            </summary>
+            <param name="col">Номер толбца</param>
+            <param name="row">Номер строки</param>
+            <returns>Объект - диапазон ячеек</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.IsOpen(System.String,System.Int32@)">
+            <summary>
+            Проверить открыт ли документ?
+            </summary>
+            <param name="name">Строка - полный путь к документу</param>
+            <param name="err">Признак результата выполнения метода</param>
+            <returns>Признак открыт/закрыт документ</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.OpenDocument(System.String)">
+            <summary>
+            ОТКРЫТЬ ДОКУМЕНТ
+            </summary>
+            <param name="name">Строка - полный путь к документу</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.NewDocument(System.String)">
+            <summary>
+            СОЗДАТЬ НОВЫЙ ДОКУМЕНТ
+            </summary>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.Int32,System.Int32,System.Int32,System.Double,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="indx">Индекс страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.String,System.Int32,System.Int32,System.Double,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.String,System.Int32,System.Int32,System.Single,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.Int32,System.Int32,System.Int32,System.String,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="indx">Индекс страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.String,System.Int32,System.Int32,System.String,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на текущей странице текущей книги
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.Int32,System.Int32,System.Single)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на текущей странице текущей книги
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.Int32,System.Int32,System.String)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на текущей странице текущей книги
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.String,System.String)">
+            <summary>
+            Установить значение для ячейки по указанному адресу диапазона ячеек
+             на текущей странице текущей книги
+            </summary>
+            <param name="pos">Адрес диапазона ячеек</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.String,System.Double)">
+            <summary>
+            Установить значение для ячейки по указанному адресу диапазона ячеек
+             на текущей странице текущей книги
+            </summary>
+            <param name="pos">Адрес диапазона ячеек</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.String,System.Single)">
+            <summary>
+            Установить значение для ячейки по указанному адресу диапазона ячеек
+             на текущей странице текущей книги
+            </summary>
+            <param name="pos">Адрес диапазона ячеек</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.setValue(System.Object,System.String)">
+            <summary>
+            Установить значение для ячейки в указанном диапазоне ячеек
+             на текущей странице текущей книги
+            </summary>
+            <param name="range">Объект - диапазон ячеек</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.CloseExcelDoc">
+            <summary>
+            Закрыть текущий документ
+            </summary>
+            <returns>Результат выполнения операции</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.CloseExcelDoc(System.String)">
+            <summary>
+            Закрыть текущий документ
+            </summary>
+            <param name="name">Строка - путь к документу - внутреннее наименование книги MS Excel</param>
+            <returns>Результат выполнения операции</returns>
+        </member>
+        <member name="P:ASUTP.MSExcel.MSExcelIO.Count">
+            <summary>
+            Количество открытых документов
+            </summary>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.CloseExcelAllDocs">
+            <summary>
+            Закрыть все книги текущего объекта приложения MS Excel
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.SaveExcel(System.String)">
+            <summary>
+            СОХРАНИТЬ текущий ДОКУМЕНТ
+            </summary>
+            <param name="name">Строка - полный путь документа - книги MS Excel</param>
+            <returns>Признак успеха/ошибки при выполнении метода</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.numtochar(System.Int32)">
+            <summary>
+            Возвратить строку - наименование столбца на листе книги MS Excel
+             по указанному номеру столбца
+            </summary>
+            <param name="n">Номер столбца на листе книги MS Excel</param>
+            <returns>Строка - наименование столбца</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.WriteValue(System.String,System.Int32,System.Int32,System.String)">
+            <summary>
+            ЗАПИСЬ ЗНАЧЕНИЯ В ЯЧЕЙКУ на страницу книги с указанными номерами столбца, строки
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение для записи</param>
+            <returns>Признак выполнения операции (True - успех)</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.WriteValue(System.String,System.Int32,System.Int32,System.Double)">
+            <summary>
+            ЗАПИСЬ ЗНАЧЕНИЯ В ЯЧЕЙКУ
+            </summary>
+            <param name="sheetName">Наименование листа</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение для записи</param>
+            <returns>Признак выполнения операции (True - успех)</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.WriteValue(System.Int32,System.Int32,System.String)">
+            <summary>
+            ЗАПИСЬ ЗНАЧЕНИЯ В ЯЧЕЙКУ
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <returns>Результат записи значения</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.WriteValue(System.Int32,System.Int32,System.Double)">
+            <summary>
+            ЗАПИСЬ ЗНАЧЕНИЯ В ЯЧЕЙКУ
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <returns>Результат записи значения</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getValue(System.Int32,System.Int32)">
+            <summary>
+            Получить значение из ячеек диапазона по указанным номерам столбуа, строки
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getValue(System.String)">
+            <summary>
+            Получить значение из ячеек диапазона по адресу
+            </summary>
+            <param name="pos">Адрес диапазона ячеек</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getValue(System.Object)">
+            <summary>
+            Получить значение из ячеек указанного диапазона
+            </summary>
+            <param name="range">Диапазон ячеек</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.getValue">
+            <summary>
+            Получить значение из ячеек текущего диапазона
+            </summary>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.ReadValue(System.Int32,System.Int32)">
+            <summary>
+            ЧТЕНИЕ ЗНАЧЕНИЯ ИЗ ЯЧЕЙКИ
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.ReadValue(System.String,System.Int32,System.Int32)">
+            <summary>
+            ЧТЕНИЕ ЗНАЧЕНИЯ ИЗ ЯЧЕЙКИ
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.SelectWorksheet(System.String)">
+            <summary>
+            Выбрать (установить текущую) страницу
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.SelectWorksheet(System.Int32)">
+            <summary>
+            Выбрать (установить текущую) страницу
+            </summary>
+            <param name="indx">Индекс страницы</param>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.ReCreate">
+            <summary>
+            Повторная инициализация объекта MS Excel
+            </summary>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.Create(ASUTP.MSExcel.MSExcelIO.TYPE_INSTANCE@)">
+            <summary>
+            Создать объект для работы с COM-приложением
+            </summary>
+            <param name="typeInstance">Тип экземпляра COM-приложения</param>
+            <returns>Объект с экземпляром COM-приложения</returns>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.Dispose">
+            <summary>
+            УНИЧТОЖЕНИЕ ОБЪЕКТА EXCEL
+            </summary>
+        </member>
+        <member name="M:ASUTP.MSExcel.MSExcelIO.dispose(System.Boolean)">
+            <summary>
+            Освобождение объекта MS Excel
+            </summary>
+            <param name="bEnded"></param>
+        </member>
+    </members>
+</doc>

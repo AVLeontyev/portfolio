@@ -1,0 +1,54 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace StatisticCommon
+{
+    public class CmdArg<T>
+    {
+        private IEnumerable<string> _errors;
+
+        private string[] Delimeters = { " ", "-", "/" };
+
+        public static IEnumerable<T> Result
+        {
+            get;
+
+            private set;
+        }
+
+        public CmdArg ()
+            : this (Environment.GetCommandLineArgs ().Skip (1).ToArray ())
+        {
+        }
+
+        private CmdArg (string[] argv)
+        {
+            if (typeof (T).IsEnum == true) {
+                Result = new List<T> ();
+                _errors = new List<string> ();
+
+                argv.ToList ().SelectMany(a => a.Split(Delimeters, StringSplitOptions.RemoveEmptyEntries)).ToList().ForEach ((arg) => {
+                    try {
+                        (Result as List<T>).Add ((T)Enum.Parse (typeof (T), arg, true));
+                    } catch {
+                        (_errors as List<string>).Add (arg);
+                    }
+                });
+            } else
+                throw new Exception($"StatisticCommon.CmdArg::ctor () - тип <{typeof(T).Name}> не является перечислением...");
+        }
+
+        public string ReusltToString ()
+        {
+            return string.Join(" | ", Result);
+        }
+
+        public string ErrorToString ()
+        {
+            return string.Join(" | ", _errors);
+        }
+    }
+}

@@ -1,0 +1,3793 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>HClassLibrary</name>
+    </assembly>
+    <members>
+        <member name="F:HClassLibrary.HHandler.m_lockState">
+            <summary>
+            Объект для синхронизации изменения списка событий
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandler.taskThreadState">
+            <summary>
+            Объект потока обработки событий очереди
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandler.semaState">
+            <summary>
+            Объект синхронизации, разрешающий начало обработки очереди событий
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON">
+            <summary>
+            Индексы для массива объектов синхронизации
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandler.m_waitHandleState">
+            <summary>
+            Массив объектов синхронизации
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandler.threadStateIsWorking">
+            <summary>
+            Признак состояния потока
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandler._indexCurState">
+            <summary>
+            Текущий индекс массива обрабатываемых состояний
+             используется только в "потоковой" функции
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HHandler.IndexCurState">
+            <summary>
+            Текущий индекс массива обрабатываемых состояний
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandler.newState">
+            <summary>
+            Признак прерывания текущего цикла обработки состояний
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandler.states">
+            <summary>
+            Список событий (состояний) для обработки (или очередь)
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HHandler.Actived">
+            <summary>
+            Свойство - Признак активности потока
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandler.#ctor">
+            <summary>
+            Конструктор - основной
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandler.Initialize">
+            <summary>
+            Инициализация
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HHandler.IsFirstActivated">
+            <summary>
+            признак 1-ой активации
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandler.Activate(System.Boolean)">
+            <summary>
+            Изменение состояния потока
+            </summary>
+            <param name="active">Значение нового сотояния</param>
+            <returns>Признак изменения состояния</returns>
+        </member>
+        <member name="M:HClassLibrary.HHandler.InitializeSyncState">
+            <summary>
+            Инициализация объектов синхронизации
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandler.Start">
+            <summary>
+            Старт потоковой функции обработки событий
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandler.Stop">
+            <summary>
+            Останов потоковой функции обработки событий
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandler.Run(System.String)">
+            <summary>
+            Начать обработку списка событий
+            </summary>
+            <param name="throwMes">Сообщение при ошибке</param>
+        </member>
+        <member name="M:HClassLibrary.HHandler.isLastState(System.Int32)">
+            <summary>
+            Проверить является ли указанное состояние последним в очереди
+            </summary>
+            <param name="state">Состояние для проверки</param>
+            <returns>Признак выполнения условия</returns>
+        </member>
+        <member name="M:HClassLibrary.HHandler.AddState(System.Int32)">
+            <summary>
+            Добавить состояние в список
+            </summary>
+            <param name="state">Добавляемое состояние</param>
+        </member>
+        <member name="M:HClassLibrary.HHandler.ClearStates">
+            <summary>
+            Очистить список состояний (событий)
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandler.StateCheckResponse(System.Int32,System.Boolean@,System.Object@)">
+            <summary>
+            Получить результат обработки события
+            </summary>
+            <param name="state">Событие для получения результата</param>
+            <param name="error">Признак ошибки при получении результата</param>
+            <param name="outobj">Результат запроса</param>
+            <returns>Признак получения результата</returns>
+        </member>
+        <member name="M:HClassLibrary.HHandler.StateRequest(System.Int32)">
+            <summary>
+            Запросить результат для события
+            </summary>
+            <param name="state">Событие запроса</param>
+            <returns>Признак отправления результата</returns>
+        </member>
+        <member name="M:HClassLibrary.HHandler.StateResponse(System.Int32,System.Object)">
+            <summary>
+            Обработка УСЕШНО полученного результата
+            </summary>
+            <param name="state">Состояние для результата</param>
+            <param name="obj">Значение результата</param>
+            <returns>Признак обработки результата</returns>
+        </member>
+        <member name="M:HClassLibrary.HHandler.StateErrors(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Обработка КРИТИЧЕСКОЙ ошибки при получении результата
+            </summary>
+            <param name="state">Состояние запроса</param>
+            <param name="req">Признак получения ответа при запросе</param>
+            <param name="res">Признак...</param>
+        </member>
+        <member name="M:HClassLibrary.HHandler.StateWarnings(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Обработка НЕ КРИТИЧной ошибки при получении результата
+            </summary>
+            <param name="state">Состояние запроса</param>
+            <param name="req">Признак получения ответа при запросе</param>
+            <param name="res">Признак...</param>
+        </member>
+        <member name="M:HClassLibrary.HHandler.ThreadStates(System.Object)">
+            <summary>
+            Потоковая функция
+            </summary>
+            <param name="data">Параметр при старте потоковой функции</param>
+        </member>
+        <member name="M:HClassLibrary.HHandler.completeHandleStates(HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON)">
+            <summary>
+            Установить признак окончания обработки всех событий
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HPanelCommon">
+            <summary>
+            Класс панели с макетом размещения дочерних элементов управления
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HPanelCommon.iActive">
+            <summary>
+            Признак активности панели
+             (-1 - исходное, 0 - старт, 1 - активная)
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HPanelCommon.Actived">
+            <summary>
+            Признак активности панели
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HPanelCommon.Started">
+            <summary>
+            Признак выполнения запуска (вызов метода 'Start')
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HPanelCommon.IsFirstActivated">
+            <summary>
+            Признак 
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HPanelCommon.Start">
+            <summary>
+            Запустить на выполнение панель
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HPanelCommon.Stop">
+            <summary>
+            Остановить панель
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HPanelCommon.Activate(System.Boolean)">
+            <summary>
+            Активировать/деактивировать панель
+            </summary>
+            <param name="active">Признак активации/деактивации</param>
+            <returns>Признак изменения состояния элемента управления</returns>
+        </member>
+        <member name="M:HClassLibrary.HPanelCommon.initializeLayoutStyle(System.Int32,System.Int32)">
+            <summary>
+            Инициализировать размеры/пропорции ячеек объекта
+            </summary>
+            <param name="cols">Количество столбцов в макете/сетке</param>
+            <param name="rows">Количество строк в макете/сетке</param>
+        </member>
+        <member name="M:HClassLibrary.HPanelCommon.initializeLayoutStyleEvenly(System.Int32,System.Int32)">
+            <summary>
+            Инициализировать размеры/пропорции ячеек объекта
+             (равномерное распределение)
+            </summary>
+            <param name="cols">Количество столбцов в макете/сетке</param>
+            <param name="rows">Количество строк в макете/сетке</param>
+        </member>
+        <member name="P:HClassLibrary.HPanelCommon.IndexLastRowControl">
+            <summary>
+            Индекс строки в [0]-ой ячейке которой не размещен ни один из элементов управления
+             (для размещения очередного элемента управления)
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HPanelCommon.OptionFindControl">
+            <summary>
+            Опции при поиске
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HPanelCommon.OptionFindControl.Name">
+            <summary>
+            Поиск осуществляется в поле 'Name' элемента управления
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HPanelCommon.OptionFindControl.Tag">
+            <summary>
+            Поиск осуществляется в поле 'Tag' элемента управления
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HPanelCommon.findControl(System.String,HClassLibrary.HPanelCommon.OptionFindControl,System.Boolean)">
+            <summary>
+            Найти элемент управления на панели идентификатору
+            </summary>
+            <param name="id">Идентификатор-строка элемента управления</param>
+            <param name="opt">Опция при поиске: в каком поле искать идентификатор</param>
+            <param name="bSearchAllChildren">True - если требуется найти все дочерние элементы</param>
+            <returns>Элемент управления на панели, если не найден null</returns>
+        </member>
+        <member name="T:HClassLibrary.PanelCommonDataHost">
+            <summary>
+            Класс панели-клиента для отправки_запросов/получения_значений от 
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.PanelCommonDataHost.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Конструктор - основной (с параметрами по умолчанию)
+            </summary>
+            <param name="iColumnCount">Количество столбцов в макете панели</param>
+            <param name="iRowCount">Количество строк в макете панели</param>
+        </member>
+        <member name="M:HClassLibrary.PanelCommonDataHost.#ctor(System.ComponentModel.IContainer,System.Int32,System.Int32)">
+            <summary>
+            Конструктор - допоплнительный (с параметрами по умолчанию)
+            </summary>
+            <param name="container">Контэйнер для панели</param>
+            <param name="iColumnCount">Количество столбцов в макете панели</param>
+            <param name="iRowCount">Количество строк в макете панели</param>
+        </member>
+        <member name="E:HClassLibrary.PanelCommonDataHost.EvtDataAskedHost">
+            <summary>
+            Событие для запроса значений из объекта сервера
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.PanelCommonDataHost.DataAskedHost(System.Object)">
+            <summary>
+            Отправить запрос главной форме
+            </summary>
+            <param name="idOwner">Идентификатор панели, отправляющей запрос</param>
+            <param name="par"></param>
+        </member>
+        <member name="M:HClassLibrary.PanelCommonDataHost.OnEvtDataRecievedHost(System.Object)">
+            <summary>
+            Обработчик события ответа от главной формы
+            </summary>
+            <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        </member>
+        <member name="M:HClassLibrary.PanelCommonDataHost.dataRecievedHost(System.Object)">
+            <summary>
+            Метод обратного вызова при окончании обработки события 'EvtDataAskedHost'
+            </summary>
+            <param name="res">Результат выполнения асинхронной операции обработки события</param>
+        </member>
+        <member name="T:HClassLibrary.HLabel">
+            <summary>
+            Подпись, наследуется от 'Label'
+            </summary>
+            <summary>
+            Подпись, наследуется от 'Label'
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HLabel.components">
+            <summary>
+            Требуется переменная конструктора.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HLabel.Dispose(System.Boolean)">
+            <summary> 
+            Освободить все используемые ресурсы.
+            </summary>
+            <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        </member>
+        <member name="M:HClassLibrary.HLabel.InitializeComponent">
+            <summary>
+            Обязательный метод для поддержки конструктора - не изменяйте
+            содержимое данного метода при помощи редактора кода.
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HLabelStyles">
+            <summary>
+            Стиль для подписи
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.CalendarColumn">
+            <summary>
+            Тип объекта - календарь для размещения в один из столбцов 'DataGridView'
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.CalendarColumn.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.CalendarColumn.CellTemplate">
+            <summary>
+            Шаблон для ячейки в столбце-каледаре
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DataGridViewPasswordTextBoxCell">
+            <summary>
+            Ячейка представления "текстовое поле" с возможностью маскирования(скрытия) вводимой информации
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DataGridViewDisableButtonCell">
+            <summary>
+            Ячейка представления "кнопка" с возможностью включения/отключения
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DataGridViewDisableButtonColumn">
+            <summary>
+            Столбец для представления с типом ячеек "кнопка", с возможностью включения/отключения
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DataGridViewPressedButtonCell">
+            <summary>
+            Ячейка представления "кнопка" с возможностью фиксации состояния "нажата"
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DataGridViewPressedButtonCell.pressedValue">
+            <summary>
+            Признак состояния нажата/не_нажата
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.DataGridViewPressedButtonCell.Pressed">
+            <summary>
+            Признак состояния нажата/не_нажата
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DataGridViewPressedButtonCell.Clone">
+            <summary>
+            Override the Clone method so that the Enabled property is copied.
+            </summary>
+            <returns>Копия ячейки</returns>
+        </member>
+        <member name="M:HClassLibrary.DataGridViewPressedButtonCell.#ctor">
+            <summary>
+            By default, not pressed the button cell
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DataGridViewPressedButtonColumn">
+            <summary>
+            Столбец для представления с типом ячеек "кнопка", с возможностью фиксации состояния "нажата"
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DataGridViewPressedButtonColumn.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandlerDb.delegateStartWait">
+            <summary>
+            Делегат функции оповещения о выполняемой операции (выполнение)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandlerDb.delegateStopWait">
+            <summary>
+            Делегат функции оповещения о выполняемой операции (завершение)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandlerDb.delegateEventUpdate">
+            <summary>
+            Делегат функции оповещения о выполняемой операции (обновление состояния)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandlerDb.m_IdListenerCurrent">
+            <summary>
+            Идентификатор (текущий) соединения с источником информации при выполнении запроса
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandlerDb.m_dictIdListeners">
+            <summary>
+            Словарь идентификаторов соединения с источником информации
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.#ctor">
+            <summary>
+            Конструктор - основной
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.register(System.Int32,System.Int32,HClassLibrary.ConnectionSettings,System.String)">
+            <summary>
+            Регистрация источника информации с наименованием по ключю, типу, параметрами соединения
+            </summary>
+            <param name="id">Ключ группы источников информации</param>
+            <param name="indx">Тип источника информации</param>
+            <param name="connSett">Параметры соединения с источником информации</param>
+            <param name="name">Наименование источника информации</param>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.StartDbInterfaces">
+            <summary>
+            Старт обработки запросов
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.stopDbInterfaces">
+            <summary>
+            Остановить обрабртку запросов
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.StopDbInterfaces">
+            <summary>
+            Остановить обрабртку запросов
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.SetDelegateWait(HClassLibrary.DelegateFunc,HClassLibrary.DelegateFunc,HClassLibrary.DelegateFunc)">
+            <summary>
+            Установить делегаты оповещения о выполняемой операции
+            </summary>
+            <param name="dStart">Делегат (выполнение)</param>
+            <param name="dStop"></param>
+            <param name="dStatus"></param>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.SetDelegateReport(HClassLibrary.DelegateStringFunc,HClassLibrary.DelegateStringFunc,HClassLibrary.DelegateStringFunc,HClassLibrary.DelegateBoolFunc)">
+            <summary>
+            Установить делегаты оповещения о результатах выполнения опрерации
+            </summary>
+            <param name="ferr"></param>
+            <param name="fwar"></param>
+            <param name="fact"></param>
+            <param name="fclr"></param>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.GetCurrentTimeRequest(HClassLibrary.DbInterface.DB_TSQL_INTERFACE_TYPE,System.Int32)">
+            <summary>
+            Отправляет запрос на получение текущего времени сервера ~ типа СУБД
+            </summary>
+            <param name="typeDB">Тип СУБД</param>
+            <param name="idListatener">Активный идентификатор соединения с БД</param>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.ErrorReport(System.String)">
+            <summary>
+            Передать строку сообщения с ошибкой для отображения
+            </summary>
+            <param name="msg">Строка-содержание ошибки</param>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.WarningReport(System.String)">
+            <summary>
+            Передать строку сообщения с предупреждением для отображения
+            </summary>
+            <param name="msg"></param>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.ActionReport(System.String)">
+            <summary>
+            Передать строку сообщения с описанием действия для отображения
+            </summary>
+            <param name="msg"></param>
+        </member>
+        <member name="M:HClassLibrary.HHandlerDb.ReportClear(System.Boolean)">
+            <summary>
+            Очистить все переданные ранее сообщения для отображения
+            </summary>
+            <param name="bClear"></param>
+        </member>
+        <member name="F:HClassLibrary.HHandlerQueue.ItemQueue.m_dataHostRecieved">
+            <summary>
+            Объект, добавививший в очередь событие(состочние), используется для обратной связи
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HHandlerQueue.ItemQueue.Pars">
+            <summary>
+            Параметры, переданные в качестве аргументов к событию(состоянию)
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerQueue.ItemQueue.#ctor(HClassLibrary.HHandler,HClassLibrary.IDataHost,System.Object[])">
+            <summary>
+            Конструктор - основной с параметрами
+            </summary>
+            <param name="owner">Объект - владелец элемента очереди</param>
+            <param name="obj">Объект, добавивший событие в очередь</param>
+            <param name="objPars">Массив аргументов события</param>
+        </member>
+        <member name="M:HClassLibrary.HHandlerQueue.ItemQueue.#ctor(HClassLibrary.IDataHost,System.Object[])">
+            <summary>
+            Конструктор - дполнительный (с параметрами)
+            </summary>
+            <param name="obj">Объект, добавивший событие в очередь</param>
+            <param name="objPars">Массив аргументов события</param>
+        </member>
+        <member name="F:HClassLibrary.HHandlerQueue.m_lockQueue">
+            <summary>
+            Объект для синхронизации изменения списка событий
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandlerQueue.taskThreadQueue">
+            <summary>
+            Объект потока обработки событий очереди
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandlerQueue.threadQueueIsWorking">
+            <summary>
+            Признак состояния потока
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HHandlerQueue.semaQueue">
+            <summary>
+            Объект синхронизации, разрешающий начало обработки очереди событий
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerQueue.Initialize">
+            <summary>
+            Инициализация
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerQueue.Activate(System.Boolean)">
+            <summary>
+            Активировать очередь обработки событий
+            </summary>
+            <param name="active"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.HHandlerQueue.Start">
+            <summary>
+            Запустить (сдедать возможным прием/обработку) очередь событий
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerQueue.Stop">
+            <summary>
+            Остановить (сделать невозможным прием/обработку) событий
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerQueue.Push(HClassLibrary.IDataHost,System.Object[])">
+            <summary>
+            Добавить объект в очередь обработки событий
+            </summary>
+            <param name="obj"></param>
+            <param name="pars"></param>
+        </member>
+        <member name="M:HClassLibrary.HHandlerQueue.addStates(HClassLibrary.HHandlerQueue.ItemQueue)">
+            <summary>
+            Добавить все состояния объекта очереди событий
+            </summary>
+            <param name="dataHost">Объект очереди событий</param>
+            <returns>Результат выполнения функции</returns>
+        </member>
+        <member name="P:HClassLibrary.HHandlerQueue.Peek">
+            <summary>
+            Возвратить объект очереди событий не удаляя его
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HHandlerQueue.ThreadQueue(System.Object)">
+            <summary>
+            Потоковая функция очереди обработки объектов с событиями
+            </summary>
+            <param name="par"></param>
+        </member>
+        <member name="M:HClassLibrary.HMath.Pow2(System.Int32,System.Int32)">
+            <summary>
+            Возвести число в степень 2 
+            </summary>
+            <param name="number">Число, возводимое в степень 2</param>
+            <param name="offset">Слагаемое к числу, возводимого в степень (используется для битов)</param>
+            <returns>Значение числа в степени 2</returns>
+        </member>
+        <member name="F:HClassLibrary.HMath.random">
+            <summary>
+            Function to get random number
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HMath.syncLock">
+            <summary>
+            Объект синхронизации для получения случайного целочисленного значения в диапазоне
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HMath.GetRandomNumber(System.Int32,System.Int32)">
+            <summary>
+            Возвраить случайное целочисленное значение в диапазоне
+            </summary>
+            <param name="min">Нижняя (левая) граница диапазона</param>
+            <param name="max">Верхняя (правая) граница диапазона</param>
+            <returns>Случайное целочисленное значение</returns>
+        </member>
+        <member name="T:HClassLibrary.ConnectionSettings">
+            <summary>
+            Класс для описания параметров соединения с источником данных (БД)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.ConnectionSettings.id">
+            <summary>
+            Идентификатор источника данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.ConnectionSettings.name">
+            <summary>
+            Наименование источника данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.ConnectionSettings.server">
+            <summary>
+            Сервер-источник данных (может быть указан как доменное имя, IP-адрес)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.ConnectionSettings.dbName">
+            <summary>
+            Нименование БД
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.ConnectionSettings.userName">
+            <summary>
+            Имя пользователя при подключении к источнику данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.ConnectionSettings.password">
+            <summary>
+            Пароль пользователя при подключении к источнику данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.ConnectionSettings.port">
+            <summary>
+            Номер порта при подключении к источнику данных
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ConnectionSettings.#ctor(System.Data.DataRow,System.Int32)">
+            <summary>
+            Конструктор для параметров соединения с БД
+            </summary>
+            <param name="r">строка таблицы с параметрами соединения</param>
+            <param name="bLogConnSett">признак предназначения параметров соединения (БД логирования/обычная)</param>
+        </member>
+        <member name="T:HClassLibrary.ConnectionSettingsSource">
+            <summary>
+            Класс для работы с параметрами списка источников данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.ConnectionSettingsSource.m_idListener">
+            <summary>
+            Идентификатор БД конфигурации
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ConnectionSettingsSource.ConnectionSettingsRequest(System.Int32)">
+            <summary>
+            Запрос для получения таблицы (одна строка) с параметрами источника данных
+            </summary>
+            <param name="id">идентификатор источника данных в таблице 'SOURCE'</param>
+            <returns>строка с параметрами источника данных</returns>
+        </member>
+        <member name="M:HClassLibrary.ConnectionSettingsSource.PasswordRequest(System.Int32,System.Int32)">
+            <summary>
+            Запрос пароля (шифрованного для 2.Х.Х и не шифрованного для 1.9.Х)
+            </summary>
+            <param name="typeDB_CFG">тип базы данных конфигурации (1.9.Х/2.Х.Х)</param>
+            <param name="id">идентификатор пользователя(роли) - часть составного ключа</param>
+            <param name="id_role">роль пользователя (только для 2.Х.Х), "роль" источника данных 501</param>
+            <returns>текст запроса</returns>
+        </member>
+        <member name="M:HClassLibrary.ConnectionSettingsSource.GetConnectionSettings(System.Data.DataTable@,System.Int32,System.Data.DataTable@,System.Int32)">
+            <summary>
+            Получение таблицы с параметрами соединения источника данных дешифрованным паролем
+            </summary>
+            <param name="src">таблица - рез-т выполнения функции 'GetConnectionSettings'</param>
+            <param name="row_src"></param>
+            <param name="psw"></param>
+            <param name="row_psw"></param>
+            <returns></returns>
+        </member>
+        <member name="T:HClassLibrary.DbInterface">
+            <summary>
+            Класс для описания объекта для обращения к БД нескольких подписчиков
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DbInterface.DB_TSQL_INTERFACE_TYPE">
+            <summary>
+            Перечисление - типы поддерживаемых интерфейсов
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL">
+            <summary>My Sql</summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.MAX_RETRY">
+            <summary>
+            Максимальное количество повторов
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.MAX_WAIT_COUNT">
+            <summary>
+            Количество попыток проверки наличия результата в одном цикле
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.WAIT_TIME_MS">
+            <summary>
+            Интервал ожидания между проверками наличия результата
+             , при условии что в предыдущей итерации результат не был получен
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.DbInterface.MAX_WATING">
+            <summary>
+            Максимальное время ожидания окончания длительно выполняющейся операции
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DbInterface.STATE_LISTENER">
+            <summary>
+            Перечисление - возможные состояния подписчика на выполнение запросов
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.STATE_LISTENER.READY">
+            <summary>
+            Зарегистрирован
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DbInterface.DbInterfaceListener">
+            <summary>
+            Класс для описания подписчика еа выполнение запросов к БД
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.DbInterfaceListener.state">
+            <summary>
+            Состояние подписчика
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.DbInterfaceListener.dataPresent">
+            <summary>
+            Признак наличия данных в результате запроса
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.DbInterfaceListener.dataError">
+            <summary>
+            Признак ошибки по результатам запроса
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.DbInterfaceListener.requestDB">
+            <summary>
+            Строка запроса на получение данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.DbInterfaceListener.dataTable">
+            <summary>
+            Результат запроса
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.DbInterfaceListener.#ctor">
+            <summary>
+            конструктор - основной (без аргументов)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.m_dictListeners">
+            <summary>
+            Словарь с подписчиками для выполнения запросов
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.DbInterface.ListenerCount">
+            <summary>
+            Количество подписчиков в интерфейсе
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.m_connectionSettings">
+            <summary>
+            Объект соединения с БД
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.lockListeners">
+            <summary>
+            Объект для синхпрнизации доступа к подписчикам
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.lockConnectionSettings">
+            <summary>
+            Объект для синхронизации изменения параметров соединения
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.DbInterface.Name">
+            <summary>
+            Наименование интерфейса
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.needReconnect">
+            <summary>
+            Признак необходимости выполнить повторное соединение с БД
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.connected">
+            <summary>
+            Признак установленного соединения с БД
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.#ctor(System.String)">
+            <summary>
+            Конструктор - основной (с аргументом)
+            </summary>
+            <param name="name">Наименование интерфейса (рабочего потока)</param>
+        </member>
+        <member name="P:HClassLibrary.DbInterface.Connected">
+            <summary>
+            Признак наличия соединения с источником данных
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.ListenerRegister">
+            <summary>
+            Зарегистрировать нового подписчика, вернуть его идентификатор
+            </summary>
+            <returns>Идентификатор нового подписчика</returns>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.ListenerUnregister(System.Int32)">
+            <summary>
+            Отменить регистрацию подписчика по идентификатору
+            </summary>
+            <param name="listenerId">Идентификатор подписчика</param>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.Start">
+            <summary>
+            Запустить поток выполнения запросов
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.Stop">
+            <summary>
+            Остановить выполнение всех запросов
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.Request(System.Int32,System.String)">
+            <summary>
+            Отправить запрос источнику данных
+            </summary>
+            <param name="listenerId">Идентификатор подписчика - инициатора запроса</param>
+            <param name="request">Строка - содержание запроса</param>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.Response(System.Int32,System.Boolean@,System.Data.DataTable@)">
+            <summary>
+            Получить результат запроса для подписчика с диагностическими признаками
+            </summary>
+            <param name="listenerId">Идентификатор подписчика - инициатора запроса</param>
+            <param name="error">Признак ошибки при получении данных</param>
+            <param name="table">Таблица - результат запроса к источнику данных</param>
+            <returns>Результат выполнения метода</returns>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.SetConnectionSettings">
+            <summary>
+            Применить параметры соединения с источником данных - активировать объект доступа к нему
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.SetConnectionSettings(System.Object,System.Boolean)">
+            <summary>
+            Установить параметры соединения с источником данных
+            </summary>
+            <param name="cs">Объект с параметрами соединения</param>
+            <param name="bStarted">Признак немедленной активации объекта доступа к источнику данных</param>
+        </member>
+        <member name="F:HClassLibrary.DbInterface.m_eventGetDataBreak">
+            <summary>
+            Объект синхронизации для распознования команды на аварийное завершение подпотока получения данных запроса
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.Connect">
+            <summary>
+            Установить соединение с БД
+            </summary>
+            <returns>Результат попытки установить соединенние с БД</returns>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.Disconnect">
+            <summary>
+            Разорвать установленное ранее соединение с БД
+            </summary>
+            <returns>Результат попытки разорвать соединенние с БД</returns>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.Disconnect(System.Int32@)">
+            <summary>
+            Разорвать установленное ранее соединение с БД
+            </summary>
+            <param name="err">Результат попытки разорвать соединенние с БД</param>
+        </member>
+        <member name="M:HClassLibrary.DbInterface.GetData(System.Data.DataTable,System.Object)">
+            <summary>
+            Заполнить таблицу значениями - результатом запроса
+            </summary>
+            <param name="table">Таблица для значений</param>
+            <param name="query">Запрос для получения значений</param>
+            <returns>Результат попытки получения значений</returns>
+        </member>
+        <member name="T:HClassLibrary.IDbSources">
+            <summary>
+            Интерфейс для класса с описанием управления установленными соединениями с источниками данных
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.IDbSources.GetConnection(System.Int32,System.Int32@)">
+            <summary>
+            Возвратить объект соединения с БД
+            </summary>
+            <param name="id">Идентификатор соединения (ключ для словаря - задается при установлении соединения в парметрах для соединения)</param>
+            <param name="err">Признак ошибки при получении объекта соединения</param>
+            <returns>Объект соединения с БД</returns>
+        </member>
+        <member name="M:HClassLibrary.IDbSources.Register(System.Object,System.Boolean,System.String,System.Boolean)">
+            <summary>
+            Зарегистрировать и установить соединение с БД
+            </summary>
+            <param name="connSett">Объект с параметрами для соединения с БД</param>
+            <param name="active">Признак активности (ожидание запросов в отдельном потоке)</param>
+            <param name="desc">Описание соединения с БД</param>
+            <param name="bReq">Признак принудительного создания отдельного экземпляра соединения
+             (при наличии уже установленного, для использования в будущем)</param>
+            <returns>Идентификатор соединения</returns>
+        </member>
+        <member name="M:HClassLibrary.IDbSources.Request(System.Int32,System.String)">
+            <summary>
+            Отправить запрос для обработки
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+            <param name="query">Запрос для обработки</param>
+        </member>
+        <member name="M:HClassLibrary.IDbSources.Response(System.Int32,System.Boolean@,System.Data.DataTable@)">
+            <summary>
+            Получить ответ на запрос к БД
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+            <param name="err">Признак ошибки при получении результата запроса</param>
+            <param name="tableRes">Таблица-результат запроса</param>
+            <returns>Признак результата выполнения</returns>
+        </member>
+        <member name="M:HClassLibrary.IDbSources.SetConnectionSettings(System.Int32,HClassLibrary.ConnectionSettings,System.Boolean)">
+            <summary>
+            Установить новые параметры для соединения с БД
+             , старое при необходимости разрывается
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+            <param name="connSett">Параметры для нового соединения</param>
+            <param name="active">Признак акивности нового соединения</param>
+        </member>
+        <member name="M:HClassLibrary.IDbSources.UnRegister">
+            <summary>
+            Разорвать (отменить регистрацию) все установленные соединения
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.IDbSources.UnRegister(System.Int32)">
+            <summary>
+            Разорвать (отменить регистрацию) указанного соединения
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+        </member>
+        <member name="T:HClassLibrary.DbSources">
+            <summary>
+            Класс для описания управлением установленными соединениями с источниками данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbSources.m_this">
+            <summary>
+            Ссылка на "самого себя" - для исключения создания 2-х объектов класса
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbSources.m_dictDbInterfaces">
+            <summary>
+            Словарь с объектами-потоками обработки запросов
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DbSources.DbSourceListener">
+            <summary>
+            Класс для описания подписчика на установленное соединение
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbSources.DbSourceListener.dbConn">
+            <summary>
+            Объект соединения с БД
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbSources.DbSourceListener.idDbInterface">
+            <summary>
+            Идентификатор объекта-потока для обработки запросов
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbSources.DbSourceListener.iListenerId">
+            <summary>
+            Идентификатор подписчика
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbSources.DbSourceListener.#ctor(System.Int32,System.Int32,System.Data.Common.DbConnection)">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+            <param name="id">Идентификатор объекта-потока для обработки запросов</param>
+            <param name="indx">Идентификатор подписчика</param>
+            <param name="conn">Объект соединения с БД</param>
+        </member>
+        <member name="F:HClassLibrary.DbSources.m_dictListeners">
+            <summary>
+            Словарь объектов-подписчиков на установленные соединения
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbSources.m_objDictListeners">
+            <summary>
+            Объект для блокирования доступа к словарю 'm_dictListeners'
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbSources.#ctor">
+            <summary>
+            Конструктор - основной (защищенный)
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbSources.Sources">
+            <summary>
+            Функция для доступа к объекту
+            </summary>
+            <returns>Объект для управления установленными соединениями с источниками данных</returns>
+        </member>
+        <member name="M:HClassLibrary.DbSources.SetConnectionSettings(System.Int32,HClassLibrary.ConnectionSettings,System.Boolean)">
+            <summary>
+            Установить новые параметры для соединения с БД
+             , старое при необходимости разрывается
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+            <param name="connSett">Параметры для нового соединения</param>
+            <param name="active">Признак акивности нового соединения</param>
+        </member>
+        <member name="M:HClassLibrary.DbSources.registerListener(System.Int32,System.Int32,System.Int32,System.Boolean,System.Int32@)">
+            <summary>
+             Регистрировать подписчика на установленное соединение - получить идентификатор для передачи в 'registerListener'
+            </summary>
+            <param name="idReg">Новый внешний идентификатор подписчика для регистрации</param>
+            <param name="id">Идентификатор объекта-потока обработки запросов</param>
+            <param name="idListener">Идентификатор</param>
+            <param name="active"></param>
+            <param name="err"></param>
+        </member>
+        <member name="M:HClassLibrary.DbSources.Request(System.Int32,System.String)">
+            <summary>
+            Отправляет запрос к источнику БД с идентификатором
+            </summary>
+            <param name="id">идентификатор</param>
+            <param name="query">запрос</param>
+        </member>
+        <member name="M:HClassLibrary.DbSources.Response(System.Int32,System.Boolean@,System.Data.DataTable@)">
+            <summary>
+            Получает рез-т запроса  - таблицу, от источника с идентификатором, с признаком ошибки
+            </summary>
+            <param name="id">идентификатор</param>
+            <param name="err">признак4 ошибки</param>
+            <param name="tableRes">результирующая таблица</param>
+        </member>
+        <member name="M:HClassLibrary.DbSources.GetConnection(System.Int32,System.Int32@)">
+            <summary>
+            Возвратить объект установленного соединения для указанного идентификатора
+            </summary>
+            <param name="id">Идентификатор подписчика</param>
+            <param name="err">Признак ошибки</param>
+            <returns>Объект установленного соединения</returns>
+        </member>
+        <member name="T:HClassLibrary.DbTSQLInterface">
+            <summary>
+            Класс для бращения к источнику данных посредством запросов на T-SQL
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DbTSQLInterface.Error">
+            <summary>
+            Перечисление - перечень возможных ошибок при работе с источником данных
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DbTSQLInterface.QUERY_TYPE">
+            <summary>
+            Перечисление - типы запросов
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbTSQLInterface.QUERY_TYPE.UPDATE">
+            <summary>
+            Обновление данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbTSQLInterface.MessageDbOpen">
+            <summary>
+            Строка - сообщение об успешно установленном соединении
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbTSQLInterface.MessageDbClose">
+            <summary>
+            Строка - сообщение о разрыве соедиения с источником данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbTSQLInterface.MessageDbException">
+            <summary>
+            Строка - сообщение при возникновении исключительной ситуации при работе с БД
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbTSQLInterface.m_dbConnection">
+            <summary>
+            Непосредственный объект соединения с источником данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbTSQLInterface.lockConn">
+            <summary>
+            Объект синхронизации при доступе к параметрам соединения с источником данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.DbTSQLInterface.m_connectionType">
+            <summary>
+            Тип источника данных
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.#ctor(HClassLibrary.DbInterface.DB_TSQL_INTERFACE_TYPE,System.String)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="type">Тип источника данных</param>
+            <param name="name">Наименование объекта для доступа к источнику данных</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.createDbConnection(HClassLibrary.DbInterface.DB_TSQL_INTERFACE_TYPE)">
+            <summary>
+            Создать объект соединения с БД
+            </summary>
+            <param name="type">Тип источника данных</param>
+            <returns>Объект соединения с БД</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.connect(HClassLibrary.ConnectionSettings,HClassLibrary.DbTSQLInterface.Error@)">
+            <summary>
+            Установить соединение
+            </summary>
+            <param name="connSett">Параметры соединения с БД</param>
+            <param name="err">Признак ошибкт при установке соединения</param>
+            <returns>Признак установки соединения</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.disconnect(System.Data.Common.DbConnection@,HClassLibrary.DbTSQLInterface.Error@)">
+            <summary>
+            Разорвать соединение с БД
+            </summary>
+            <param name="conn">Объект соединения с БД</param>
+            <param name="err">Признак ошибки при выполнении операции</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.Connect">
+            <summary>
+            Установить соединение с источником данных
+            </summary>
+            <returns>Признак установки соединения</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.SetConnectionSettings(System.Object,System.Boolean)">
+            <summary>
+            Установить параметры соединения с источником данных
+            </summary>
+            <param name="cs">Объект с параметрами соединения</param>
+            <param name="bStarted">Признак немедленной активации объекта доступа к источнику данных</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.Disconnect">
+            <summary>
+            Отменить установку соединения с источником данных
+            </summary>
+            <returns>Признак выполнения операции разъединения</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.Disconnect(System.Int32@)">
+            <summary>
+            Разорвать установленное соединение с источником данных
+            </summary>
+            <param name="er">Признак наличия ошибки при выполнении операции</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.GetData(System.Data.DataTable,System.Object)">
+            <summary>
+            Получить результат запроса (KhryapinAN DD.09.2017 выполняется в отдельном потоке)
+            </summary>
+            <param name="table">Таблица - результат запроса</param>
+            <param name="query">Запрос к источнику данных на T-SQL</param>
+            <returns>Признак получения результата</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.ConnectionStringToLog(System.String)">
+            <summary>
+            Строка соединения для логгирования с усечением значения пароля
+            </summary>
+            <param name="strConnSett">Строка соединения с БД</param>
+            <returns>Строка для размещения в журнале приложения</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.logging_catch_db(System.Data.Common.DbConnection,System.Exception)">
+            <summary>
+            Зафиксировать/разместить в журнале сообщение о возникновении исключительной ситуации
+            </summary>
+            <param name="conn">Объект соединения с БД(источником данных)</param>
+            <param name="e">Исключение, требуещще журналирования</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.logging_close_db(System.Data.Common.DbConnection)">
+            <summary>
+            Зафиксировать/разместить в журнале сообщение о разрыве соединения с БД (источником данных)
+            </summary>
+            <param name="conn">Объект соединения с БД(источником данных)</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.logging_open_db(System.Data.Common.DbConnection)">
+            <summary>
+            Зафиксировать/разместить в журнале сообщение об установке соединения с БД (источником данных)
+            </summary>
+            <param name="conn">Объект соединения с БД(источником данных)</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.getTypeDB(HClassLibrary.ConnectionSettings)">
+            <summary>
+            Возвратить тип источника данных по объекту с параметрами для соединения
+            </summary>
+            <param name="connSett">Объект с параметрами для установления соединения</param>
+            <returns>Тип источника данных</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.getTypeDB(System.String)">
+            <summary>
+            Возвратить тип источника данных по строке соединения
+             (извлекается номер порта, по нему и определяется искомый тип)
+             , не применим, если в строке соединения не указан номер порта
+             , по умолчанию возвращается 'MS SQL'
+            </summary>
+            <param name="strConn">Строка соединения с источником данных</param>
+            <returns>Тип источника данных</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.getTypeDB(System.Int32)">
+            <summary>
+            Возвратить тип источника данных по номеру порта
+             , если не удается идентифицировать источник, возвращается 'неизвестный тип'
+            </summary>
+            <param name="port">Номер порта для связи с источником данных</param>
+            <returns>Тип источника данных</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.GetConnection(System.Int32@)">
+            <summary>
+            Возвратить объект соединения с БД (для синхронных операций)
+            </summary>
+            <param name="err">Признак ошибки при выполнении метода, актуальности возвращаемого значения</param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.IsNameField(System.Data.DataTable,System.String)">
+            <summary>
+            Подтвердить наличие поля в таблице-результате запроса
+            </summary>
+            <param name="data">Таблица</param>
+            <param name="nameField">Наименование поля</param>
+            <returns>Признак наличия поля</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.IsNameField(System.Data.DataRow,System.String)">
+            <summary>
+            Подтвердить наличие поля в строке таблицы-результата запроса
+            </summary>
+            <param name="data">Строка таблицы</param>
+            <param name="nameField">Наименование поля</param>
+            <returns>Признак наличия поля</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.ValueToQuery(System.Data.DataTable,System.Int32,System.Int32)">
+            <summary>
+            Преобразование/подготовка значение для использования его в строке запроса
+             - добавление в начале и в конце значения одинарные кавычки
+             , если тип значения "простой"
+            </summary>
+            <param name="table">Таблица со значениями</param>
+            <param name="row">Номер записи в таблице со значениями</param>
+            <param name="col">Номер столбца в записи таблицы со значениями</param>
+            <returns>Строка - значение из таблицы с одинарными кавычками или без них</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.ValueToQuery(System.Object,System.Type)">
+            <summary>
+            Преобразование/подготовка значение для использования его в строке запроса
+            </summary>
+            <param name="val">Значение для преобразования</param>
+            <param name="type">Тип столбца в таблице, для размещения в него значения</param>
+            <returns>Строка - значение из таблицы с одинарными кавычками или без них</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.queryValidateOfTypeDB(System.String,System.String@)">
+            <summary>
+            Проверка и преобразование запроса к БД в зависимости от типа БД (MSSQL, MySql)
+            </summary>
+            <param name="strConn">строка соединения объекта DbConnection</param>
+            <param name="query">преобразуемый запрос</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.CSVImport(System.String,System.String,System.Int32@)">
+            <summary>
+            Импорт содержания текстового файла с разделителем в таблицу
+            </summary>
+            <param name="path">путь к файлу</param>
+            <param name="fields">наименования полей таблицы (не используется)</param>
+            <param name="er">Признак ошибки при выполнении операции</param>
+            <returns></returns>
+        </member>
+        <member name="T:HClassLibrary.DbTSQLInterface.DelegateSelectAsync">
+            <summary>
+            Тип делегата для функции обратного вызова при аснхронном запросе к источнику данных синхронного типа
+            </summary>
+            <param name="table">Таблица - результат запроса</param>
+            <param name="err">Признак ошибки при выполнении запроса</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.Select(System.String,System.String,System.Int32@)">
+            <summary>
+            Отправить/выполнить запрос к источнику данных
+            </summary>
+            <param name="path">Путь к источнику данных (MS Excel, MS Access)</param>
+            <param name="query">Строка - запрос</param>
+            <param name="er">Признак ошибки при отправлении запроса</param>
+            <returns>Результат выполнения запроса</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.Select(HClassLibrary.ConnectionSettings,System.String,System.Int32@)">
+            <summary>
+            Отправить/выполнить запрос не требующий возвращения результата
+            </summary>
+            <param name="connSett">Параметры соединения с БД</param>
+            <param name="query">Запрос для выполнения</param>
+            <param name="er">Признак ошибки при выполнеии запроса</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.Select(System.String,System.String,HClassLibrary.DbTSQLInterface.DelegateSelectAsync)">
+            <summary>
+            Отправить/выполнить запрос асинхронно к источнику данных синхронного типа
+            </summary>
+            <param name="path">Путь к источнику данных (MS Excel, MS Access)</param>
+            <param name="query">Строка - запрос</param>
+            <param name="fCallback">Делегат(метод/функция) обратного вызова</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.Select(System.Data.Common.DbConnection@,System.String,System.Data.DbType[],System.Object[],System.Int32@)">
+            <summary>
+            Отправить/выполнить запрос(параметризованный) к источнику данных
+            </summary>
+            <param name="conn">Объект соединения с источником данных</param>
+            <param name="query">Строка - запрос к источнику данных</param>
+            <param name="types">Список типов параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="parametrs">Список параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="er">Признак ошибки при выпонении запроса</param>
+            <returns>Результат - таблица выполнения запроса</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.Select(System.Data.Common.DbConnection@,System.String,System.Data.DbType[],System.Object[],HClassLibrary.DbTSQLInterface.DelegateSelectAsync)">
+            <summary>
+            Отправить/выполнить запрос(параметризованный) асинхронно к источнику данных синхронного типа
+            </summary>
+            <param name="conn">Объект соединения с источником данных</param>
+            <param name="query">Строка - запрос</param>
+            <param name="types">Список типов параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="parametrs">Список значений параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="fCallback">Делегат(метод/функция) обратного вызова</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.ParametrsAdd(System.Data.Common.DbCommand,System.Data.DbType[],System.Object[])">
+            <summary>
+            Добавить параметр к запросу
+            </summary>
+            <param name="cmd">Объект 'команда' в составе запроса к источнику данных</param>
+            <param name="types">Тип парметра</param>
+            <param name="parametrs">Значение параметра</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.ParametrsValidate(System.Data.DbType[],System.Object[],System.Int32@)">
+            <summary>
+            Проверить параметры для возможности использования в запросе
+            </summary>
+            <param name="types">Список типов параметров в запросе</param>
+            <param name="parametrs">Список значений параметров в запросе</param>
+            <param name="err">Признак ошибки при выполнеии метода</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.ExecNonQuery(System.Data.Common.DbConnection@,System.String,System.Data.DbType[],System.Object[],System.Int32@)">
+            <summary>
+            Выполнить запрос, не требущий возвращения результатат, синхронно 
+            </summary>
+            <param name="conn">Объект соединения с источником данных</param>
+            <param name="query">Строка - запрос</param>
+            <param name="types">Список типов параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="parametrs">Список значений параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="er">Признак ошибки при выполнеини запроса</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.ExecNonQuery(HClassLibrary.ConnectionSettings,System.String,System.Int32@)">
+            <summary>
+            Выполнить запрос не требующий возвращения результата
+            </summary>
+            <param name="connSett">Объект с параметрами соединения</param>
+            <param name="query">Запрос для выполнения</param>
+            <param name="er">Признак ошибки при выполнении операции</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.ExecNonQuery(System.String,System.String,System.Int32@)">
+            <summary>
+            Выполнить запрос не требующий возвращения результата
+            </summary>
+            <param name="path">Путь к источнику данных (файловому: MS Excel, MS Access)</param>
+            <param name="query">Запрос для выполнения</param>
+            <param name="er">Признак ошибки при выполнении операции</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.GetIdNext(System.Data.Common.DbConnection@,System.String,System.Int32@,System.String,System.Int32,System.Int32)">
+            <summary>
+            Возвратить идентификатор для очередной записи в диапазоне [min...max]
+            </summary>
+            <param name="conn">Объект с установленным соединениес с БД</param>
+            <param name="nameTable">Наименование таблицы для вставки записи</param>
+            <param name="nameFieldID">Наименование целочисленного поля с идентификатором</param>
+            <param name="min">Минимальное значение диапазона для поиска идентификатора</param>
+            <param name="max">Максимальное значение диапазона для поиска идентификатора</param>
+            <returns>Очередной(по сквозной нумерации) идентификатор</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.GetIdNext(System.Data.DataTable,System.Int32@,System.String,System.Int32,System.Int32)">
+            <summary>
+            Возвратить идентификатор для очередной записи в диапазоне [min...max]
+            </summary>
+            <param name="table">Таблица для вставки записи</param>
+            <param name="nameFieldID">Наименование целочисленного поля</param>
+            <param name="min">Минимальное значение диапазона для поиска идентификатора</param>
+            <param name="max">Максимальное значение диапазона для поиска идентификатора</param>
+            <returns>Целочисленный идентификатор записи в таблице</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.RecUpdateInsertDelete(System.Data.Common.DbConnection@,System.String,System.String,System.String,System.Data.DataTable,System.Data.DataTable,System.Int32@)">
+            <summary>
+            Изменение (вставка), удаление
+            </summary>
+            <param name="conn">Объект соединения с БД</param>
+            <param name="nameTable">Наименование таблицы</param>
+            <param name="keyFields">Наименования полей таблицы в составе ключа по поиску записей</param>
+            <param name="unchangeableColumn">Наименования полей таблицы не подлежащие изменению</param>
+            <param name="origin">Таблица со значениями - исходная</param>
+            <param name="data">Таблица со значениями - с изменениями</param>
+            <param name="err">Признак ошибки выполнения функции</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.getWhereSelect(System.String,System.Data.DataRow)">
+            <summary>
+            Возвратить предложение 'WHERE' для запроса
+            </summary>
+            <param name="fields">Список полей в предложении WHERE</param>
+            <param name="r">Строка со значенями для включения в результирующую строку</param>
+            <returns>Строка - предложение 'WHERE (часть запроса)'</returns>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.RecUpdateInsert(System.Data.Common.DbConnection@,System.String,System.String,System.String,System.Data.DataTable,System.Data.DataTable,System.Int32@)">
+            <summary>
+            Изменение (вставка) в оригинальную таблицу записей измененных (добавленных) в измененную таблицу (обязательно наличие поля: ID)
+            </summary>
+            <param name="conn">Объект с параметрами соединения с БД</param>
+            <param name="nameTable">Наименование таблицы в БД</param>
+            <param name="keyFields">Набор ключевых полей по которым определяется изменение/добавление/удаление записи</param>
+            <param name="unchangeableColumn">Наименование поля, которое не проверяется на изменение/добавление/удаление</param>
+            <param name="origin">Оригинальная таблица со значениями</param>
+            <param name="data">Таблица с внесенными изменениями</param>
+            <param name="err">Признак ошибки выполнения функции</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.RecDelete(System.Data.Common.DbConnection@,System.String,System.String,System.Data.DataTable,System.Data.DataTable,System.Int32@)">
+            <summary>
+            Удаление из оригинальной таблицы записей не существующих в измененной таблице (обязательно наличие поля: ID)
+            </summary>
+            <param name="conn">Объект с параметрами соединения с БД</param>
+            <param name="nameTable">Наименование таблицы в БД</param>
+            <param name="keyFields">Набор ключевых полей по которым определяется изменение/добавление/удаление записи</param>
+            <param name="origin">Оригинальная(исходная) таблица со значениями</param>
+            <param name="data">Таблица с внесенными изменениями</param>
+            <param name="err">Признак ошибки выполнения функции</param>
+        </member>
+        <member name="M:HClassLibrary.DbTSQLInterface.IsConnected(System.Data.Common.DbConnection@)">
+            <summary>
+            Признак наличия соединения с БД
+            </summary>
+            <param name="obj">Объект соединения с БД, подвергающийся проверке</param>
+            <returns>Признак наличия соединения с БД</returns>
+        </member>
+        <member name="M:HClassLibrary.FIleConnSett.ParseSettingsFile(System.Collections.Generic.List{HClassLibrary.ConnectionSettings}@,System.String@)">
+            <summary>
+            Разбор зашифрованного файла с параметрами соединения
+            </summary>
+            <param name="connSetts">выходной список с объектами с параметрами соединения</param>
+            <param name="msgErr">Текст сообщения при наличии ошибки</param>
+            <returns>Признак выполнения: 0 - успех</returns>
+        </member>
+        <member name="M:HClassLibrary.FIleConnSett.ReadSettingsFile(System.Int32,System.Collections.Generic.List{HClassLibrary.ConnectionSettings}@,System.Int32@,System.String@)">
+            <summary>
+            Чтение зашифрованного файла конфигурации с параметрами соединения
+            </summary>
+            <param name="notUsed">не используется (-1), для совместимости с типом делегата</param>
+            <param name="listConnSett">выходной список объектов с параметрами соедений</param>
+            <param name="res">результат выполнения функции</param>
+            <param name="mes">сообщение после выполнения операции</param>
+        </member>
+        <member name="M:HClassLibrary.FIleConnSett.SaveSettingsFile(System.Int32,System.Collections.Generic.List{HClassLibrary.ConnectionSettings},System.Int32@)">
+            <summary>
+            Шифрование и сохранение параметров соедиений
+            </summary>
+            <param name="notUsed">не используется (-1), для совместимости с типом делегата</param>
+            <param name="listConnSett"></param>
+            <param name="err"></param>
+        </member>
+        <member name="T:HClassLibrary.FileINI.MODE_SECTION_APPLICATION">
+            <summary>
+            Перечисление - режим обработки принадлежности секций
+             при UNNAMED наименование исполняемого файла игнорируется
+             при INSTANCE (режим по умолчанию) используется собственное наименование приложения
+             при CUSTOM д.б. указано наименование исполняемого файла в качестве принадлежности секции
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FileINI._modeSectionApp">
+            <summary>
+            Режим обработки принадлежности секции для текущего экземпляра объекта
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FileINI.m_strSecAppCustom">
+            <summary>
+            Принадлежность секции в режиме 'CUSTOM'
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.FileINI.TYPE">
+            <summary>
+            Перечисление - известный формат файлов конфигурации
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FileINI._type">
+            <summary>
+            Формат обрабатываемого файоа конфигурации текущим экземпляром
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.FileINI.INDEX_DELIMETER">
+            <summary>
+            Перечисление для индексирования символов-разделителей
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FileINI.s_chSecDelimeters">
+            <summary>
+            Символы-разделители
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FileINI.m_NameFileINI">
+            <summary>
+            Наименовние файла конфигурации
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FileINI.m_values">
+            <summary>
+            Словарь со всеми значениями из файла конфигурации
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.FileINI.SEC_SHR_MAIN">
+            <summary>
+            Наименование (краткое) главной секции файла конфигурации
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.FileINI.SEC_APP">
+            <summary>
+            Часть секции - признак принадлежности текущему приложению
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.FileINI.SEC_MAIN">
+            <summary>
+            Наименование главной секции файла конфигурации
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.FileINI.isMainSec">
+            <summary>
+            Проверить наличие главной секции
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FileINI.isSec(System.String)">
+            <summary>
+            Проверить наличие секции
+            </summary>
+            <param name="sec_shr">Нименвание секции (краткое)</param>
+            <returns>Признак наличия секции</returns>
+        </member>
+        <member name="M:HClassLibrary.FileINI.isSecApp(System.String)">
+            <summary>
+            Проверка принадлежности секции текущему приложению
+            </summary>
+            <param name="sec">Наименование секции</param>
+            <returns>Признак принадлежности</returns>
+        </member>
+        <member name="M:HClassLibrary.FileINI.isMainSecKey(System.String)">
+            <summary>
+            Проверка наличия ключа в главной секции
+            </summary>
+            <param name="key">Ключ для проверки</param>
+            <returns>Признак наличия ключа</returns>
+        </member>
+        <member name="M:HClassLibrary.FileINI.isSecKey(System.String,System.String)">
+            <summary>
+            Проверка наличия ключа в секции
+            </summary>
+            <param name="sec_shr">Часть "смысловая" наименования секции</param>
+            <param name="key">Ключ для проверки</param>
+            <returns>Признак наличия ключа</returns>
+        </member>
+        <member name="M:HClassLibrary.FileINI.#ctor(System.String,System.Boolean,HClassLibrary.FileINI.MODE_SECTION_APPLICATION)">
+            <summary>
+            Конструктор - основной
+            </summary>
+            <param name="nameFile">Имя файла конфигурации</param>
+            <param name="bReadAuto">Признак автоматического считывания всех параметров при создании</param>
+        </member>
+        <member name="M:HClassLibrary.FileINI.GetMainValueOfKey(System.String)">
+            <summary>
+            Получить значение из главной секции по ключу
+            </summary>
+            <param name="key">Ключ в главной секции</param>
+            <returns>Значение параметра по ключу</returns>
+        </member>
+        <member name="M:HClassLibrary.FileINI.SetMainValueOfKey(System.String,System.String)">
+            <summary>
+            Установить значение по ключу в главной секции
+            </summary>
+            <param name="key">Ключ для сохранения значения</param>
+            <param name="val">Значение для сохранения</param>
+        </member>
+        <member name="M:HClassLibrary.FileINI.SetSecValueOfKey(System.String,System.String,System.String)">
+            <summary>
+            Установить значение по ключу в указанной секции
+            </summary>
+            <param name="sec_shr">Краткое наименование секции</param>
+            <param name="key">Ключ для сохранения значения</param>
+            <param name="val">Значение для сохранения</param>
+        </member>
+        <member name="M:HClassLibrary.FileINI.GetSecValueOfKey(System.String,System.String)">
+            <summary>
+            Получить значение из указанной секции по ключу
+            </summary>
+            <param name="sec_shr">Секция в кторой размещен парметр с ключом</param>
+            <param name="key">Ключ для получения значения</param>
+            <returns>Значение параметра по ключу</returns>
+        </member>
+        <member name="M:HClassLibrary.FileINI.getSecValues(System.String)">
+            <summary>
+            Возвратить словарь всех значений для секции
+            </summary>
+            <param name="sec_shr">Наименование секции</param>
+            <returns>Словарь значений в секции</returns>
+        </member>
+        <member name="M:HClassLibrary.FileINI.#ctor(System.String,System.Boolean,System.String[],System.String[],HClassLibrary.FileINI.MODE_SECTION_APPLICATION)">
+            <summary>
+            Конструктор - дополн. (при создании добавляет в словарь указаныые параметры ключ-значение)
+            </summary>
+            <param name="nameFile">Наименование файла</param>
+            <param name="bReadAuto">Признак автоматического считывания всех параметров при создании</param>
+            <param name="par">Массив ключей параметров</param>
+            <param name="val">Массив значений параметров</param>
+        </member>
+        <member name="P:HClassLibrary.FormConnectionSettings.SelectedIndex">
+            <summary>
+            Индекс выбранного элемента - объекта с параметрами соединения
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.FormConnectionSettings.Count">
+            <summary>
+            Количество объектов с параметрами соединения
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.FormConnectionSettings.Ready">
+            <summary>
+            Признак состояния объекта (0 - без ошибок: файл считан, параметры соединения распознаны И интерпретированы)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormConnectionSettings.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormConnectionSettings.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:HClassLibrary.FormConnectionSettings.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.m_formWait">
+            <summary>
+            Форма, индицирующая продолжительное выполнение операции
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.s_fileConnSett">
+            <summary>
+            Объект для работы с шифрованным файлом с параметрами соединения с БД (конфигурации)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.lockCounter">
+            <summary>
+            Объект для синхронизации доступа к счетчику кол-ва отображаемых наследуемых форм
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.formCounter">
+            <summary>
+            СЧетчик кол-ва наследуемых отображаемых форм
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.delegateStartWait">
+            <summary>
+            Делегат для вызова на отображение окна 'FormWait'
+            </summary>        
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.delegateStopWait">
+            <summary>
+            Делегат для снятия с отображения окна 'FormWait'
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.delegateEvent">
+            <summary>
+            Делегат для обработки события периодического обновления строки состояния наследуемой формы
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.delegateUpdateActiveGui">
+            <summary>
+            Делегат для обработки события - применение параметров (с обновлением) графической интерпретации данных
+            </summary>        
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.delegateHideGraphicsSettings">
+            <summary>
+            Делегат для обработки события - скрыть форму с параметрами графической интерпретации данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.delegateParamsApply">
+            <summary>
+            Делегат для обработки события - применение параметров
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormMainBase.s_iMainSourceData">
+            <summary>
+            Идентификатор основного источника данных
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.InitializeComponent">
+            <summary>
+            Инициализация индивидуальных параметров формы
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.Abort(System.String)">
+            <summary>
+            Инициировать аварийное завершение работы
+            </summary>
+            <param name="msg"></param>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.Abort(System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Инициировать (при необходимости) аврийное завершение
+             , отобразить сообщение
+            </summary>
+            <param name="msg">Текст сообщения</param>
+            <param name="bThrow">Признак инициирования аварийного завершения</param>
+            <param name="bSupport">Признак отображения контактной информации техн./поддержки</param>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.startWait">
+            <summary>
+            Запустить (отобразить) форму 'FormWait'
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.stopWait">
+            <summary>
+            Остановить (скрыть) форму 'FormWait' 
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.findMainMenuItemOfText(System.Windows.Forms.ToolStripMenuItem,System.String)">
+            <summary>
+            Рекурсивная функция поиска элемента меню в указанном пункте меню
+            </summary>
+            <param name="miParent">Пункт меню в котором осуществляется поиск</param>
+            <param name="text"></param>
+            <returns>Результат - пукт меню с текстом для поиска</returns>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.FindMainMenuItemOfText(System.String)">
+            <summary>
+            Поиск в главном меню элемента с именнем
+            </summary>
+            <param name="text">Текст пункта (под)меню для поиска</param>
+            <returns>Результат - пукт меню с текстом для поиска</returns>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.Close(System.Boolean)">
+            <summary>
+            Закрыть окно
+            </summary>
+            <param name="bForce">Признак немедленного закрытия окна</param>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.FormMainBase_Shown(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события создания дескрипотра окна
+             для подсчета кол-ва отображаемых наследуемых форм
+             для своевременного вызова функции полного останова окна 'FormWait'
+            </summary>
+            <param name="obj">Объект, инициировавший событие - this</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:HClassLibrary.FormMainBase.FormMainBase_FormClosed(System.Object,System.Windows.Forms.FormClosedEventArgs)">
+            <summary>
+            Обработчик события - закрытие формы
+             для подсчета кол-ва отображаемых наследуемых форм
+            </summary>
+            <param name="obj">Объект, инициировавший событие - this</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="F:HClassLibrary.FormMainBaseWithStatusStrip.show_error_alert">
+            <summary>
+            Признак отображения сообщения (в 1-ой части строки состояния)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormPassword.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormPassword.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:HClassLibrary.FormPassword.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormPasswordBase.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormPasswordBase.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:HClassLibrary.FormPasswordBase.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormSetPassword.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormSetPassword.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:HClassLibrary.FormSetPassword.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.FormWait">
+            <summary>
+            Класс для описания окна визуализации длительного выполнения операции
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormWait.lockState">
+            <summary>
+            Объект для блокирования изменения значения счетчика вызовов окна на отображение
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormWait._waitCounter">
+            <summary>
+            Счетчик вызовов окна на отображение
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.FormWait.isContinue">
+            <summary>
+            Признак запуска окна
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.FormWait._this">
+            <summary>
+            Ссылка на самого себя
+             для реализации создания одного и только одного объекта в границах приложения
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.FormWait.This">
+            <summary>
+            Получить объект из внешенго кода
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormWait.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormWait.StartWaitForm(System.Drawing.Point,System.Drawing.Size)">
+            <summary>
+            Вызвать на отображение окно
+            </summary>
+            <param name="ptLocationParent">Позиция отображения родительского окна</param>
+            <param name="szParent">Размер родительского окна</param>
+        </member>
+        <member name="M:HClassLibrary.FormWait.StopWaitForm(System.Boolean)">
+            <summary>
+            Снять с отображения окно
+            </summary>
+            <param name="bStopped"></param>
+        </member>
+        <member name="M:HClassLibrary.FormWait.close">
+            <summary>
+            Делегат для вызова метода закрытия окна
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormWait.setLocation(System.Drawing.Point,System.Drawing.Size)">
+            <summary>
+            Установить позицию окна
+             в зависимости от позиции родительского
+            </summary>
+            <param name="ptLocationParent">Позиция отображения родительского окна</param>
+            <param name="szParent">Размер родительского окна</param>
+        </member>
+        <member name="M:HClassLibrary.FormWait.FormWait_Shown(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - 
+            </summary>
+            <param name="sender">Объект, инициоровавший событие - this</param>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="F:HClassLibrary.FormWait.components">
+            <summary>
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormWait.Dispose(System.Boolean)">
+            <summary>
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:HClassLibrary.FormWait.InitializeComponent">
+            <summary>
+            Required method for Designer support - do not modify
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.EventArgsDataHost">
+            <summary>
+            Класс для обмена данными между объектами клиент-сервер
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.EventArgsDataHost.id_main">
+            <summary>
+            Идентификатор объекта-клиента, отправляющего сообщение
+             , сервер обязательно должен "знать" этот идентификатор
+             , а по нему определить объект-клиент для отправления ответа
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.EventArgsDataHost.reciever">
+            <summary>
+            Объект-клиент, получатель запрашиваемых данных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.EventArgsDataHost.par">
+            <summary>
+            Массив аргументов, детализирующие сообщение
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.EventArgsDataHost.#ctor(System.Int32,System.Int32,System.Object[])">
+            <summary>
+            Конструктор - основной (с параметрами)
+            </summary>
+            <param name="id_">Идентификатор объекта</param>
+            <param name="arObj">Массив аргументов сообщения</param>
+        </member>
+        <member name="M:HClassLibrary.EventArgsDataHost.#ctor(HClassLibrary.IDataHost,System.Object[])">
+            <summary>
+            Конструктор - дополнительный (с параметрами)
+            </summary>
+            <param name="objReciever">Объект-клиент, получатель запрашиваемых данных</param>
+            <param name="arObj">Массив аргументов сообщения</param>
+        </member>
+        <member name="T:HClassLibrary.ID_DATA_ASKED_HOST">
+            <summary>
+            Перечисление идентификаторов-типов сообщений
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.ID_HEAD_ASKED_HOST">
+            <summary>
+            Перечисление дополнительных идентификаторов-типов сообщений
+             , передавать в том же массиве аргументов для указания направления сообщения
+             (запросить, подтвердить получение)
+            </summary>
+        </member>
+        <member name="E:HClassLibrary.IDataHost.EvtDataAskedHost">
+            <summary>
+            Событие запроса данных для плюг'ина из главной формы
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.IDataHost.DataAskedHost(System.Object)">
+            <summary>
+            Отиравить запрос на получение данных
+            </summary>
+            <param name="par">Аргумент с детализацией запрашиваемых данных</param>
+        </member>
+        <member name="M:HClassLibrary.IDataHost.OnEvtDataRecievedHost(System.Object)">
+            <summary>
+            Обработчик события ответа от главной формы
+            </summary>
+            <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        </member>
+        <member name="M:HClassLibrary.HDataHost.OnEvtDataRecievedHost(System.Object)">
+            <summary>
+            Обработчик события ответа от главной формы
+            </summary>
+            <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        </member>
+        <member name="F:HClassLibrary.PlugInBase._host">
+            <summary>
+            Объект интерфейса подписчика
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.PlugInBase._types">
+            <summary>
+            Массив зарегистрированных типов плюгИна
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.PlugInBase._objects">
+            <summary>
+            Массив созданных
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.PlugInBase._Id">
+            <summary>
+            Идентификатор плюгина
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.PlugInBase.m_dictDataHostCounter">
+            <summary>
+            Счетчик полученных команд/сообщений от подписчика по индексу
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.PlugInBase.registerType(System.Int32,System.Type)">
+            <summary>
+            Зарегистрировать тип объекта библиотеки
+            </summary>
+            <param name="key">Ключ регистрируемого типа объекиа</param>
+            <param name="type">Регистрируемый тип</param>
+        </member>
+        <member name="M:HClassLibrary.PlugInBase.createObject(System.Int32)">
+            <summary>
+            Создание объекта(объектов) библиотеки
+            </summary>
+            <returns>признак создания</returns>
+        </member>
+        <member name="M:HClassLibrary.PlugInBase.GetObject(System.Int32)">
+            <summary>
+            Возвратить объект 'плюгина'
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.PlugInBase.GetTypeObject(System.Int32)">
+            <summary>
+            Возвратить тип объекта 'плюгина'
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.PlugInBase.GetKeyType(System.Type)">
+            <summary>
+            Возвратить идентификатор одного из зарегистрированных типов объекта 'плюгина'
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.PlugInBase.GetKeyType(System.String)">
+            <summary>
+            Возвратить идентификатор одного из зарегистрированных типов объекта 'плюгина'
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.PlugInBase.DataAskedHost(System.Object)">
+            <summary>
+            Отправить данные получателю (подписчику)
+            </summary>
+            <param name="par">Объект с передаваемыми данными (может быть массивом объектов)</param>
+        </member>
+        <member name="M:HClassLibrary.PlugInBase.OnEvtDataRecievedHost(System.Object)">
+            <summary>
+            Обработчик события ответа от главной формы
+            </summary>
+            <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        </member>
+        <member name="T:HClassLibrary.IPlugInHost">
+            <summary>
+            Интерфейс для контейнера 'плюгинов'
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.IPlugInHost.Register(HClassLibrary.IPlugIn)">
+            <summary>
+            Регистрировать 'плюгин'
+            </summary>
+            <param name="plug">Регистрируемый 'плюгин'</param>
+            <returns>Результат регистрации</returns>
+        </member>
+        <member name="T:HClassLibrary.HPlugIns.STATE_DLL">
+            <summary>
+            Перечисление состояний библиотеки
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HPlugIns.m_appDomain">
+            <summary>
+            Домен для загрузки плюгИнов
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HPlugIns.m_proxyAppDomain">
+            <summary>
+            Домен-посредник для загрузки плюгИнов
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HPlugIns.s_domEvidence">
+            <summary>
+            Объект с параметрами безопасности для создания домена (для загрузки плюгИнов)
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HPlugIns.s_domSetup">
+            <summary>
+            Объект с параметрами среды окружения для создания домена (для загрузки плюгИнов)
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HPlugIns.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+            <param name="fClickMenuItem">Делегат обработки сообщения - ваыбор п. меню</param>
+        </member>
+        <member name="M:HClassLibrary.HPlugIns.Register(HClassLibrary.IPlugIn)">
+            <summary>
+            Установить взамосвязь
+            </summary>
+            <param name="plug">Загружаемый плюгИн</param>
+            <returns>Признак успешности загрузки</returns>
+        </member>
+        <member name="P:HClassLibrary.HPlugIns.isInitPluginAppDomain">
+            <summary>
+            Признак инициализации домена для загрузки в него плюгИнов
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HPlugIns.initPluginDomain(System.String)">
+            <summary>
+            Инициализация домена для загрузки в него плюгИнов
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HPlugIns.UnloadPlugIn">
+            <summary>
+            Выгрузить из памяти загруженные плюгИны
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HPlugIns.load(System.String,System.Int32@)">
+            <summary>
+            Загрузить плюгИн с указанным наименованием
+            </summary>
+            <param name="name">Наименование плюгИна</param>
+            <param name="iRes">Результат загрузки (код ошибки)</param>
+            <returns>Загруженный плюгИн</returns>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx.ALLOW_DROP">
+            <summary>
+            Признак разрешения изменения порядка следования вкладок
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HTabCtrlEx.TYPE_TAB">
+            <summary>
+            Перечисление - типы вкладок (фиксированные, плавающие)
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HTabCtrlEx.PropertyTab">
+            <summary>
+            Структура для хранения свойств вкладки
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx.PropertyTab.id">
+            <summary>
+            Идентификатор вкладки
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx.PropertyTab.type">
+            <summary>
+            Тип вкладки
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx.m_listPropTabs">
+            <summary>
+            Список объектов со свойствами вкладок
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx._propTabLastRemoved">
+            <summary>
+            Свойства крайней закрытой вкладки
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx.s_rectPositionImg">
+            <summary>
+            Параметры для позиционирования пиктогамм на заголовке вкладки
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HTabCtrlEx.INDEX_BITMAP">
+            <summary>
+            Перечисление - индексы пиктограмм, размещаемых на заголовкее вкладки
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HTabCtrlEx.INDEX_STATE_BITMAP">
+            <summary>
+            Перечисление - индексы возможных состояний пиктограмм
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx.m_arBitmap">
+            <summary>
+            Массив пиктограмм для отображения на заголовке вкладки
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HTabCtrlEx.DelegateHTabCtrlEx">
+            <summary>
+            Тип делегата для событий/обработки
+            </summary>
+            <param name="sender">Объект, инициировавший событие</param>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="E:HClassLibrary.HTabCtrlEx.EventHTabCtrlExClose">
+            <summary>
+            Событие - закрыть вкладку
+            </summary>
+        </member>
+        <member name="E:HClassLibrary.HTabCtrlEx.EventHTabCtrlExFloat">
+            <summary>
+            Событие - Отделить вкладку от главного окна
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HTabCtrlEx.PrevSelectedIndex">
+            <summary>
+            Индекс вкладки, бывшей активной, перед текущей активной вкладкой
+            </summary>
+        </member>
+        <member name="E:HClassLibrary.HTabCtrlEx.EventPrevSelectedIndexChanged">
+            <summary>
+            Событие - изменение индекса предыдущей активной вкладки
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.#ctor">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.getBitmap(HClassLibrary.HTabCtrlEx.INDEX_BITMAP,HClassLibrary.HTabCtrlEx.INDEX_STATE_BITMAP)">
+            <summary>
+            Возвратить пиктограмму для отображения по ее типу и состоянию
+            </summary>
+            <param name="indx">Тип пиктограммы</param>
+            <param name="state">Состояние пиктограммы</param>
+            <returns>Пиктограмма для отображения</returns>
+        </member>
+        <!-- Проигнорирован некорректный комментарий XML для члена "M:HClassLibrary.HTabCtrlEx.OnDrawItem(System.Windows.Forms.DrawItemEventArgs)" -->
+        <!-- Проигнорирован некорректный комментарий XML для члена "M:HClassLibrary.HTabCtrlEx.GetContentFromResource(System.String)" -->
+        <member name="M:HClassLibrary.HTabCtrlEx.AddTabPage(System.Windows.Forms.Control,System.String,System.Int32,HClassLibrary.HTabCtrlEx.TYPE_TAB)">
+            <summary>
+            Добавить вкладку
+            </summary>
+            <param name="tab">Объект вкладки</param>
+            <param name="name">Наименование(заголовок) вкладки</param>
+            <param name="id">Идентификатор вкладки</param>
+            <param name="typeTab">Тип вкладки</param>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.RemoveTabPage">
+            <summary>
+            Удалить активную вкладку
+            </summary>
+            <returns>Признак выполнения операции удаления вкладки</returns>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.RemoveTabPage(System.Int32)">
+            <summary>
+            Удалить вкладку по индексу
+            </summary>
+            <param name="indx">Индекс вкладки</param>
+            <returns>Признак выполнения операции удаления вкладки</returns>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.getNameTab(System.String,HClassLibrary.HTabCtrlEx.TYPE_TAB)">
+            <summary>
+            Возвратить строку для заголовка вкладки с учетом размещения пиктограмм
+            </summary>
+            <param name="text">Тест для заголовка</param>
+            <param name="type">Тип вкладки (количество размещаемых пиктограмм)</param>
+            <returns>Строка заголовка вкладки</returns>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.IndexOfID(System.Int32)">
+            <summary>
+            Возвратить индекс вкладки по ее идентификатору
+            </summary>
+            <param name="id">Идентификатор вкладки</param>
+            <returns>Индекс вкладки</returns>
+        </member>
+        <member name="P:HClassLibrary.HTabCtrlEx.VisibleIDs">
+            <summary>
+            Возвратить строку-перечисление с идентификаторами отображаемых вкладок через разделитель ','
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx._draggedTab">
+            <summary>
+            Объект, перемещаемой вкладки
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.getPointedTab">
+            <summary>
+            Возвратить вкладку по текущей позиции курсора указателя
+            </summary>
+            <returns>Объект-вкладка</returns>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.swapTabPages(System.Windows.Forms.TabPage,System.Windows.Forms.TabPage)">
+            <summary>
+            Поменять местами индексы, объекты на вкладках
+            </summary>
+            <param name="src">Вкладка-источник</param>
+            <param name="dst">Вкладка-назначение</param>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx.components">
+            <summary>
+            Требуется переменная конструктора.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.Dispose(System.Boolean)">
+            <summary> 
+            Освободить все используемые ресурсы.
+            </summary>
+            <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.InitializeComponent">
+            <summary>
+            Обязательный метод для поддержки конструктора - не изменяйте
+            содержимое данного метода при помощи редактора кода.
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HTabCtrlEx.HTabPageEx.components">
+            <summary>
+            Требуется переменная конструктора.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.HTabPageEx.Dispose(System.Boolean)">
+            <summary> 
+            Освободить все используемые ресурсы.
+            </summary>
+            <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        </member>
+        <member name="M:HClassLibrary.HTabCtrlEx.HTabPageEx.InitializeComponent">
+            <summary>
+            Обязательный метод для поддержки конструктора - не изменяйте
+            содержимое данного метода при помощи редактора кода.
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HTabCtrlExEventArgs.TabIndex">
+            <summary>
+            Get/Set the tab index value where the close button is clicked
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HTabCtrlExEventArgs.TabHeaderText">
+            <summary>
+            Get/Set the tab index value where the close button is clicked
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.Logging.AppName">
+            <summary>
+            Имя приложения без расширения
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Logging.#ctor(System.String)">
+            <summary>
+            Конструктор
+            </summary>
+            <param name="name">имя лог-файла</param>
+            <param name="extLog">признак - внешнее логгирование</param>
+            <param name="updateLogText">функция записи во внешний лог-файл</param>
+            <param name="clearLogText">функция очистки внешнего лог-файла</param>
+        </member>
+        <member name="M:HClassLibrary.Logging.UpdateMarkDebugLog">
+            <summary>
+            Обновляет параметры журналирования "присоединенных" типов сообщений
+            , присоединение/отсоединение ('Link'/'UnLink')
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Logging.Suspend">
+            <summary>
+            Приостановка логгирования
+            </summary>
+            <returns>строка с именем лог-файла</returns>
+        </member>
+        <member name="M:HClassLibrary.Logging.Resume">
+            <summary>
+            Восстановление гоггирования
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Logging.LogLock">
+            <summary>
+            Блокирование лог-файла для изменения содержания
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Logging.LogUnlock">
+            <summary>
+            Разблокирование лог-файла после изменения содержания
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Logging.post(HClassLibrary.Logging.ID_MESSAGE,System.String,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Запись сообщения в лог-файл
+            </summary>
+            <param name="message">сообщение</param>
+            <param name="separator">признак наличия разделителя</param>
+            <param name="timeStamp">признак наличия метки времени</param>
+            <param name="locking">признак блокирования при записи сообщения</param>
+        </member>
+        <member name="M:HClassLibrary.Logging.LogFileName(System.Int32)">
+            <summary>
+            Наименование лог-файла
+            </summary>
+            <returns>строка с наименованием лог-файла</returns>
+        </member>
+        <member name="T:HClassLibrary.HMark">
+            <summary>
+            Класс для хранения массива признаков
+            Значение каждого признака хранится в одном из битов (адреса) объекта
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HMark.m_mark">
+            <summary>
+            Совокупность значений признаков
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HMark.#ctor(System.Int32)">
+            <summary>
+            Конструктор объекта
+            </summary>
+            <param name="val">Совокупность значений признаков</param>
+        </member>
+        <member name="M:HClassLibrary.HMark.#ctor(System.Int32[])">
+            <summary>
+            Конструктор объекта
+            </summary>
+            <param name="arNumBits">Индексы (номера)</param>
+        </member>
+        <member name="M:HClassLibrary.HMark.marked(System.Boolean,System.Int32)">
+            <summary>
+            Присвоить признак по указанному адресу (номеру бита)
+            </summary>
+            <param name="opt">Значение признака</param>
+            <param name="bit">Номер бита</param>
+        </member>
+        <member name="M:HClassLibrary.HMark.Set(System.Int32,System.Boolean)">
+            <summary>
+            Установить значение признака по указанному адресу
+            </summary>
+            <param name="bit">Номер бита</param>
+            <param name="val">Значение признака</param>
+        </member>
+        <member name="M:HClassLibrary.HMark.SetOf(HClassLibrary.HMark)">
+            <summary>
+            Установить значение всех признаков
+            </summary>
+            <param name="mark">Исходное значение для всех признаков</param>
+        </member>
+        <member name="M:HClassLibrary.HMark.SetOf(System.Int32)">
+            <summary>
+            Установить значение всех признаков
+            </summary>
+            <param name="val">Исходное значение для всех признаков</param>
+        </member>
+        <member name="M:HClassLibrary.HMark.Add(HClassLibrary.HMark)">
+            <summary>
+            Добавить истинные признаки при их отсутствии
+            </summary>
+            <param name="mark">Исходное значение для всех признаков</param>
+        </member>
+        <member name="M:HClassLibrary.HMark.Marked(System.Int32)">
+            <summary>
+            Установить значение признака ИСТИНА по адресу (номеру бита)
+            </summary>
+            <param name="bit">Номер бита</param>
+        </member>
+        <member name="M:HClassLibrary.HMark.UnMarked">
+            <summary>
+            Установить все признаки в ЛОЖЬ
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HMark.UnMarked(System.Int32)">
+            <summary>
+            Установить значение признака в ЛОЖЬ по адресу (номеру бита)
+            </summary>
+            <param name="bit">Номер бита</param>
+        </member>
+        <member name="M:HClassLibrary.HMark.IsMarked(System.Int32)">
+            <summary>
+            Проверить установлено ли значение признака в ИСТИНА по адресу (номеру бита)
+            </summary>
+            <param name="bit">Номер бита</param>
+            <returns>Признак установки значения</returns>
+        </member>
+        <member name="M:HClassLibrary.HMark.IsMarked">
+            <summary>
+            Проверить установлен ли хотя бы один признак в ИСТИНА
+            </summary>
+            <returns>Признак установки значения</returns>
+        </member>
+        <member name="M:HClassLibrary.HMark.IsMarked(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Проверить установлено ли значение признака в ИСТИНА по адресу (номеру бита) и доп./смещению
+            </summary>
+            <param name="val">Все значения признаков</param>
+            <param name="bit">Номер бита</param>
+            <param name="offset">Доп./смещение</param>
+            <returns>Признак установки значения</returns>
+        </member>
+        <member name="P:HClassLibrary.HMark.Value">
+            <summary>
+            Возвратить значение всех признаков в виде целого числа
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.MSExcelIO">
+            <summary>
+            Класс для описания объекта-приложения MS Excel
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.MSExcelIO.TYPE_INSTANCE">
+            <summary>
+            Тип создаваемого COM-объекта
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.MSExcelIO.UID">
+            <summary>
+            Строка - идентификатор приложения MS Excel
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.MSExcelIO.oExcel">
+            <summary>
+            Объект - приложения MS Excel
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.MSExcelIO.WorkBooks">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.MSExcelIO.WorkBook">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.MSExcelIO.WorkSheets">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.MSExcelIO.WorkSheet">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.MSExcelIO.Range">
+            <summary>
+            Объект - массив открытых документов - книг MS Excel
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.MSExcelIO.sheets">
+            <summary>
+            Объект - словарь листов текущей книги (ключ-наименование:значение-порядковый номер листа)
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.#ctor">
+            <summary>
+            КОНСТРУКТОР КЛАССА
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.MSExcelIO.IsValidate">
+            <summary>
+            Признак возможности использования функционала тек./объекта
+             , иначе: установлен ли MS Excel на ПК
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.MSExcelIO.Visible">
+            <summary>
+            ВИДИМОСТЬ MS EXCEL
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getWorkBooks">
+            <summary>
+            Получить массив всех открытых документов - книг
+            </summary>
+            <returns>Массив всех открытых документов - книг</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.addWorkBook(System.String)">
+            <summary>
+            Добавить к массиву открытых документов элемент - книгу с именем - полным путем к книге
+            </summary>
+            <param name="name">Строка - полный путь к книге</param>
+            <returns>Объект - книга MS Excel</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.openWorkBook(System.String,System.Int32@)">
+            <summary>
+            Добавить к массиву открытых документов элемент - книгу с именем - полным путем к книге
+            </summary>
+            <param name="name">Строка - полный путь к книге</param>
+            <param name="err">Признак результата выполнения метода</param>
+            <returns>Объект - книга MS Excel</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getWorkBook(System.String,System.Int32@)">
+            <summary>
+            Возвратить объект - книгу MS Excel по указанному наименованию
+            </summary>
+            <param name="name">Наименование книги (внутреннее для приложения)</param>
+            <param name="err">Признак результата выполнения метода</param>
+            <returns>Объект - книга MS Excel</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getWorkBook(System.Int32)">
+            <summary>
+            Возвратить объект - книгу MS Excel по указанному индексу
+            </summary>
+            <param name="indx">Индекс книги (по умолчанию - 1)</param>
+            <returns>Объект - книга MS Excel</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getWorkSheets">
+            <summary>
+            Получить массив всех листов текущей книги
+            </summary>
+            <returns>Массив всех листов книги</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getWorkSheet(System.Int32)">
+            <summary>
+            Получить лист книги с указанным номером (1 - по умолчанию)
+            </summary>
+            <param name="num">Номер листа (1-ый - по умолчанию)</param>
+            <returns>Лист книги MS Excel</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getRange(System.String)">
+            <summary>
+            Получить объект - диапазон ячеек с указанным адресом на текущем листе
+            </summary>
+            <param name="pos">Строка - адрес диапазона (по умолчанию "A1")</param>
+            <returns>Объект - диапазон ячеек</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getRange(System.Int32,System.Int32)">
+            <summary>
+            Получить объект - диапазон ячеек с указанным адресом на текущем листе
+            </summary>
+            <param name="col">Номер толбца</param>
+            <param name="row">Номер строки</param>
+            <returns>Объект - диапазон ячеек</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.IsOpen(System.String,System.Int32@)">
+            <summary>
+            Проверить открыт ли документ?
+            </summary>
+            <param name="name">Строка - полный путь к документу</param>
+            <param name="err">Признак результата выполнения метода</param>
+            <returns>Признак открыт/закрыт документ</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.OpenDocument(System.String)">
+            <summary>
+            ОТКРЫТЬ ДОКУМЕНТ
+            </summary>
+            <param name="name">Строка - полный путь к документу</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.NewDocument(System.String)">
+            <summary>
+            СОЗДАТЬ НОВЫЙ ДОКУМЕНТ
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.Int32,System.Int32,System.Int32,System.Double,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="indx">Индекс страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.String,System.Int32,System.Int32,System.Double,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.String,System.Int32,System.Int32,System.Single,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.Int32,System.Int32,System.Int32,System.String,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="indx">Индекс страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.String,System.Int32,System.Int32,System.String,System.Boolean)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на указанной странице (страница становится активной) текущей книги
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <param name="bSelectSheet">Признак установки активной указанной страницы</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.Int32,System.Int32,System.Double)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на текущей странице текущей книги
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.Int32,System.Int32,System.Single)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на текущей странице текущей книги
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.Int32,System.Int32,System.String)">
+            <summary>
+            Установить значение для ячейки с указанными номерами стобца, строки
+             на текущей странице текущей книги
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.String,System.String)">
+            <summary>
+            Установить значение для ячейки по указанному адресу диапазона ячеек
+             на текущей странице текущей книги
+            </summary>
+            <param name="pos">Адрес диапазона ячеек</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.String,System.Double)">
+            <summary>
+            Установить значение для ячейки по указанному адресу диапазона ячеек
+             на текущей странице текущей книги
+            </summary>
+            <param name="pos">Адрес диапазона ячеек</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.String,System.Single)">
+            <summary>
+            Установить значение для ячейки по указанному адресу диапазона ячеек
+             на текущей странице текущей книги
+            </summary>
+            <param name="pos">Адрес диапазона ячеек</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.setValue(System.Object,System.String)">
+            <summary>
+            Установить значение для ячейки в указанном диапазоне ячеек
+             на текущей странице текущей книги
+            </summary>
+            <param name="range">Объект - диапазон ячеек</param>
+            <param name="value">Значение ячейки</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.CloseExcelDoc">
+            <summary>
+            Закрыть текущий документ
+            </summary>
+            <returns>Результат выполнения операции</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.CloseExcelDoc(System.String)">
+            <summary>
+            Закрыть текущий документ
+            </summary>
+            <param name="name">Строка - путь к документу - внутреннее наименование книги MS Excel</param>
+            <returns>Результат выполнения операции</returns>
+        </member>
+        <member name="P:HClassLibrary.MSExcelIO.Count">
+            <summary>
+            Количество открытых документов
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.CloseExcelAllDocs">
+            <summary>
+            Закрыть все книги текущего объекта приложения MS Excel
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.SaveExcel(System.String)">
+            <summary>
+            СОХРАНИТЬ текущий ДОКУМЕНТ
+            </summary>
+            <param name="name">Строка - полный путь документа - книги MS Excel</param>
+            <returns>Признак успеха/ошибки при выполнении метода</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.numtochar(System.Int32)">
+            <summary>
+            Возвратить строку - наименование столбца на листе книги MS Excel
+             по указанному номеру столбца
+            </summary>
+            <param name="n">Номер столбца на листе книги MS Excel</param>
+            <returns>Строка - наименование столбца</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.WriteValue(System.String,System.Int32,System.Int32,System.String)">
+            <summary>
+            ЗАПИСЬ ЗНАЧЕНИЯ В ЯЧЕЙКУ на страницу книги с указанными номерами столбца, строки
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение для записи</param>
+            <returns>Признак выполнения операции (True - успех)</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.WriteValue(System.String,System.Int32,System.Int32,System.Double)">
+            <summary>
+            ЗАПИСЬ ЗНАЧЕНИЯ В ЯЧЕЙКУ
+            </summary>
+            <param name="sheetName">Наименование листа</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение для записи</param>
+            <returns>Признак выполнения операции (True - успех)</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.WriteValue(System.Int32,System.Int32,System.String)">
+            <summary>
+            ЗАПИСЬ ЗНАЧЕНИЯ В ЯЧЕЙКУ
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <returns>Результат записи значения</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.WriteValue(System.Int32,System.Int32,System.Double)">
+            <summary>
+            ЗАПИСЬ ЗНАЧЕНИЯ В ЯЧЕЙКУ
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <param name="value">Значение ячейки</param>
+            <returns>Результат записи значения</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getValue(System.Int32,System.Int32)">
+            <summary>
+            Получить значение из ячеек диапазона по указанным номерам столбуа, строки
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getValue(System.String)">
+            <summary>
+            Получить значение из ячеек диапазона по адресу
+            </summary>
+            <param name="pos">Адрес диапазона ячеек</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getValue(System.Object)">
+            <summary>
+            Получить значение из ячеек указанного диапазона
+            </summary>
+            <param name="range">Диапазон ячеек</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.getValue">
+            <summary>
+            Получить значение из ячеек текущего диапазона
+            </summary>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.ReadValue(System.Int32,System.Int32)">
+            <summary>
+            ЧТЕНИЕ ЗНАЧЕНИЯ ИЗ ЯЧЕЙКИ
+            </summary>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.ReadValue(System.String,System.Int32,System.Int32)">
+            <summary>
+            ЧТЕНИЕ ЗНАЧЕНИЯ ИЗ ЯЧЕЙКИ
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+            <param name="col">Номер столбца</param>
+            <param name="row">Номер строки</param>
+            <returns>Значение ячейки</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.SelectWorksheet(System.String)">
+            <summary>
+            Выбрать (установить текущую) страницу
+            </summary>
+            <param name="sheetName">Наименование страницы</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.SelectWorksheet(System.Int32)">
+            <summary>
+            Выбрать (установить текущую) страницу
+            </summary>
+            <param name="indx">Индекс страницы</param>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.ReCreate">
+            <summary>
+            Повторная инициализация объекта MS Excel
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.Create(HClassLibrary.MSExcelIO.TYPE_INSTANCE@)">
+            <summary>
+            Создать объект для работы с COM-приложением
+            </summary>
+            <param name="typeInstance">Тип экземпляра COM-приложения</param>
+            <returns>Объект с экземпляром COM-приложения</returns>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.Dispose">
+            <summary>
+            УНИЧТОЖЕНИЕ ОБЪЕКТА EXCEL
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.MSExcelIO.dispose(System.Boolean)">
+            <summary>
+            Освобождение объекта MS Excel
+            </summary>
+            <param name="bEnded"></param>
+        </member>
+        <member name="M:HClassLibrary.Passwords.getOwnerPass(System.Int32)">
+            <summary>
+            Наименование пользователя
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.Passwords.m_idListener">
+            <summary>
+            Идентификатор соединения с источником информации при выполнении запроса
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Passwords.SetIdListener(System.Int32)">
+            <summary>
+            Идентификатор соединения с источником информации при выполнении запроса
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Passwords.GetPassword(System.Int32@)">
+            <summary>
+            Функция получения пароля для пользователя  
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Passwords.SetPassword(System.String,System.UInt32,System.UInt32)">
+            <summary>
+            Функция проверки установки пароля для пользователя
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Passwords.ComparePassword(System.String,System.UInt32,System.UInt32)">
+            <summary>
+            Функция проверки пароля пользователя
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Passwords.GetPassRequest">
+            <summary>
+            Функция получения строки запроса на проверку пароля
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Passwords.GetPassResponse(System.Data.DataTable)">
+            <summary>
+            Функция проверки пароля для пользователя
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Passwords.SetPassRequest(System.String,System.Boolean)">
+            <summary>
+            Функция получения запроса для установки пароля
+            <returns>Запрос</returns>
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DelegateFunc">
+            <summary>
+            Тип для делегата без аргументов и без возвращаемого значения
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.DelegateIntFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'int' и без возвращаемого значения
+            </summary>
+            <param name="param">Аргумент 1</param>
+        </member>
+        <member name="T:HClassLibrary.DelegateIntIntFunc">
+            <summary>
+            Тип для делегата с аргументами типа 'int', 'int' и без возвращаемого значения
+            </summary>
+            <param name="param1">Аргумент 1</param>
+            <param name="param2">Аргумент 2</param>
+        </member>
+        <member name="T:HClassLibrary.IntDelegateIntIntFunc">
+            <summary>
+            Тип для делегата с аргументами типа 'int', 'int' с возвращаемым значением типа 'int'
+            </summary>
+            <param name="param1">Аргумент 1</param>
+            <param name="param2">Аргумент 2</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:HClassLibrary.DelegateStringFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'string' и без возвращаемого значения
+            </summary>
+            <param name="param">Аргумент 1</param>
+        </member>
+        <member name="T:HClassLibrary.DelegateBoolFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'bool' и без возвращаемого значения
+            </summary>
+            <param name="param">Аргумент 1</param>
+        </member>
+        <member name="T:HClassLibrary.DelegateObjectFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'object' и без возвращаемого значения
+            </summary>
+            <param name="obj">Аргумент 1</param>
+        </member>
+        <member name="T:HClassLibrary.DelegateRefObjectFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'ссылка на object' с и без возвращаемого значения
+            </summary>
+            <param name="obj">Аргумент 1</param>
+        </member>
+        <member name="T:HClassLibrary.DelegateDateFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'DateTime' с и без возвращаемого значения
+            </summary>
+            <param name="date">Аргумент 1</param>
+        </member>
+        <member name="T:HClassLibrary.IntDelegateFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'DateTime' и без возвращаемого значения
+            </summary>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:HClassLibrary.IntDelegateIntFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'int' с возвращаемым значения типа 'int'
+            </summary>
+            <param name="param">>Аргумент 1</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:HClassLibrary.StringDelegateFunc">
+            <summary>
+            Тип для делегата без аргументов с возвращаемым значения типа 'string'
+            </summary>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:HClassLibrary.StringDelegateIntFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'int' с возвращаемым значения типа 'string'
+            </summary>
+            <param name="param">Аргумент 1</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:HClassLibrary.StringDelegateStringFunc">
+            <summary>
+            Тип для делегата с аргументом типа 'string' с возвращаемым значения типа 'string'
+            </summary>
+            <param name="keyParam">Аргумент 1</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="T:HClassLibrary.HException">
+            <summary>
+            Класс исключения для хранения дополнительно 
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HException.m_code">
+            <summary>
+            Целочисленное значение детализирующее исключение пользователя
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HException.#ctor(System.Int32,System.String)">
+            <summary>
+            Конструктор - основной (с параметрами)
+            </summary>
+            <param name="code">Дополнительный код исключения</param>
+            <param name="msg">Сообщение для создания объекта базового класса</param>
+        </member>
+        <member name="T:HClassLibrary.Errors">
+            <summary>
+            Перечисление - идентификатор ошибки
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.ProgramBase">
+            <summary>
+            Базовый класс для класса приложения
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.ProgramBase.ID_APP">
+            <summary>
+            Перечисление - идентификаторы приложений из состава ИС Статистика
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.Start(System.Boolean)">
+            <summary>
+            Журналирование старта приложения
+            </summary>
+            <param name="bGUI">Признак наличия графического интерфейса с пользователем</param>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.Exit">
+            <summary>
+            Журналирование завершения приложения
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.Application_ThreadException(System.Object,System.Threading.ThreadExceptionEventArgs)">
+            <summary>
+            Оброботчик исключений в потоках и запись их в лог
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.CurrentDomain_UnhandledException(System.Object,System.UnhandledExceptionEventArgs)">
+            <summary>
+            Оборботчик не перехваченного исключения в текущем домене и запись их в лог
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.SeparateAppDomain_UnhandledException(System.Object,System.UnhandledExceptionEventArgs)">
+            <summary>
+            Оборботчик не перехваченного исключения в текущем домене и запись их в лог
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.fAppDomain_UnhandledException(System.Object,System.UnhandledExceptionEventArgs,System.Boolean,System.Boolean)">
+            <summary>
+            Оборботчик не перехваченного исключения в текущем домене и запись их в лог
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.ProgramBase.AppName">
+            <summary>
+            Запись в  лог имени проложения
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.ProgramBase.AppProductVersion">
+            <summary>
+            Возвращает версию продукта с датой
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.AppExit">
+            <summary>
+            Функция завершения приложения
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.AppRestart">
+            <summary>
+            Функция перезапуска приложения
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.getCommandLineArgs">
+            <summary>
+            Формируек командную строку для запуска приложения
+              (исключая путь к образу исполняемого файла)
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.ProgramBase.wait_allowingEvents(System.Int32)">
+            <summary>
+            Обработчик сообщений в очереди
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HCmd_Arg">
+            <summary>
+            Класс обработки камандной строки
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HCmd_Arg.m_dictCmdArgs">
+            <summary>
+            Значения командной строки
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.#ctor(System.String[])">
+            <summary>
+            Основной конструктор класса
+            </summary>
+            <param name="args">Параметры командной строки</param>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.handlerArgs(System.String[])">
+            <summary>
+            Обработка CommandLine - формирование словаря со значениями
+            </summary>
+            <param name="cmdLine">Параметры командной строки</param>
+        </member>
+        <member name="T:HClassLibrary.HCmd_Arg.ProgramInfo">
+            <summary>
+            Класс для создания спец имени для мьютекса
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.ProgramInfo.NewGuid">
+            <summary>
+            Создание GUID для приложения
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:HClassLibrary.HCmd_Arg.ProgramInfo.NameMtx">
+            <summary>
+            Строковя уникальная строка для наименования мьютекса
+             (из пути запускаемого приложения)
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HCmd_Arg.ProgramInfo.AssemblyTitle">
+            <summary>
+            Получение имени запускаемого файла
+            </summary>
+        </member>
+        <member name="T:HClassLibrary.HCmd_Arg.SingleInstance">
+            <summary>
+            Класс по работе с запущенным приложением
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HCmd_Arg.SingleInstance.IsOnlyInstance">
+            <summary>
+            Проверка на повторный запуск
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.SingleInstance.sendMsg(System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            Отправка сообщения приложению
+            для его активации
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.SingleInstance.ReleaseMtx">
+            <summary>
+            освобождение мьютекса
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.SingleInstance.StopApp">
+            <summary>
+            Остановка работы дублирующего приложения
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.SingleInstance.InterruptReApp">
+            <summary>
+            Прерывание запуска основного(текущего) приложения
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HCmd_Arg.SingleInstance.HandleWnd">
+            <summary>
+            Дескриптор окна дублирующего процесса
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.SingleInstance.getWindowThreadProcessId(System.Int32)">
+            <summary>
+            Возвратить дескриптор окна по идентификатору процесса
+            </summary>
+            <param name="id">Идентификатор процесса</param>
+            <returns>Дескриптор (главного) окна приложения</returns>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.SingleInstance.SwitchToCurrentInstance">
+            <summary>
+            Активация окна
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.SingleInstance.getWindowThreadProcessId(System.Int32,System.IntPtr,System.Boolean@)">
+            <summary>
+            Возвратить дескриптор окна, если процесс является его владельцем, иначе null
+            </summary>
+            <param name="id">Идентификатор приложения</param>
+            <param name="hWnd">Дескриптор окна для проверки</param>
+             <param name="bIsOwner">Признак совпадения идентификаторов главных потоков (???процессов) переданного в 1-ом аргументе и владельца окна, переданного во 2-ом аргументе</param>
+            <returns>Дескриптор окна</returns>
+        </member>
+        <member name="M:HClassLibrary.HCmd_Arg.execCmdLine(System.Boolean,System.Boolean)">
+            <summary>
+            Обработка команды старт/стоп
+            </summary>
+            <param name="bIsExecute">Признак продолжения выполнения текущего экземпляра</param>
+            <param name="bIsOnlyInstance">Признак уникальности текущего экземпляра</param>
+        </member>
+        <member name="T:HClassLibrary.Properties.Resources">
+            <summary>
+              Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.Properties.Resources.ResourceManager">
+            <summary>
+              Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.Properties.Resources.Culture">
+            <summary>
+              Перезаписывает свойство CurrentUICulture текущего потока для всех
+              обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.Properties.Resources.closeInActive">
+            <summary>
+              Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.Properties.Resources.closeNonActive">
+            <summary>
+              Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.Properties.Resources.floatInActive">
+            <summary>
+              Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.Properties.Resources.floatNonActive">
+            <summary>
+              Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Значок).
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.#ctor(System.Net.IPAddress,System.Int32)">
+            <summary>
+            Конструктор по известному IP-адресу
+            </summary>
+            <param name="address">The IP Address of the server</param>
+            <param name="port">The port of the server</param>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.#ctor(System.Net.IPAddress[],System.Int32)">
+            <summary>
+            Construct a new client where multiple IP Addresses for
+            the same client are known.
+            </summary>
+            <param name="addresses">The array of known IP Addresses</param>
+            <param name="port">The port of the server</param>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.#ctor(System.String,System.Int32)">
+            <summary>
+            Конструктор по IP-адресу или сетевому имени компьютера
+            известному в домене.
+            </summary>
+            <param name="hostNameOrAddress">Сетевое имя или IP-адрес</param>
+            <param name="port">Номер порт для подключения к серверу</param>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.#ctor(System.Int32)">
+            <summary>
+            Защищенный конструктор для других конструкторов
+            общий для нескольких операций.
+            </summary>
+            <param name="port"></param>
+        </member>
+        <member name="P:HClassLibrary.TcpClientAsync.m_Encoding">
+            <summary>
+            Объект, использующийся для кодировки/декодировки отправляемых/получаемых сообщений.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.Connect">
+            <summary>
+            Попытка соединения по какому-либо из заданных IP-адресов
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.Write(System.String)">
+            <summary>
+            Запись строки в поток с использованием кодировки по умолчанию.
+            </summary>
+            <param name="data">Строка для записи</param>
+            <returns>A WaitHandle может использоваться для определения
+            завершения операции записи.</returns>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.Write(System.Byte[])">
+            <summary>
+            Запись массива байтов в поток записи открытого соединения
+            </summary>
+            <param name="bytes">Массив для записи</param>
+            <returns>WaitHandle может использоваться для определения
+            завершения операции записи.</returns>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.WriteCallback(System.IAsyncResult)">
+             <summary>
+            Функция возврата для операции записи
+             </summary>
+             <param name="result">The AsyncResult object</param>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.ConnectCallback(System.IAsyncResult)">
+            <summary>
+            Функция возврата для операции соединения
+            </summary>
+            <param name="result">The AsyncResult object</param>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.ReadCallback(System.IAsyncResult)">
+            <summary>
+            Callback for Read operation
+            </summary>
+            <param name="result">The AsyncResult object</param>
+        </member>
+        <member name="M:HClassLibrary.TcpClientAsync.GetHostAddressesCallback(System.IAsyncResult)">
+            <summary>
+            Callback for Get Host Addresses operation
+            </summary>
+            <param name="result">The AsyncResult object</param>
+        </member>
+        <member name="T:HClassLibrary.TcpServerAsync">
+            <summary>
+            An Asynchronous TCP Server that makes use of system managed threads
+            and callbacks to stop the server ever locking up.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.#ctor(System.Net.IPAddress,System.Int32)">
+            <summary>
+            Constructor for a new server using an IPAddress and Port
+            </summary>
+            <param name="localaddr">The Local IP Address for the server.</param>
+            <param name="port">The port for the server.</param>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.#ctor(System.Net.IPEndPoint)">
+            <summary>
+            Constructor for a new server using an end point
+            </summary>
+            <param name="localEP">The local end point for the server.</param>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.#ctor">
+            <summary>
+            Private constructor for the common constructor operations.
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.TcpServerAsync.Encoding">
+            <summary>
+            The encoding to use when sending / receiving strings.
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.TcpServerAsync.TcpClients">
+            <summary>
+            An enumerable collection of all the currently connected tcp clients
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.Start">
+            <summary>
+            Starts the TCP Server listening for new clients.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.Stop">
+            <summary>
+            Stops the TCP Server listening for new clients and disconnects
+            any currently connected clients.
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.Write(System.Net.Sockets.TcpClient,System.String)">
+            <summary>
+            Writes a string to a given TCP Client
+            </summary>
+            <param name="tcpClient">The client to write to</param>
+            <param name="data">The string to send.</param>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.Write(System.String)">
+            <summary>
+            Writes a string to all clients connected.
+            </summary>
+            <param name="data">The string to send.</param>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.Write(System.Byte[])">
+            <summary>
+            Writes a byte array to all clients connected.
+            </summary>
+            <param name="bytes">The bytes to send.</param>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.Write(System.Net.Sockets.TcpClient,System.Byte[])">
+            <summary>
+            Writes a byte array to a given TCP Client
+            </summary>
+            <param name="tcpClient">The client to write to</param>
+            <param name="bytes">The bytes to send</param>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.WriteCallback(System.IAsyncResult)">
+            <summary>
+            Callback for the write opertaion.
+            </summary>
+            <param name="result">The async result object</param>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.AcceptTcpClientCallback(System.IAsyncResult)">
+            <summary>
+            Callback for the accept tcp client opertaion.
+            </summary>
+            <param name="result">The async result object</param>
+        </member>
+        <member name="M:HClassLibrary.TcpServerAsync.ReadCallback(System.IAsyncResult)">
+            <summary>
+            Callback for the read opertaion.
+            </summary>
+            <param name="result">The async result object</param>
+        </member>
+        <member name="T:HClassLibrary.Client">
+            <summary>
+            Internal class to join the TCP client and buffer together
+            for easy management in the server
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.Client.#ctor(System.Net.Sockets.TcpClient,System.Byte[])">
+            <summary>
+            Constructor for a new Client
+            </summary>
+            <param name="tcpClient">The TCP client</param>
+            <param name="buffer">The byte array buffer</param>
+        </member>
+        <member name="P:HClassLibrary.Client.TcpClient">
+            <summary>
+            Gets the TCP Client
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.Client.Buffer">
+            <summary>
+            Gets the Buffer.
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.Client.NetworkStream">
+            <summary>
+            Gets the network stream
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HUsers.HProfiles.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Функция подключения пользователя
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HUsers.HProfiles.GetAllowed(System.Int32)">
+            <summary>
+            Функция получения доступа
+            </summary>
+            <param name="id">ID типа(unit)</param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.HUsers.HProfiles.SetAllowed(System.Int32,System.Int32,System.String)">
+            <summary>
+            Функция добавления прав доступа для пользователя
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HUsers.UserDomainName">
+            <summary>
+            Доменные имена пользователя/компьютера
+            !!! - используется ТОЛЬКО для информации
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HUsers.registrationEnv(System.Object)">
+            <summary>
+            Запуск проверки пользователя 
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HUsers.getUsersRequest(System.String,System.String)">
+            <summary>
+            Функция получения строки запроса пользователя
+             /// <returns>Строка строку запроса</returns>
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HUsers.GetUsers(System.Data.Common.DbConnection@,System.String,System.String,System.Data.DataTable@,System.Int32@)">
+            <summary>
+            Функция запроса для поиска пользователя
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HUsers.GetRoles(System.Data.Common.DbConnection@,System.String,System.String,System.Data.DataTable@,System.Int32@)">
+            <summary>
+            Функция взятия ролей из БД
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HUsers.Id">
+            <summary>
+            Возвращает ИД пользователя
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HUsers.DomainName">
+            <summary>
+            Возвращает доменное имя
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HUsers.allTEC">
+            <summary>
+            Возвращает ИД ТЭЦ
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.FormMainFloatBase.container_onSizeChanged(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события - изменение размера панели
+            </summary>
+            <param name="obj">Объект, инициировавший событие (контейнер панели)</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="T:HClassLibrary.HDateTime.INTERVAL">
+            <summary>
+            Перечисление - идентификаторы периодов времени
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HDateTime.NameMonths">
+            <summary>
+            Массив со строковыми наименованиями месяцев в году
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.HDateTime.s_Name_Moscow_TimeZone">
+            <summary>
+            Наименование в ОС для зоны "Москва - стандартное время РФ"
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.HDateTime.ToMoscowTimeZone(System.DateTime)">
+            <summary>
+            Привести дату/время к зоне "Москва - стандартное время РФ"
+            </summary>
+            <param name="dt">Дата/время для приведения</param>
+            <returns>Дата/время в МСК</returns>
+        </member>
+        <member name="M:HClassLibrary.HDateTime.ToMoscowTimeZone">
+            <summary>
+             Возвратить текущие дату/время в МСК
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:HClassLibrary.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE">
+            <summary>
+            Разность между локальным текущим времененм и МСК текущим временем
+            </summary>
+        </member>
+        <member name="P:HClassLibrary.HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE">
+            <summary>
+            Возвратить смещение зоны "Москва - стандартное время РФ" от UTC
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.PlugInMenuItem.register(System.Int32,System.Type,System.String,System.String)">
+            <summary>
+            Зарегистрировать тип объекта в библиотеке, для отображения при обработке п. меню
+            </summary>
+            <param name="key">Идентификатор типа (панели)</param>
+            <param name="type">Тип панели</param>
+            <param name="nameMenuItemOwner">Текст родительского п. мен.</param>
+            <param name="nameMenuItem">Текст п. меню</param>
+        </member>
+        <member name="M:HClassLibrary.PlugInMenuItem.OnClickMenuItem(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик выбора пункта меню для плюг'ина
+            </summary>
+            <param name="obj">объект-инициатор события</param>
+            <param name="ev">параметры события</param>
+        </member>
+        <member name="T:HClassLibrary.WinApi">
+            <summary>
+            Библиотека функций WinApi
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.WinApi.WM_SYSCOMMAND">
+            <summary>
+            Служит для генерации сообщения WM_SYSCOMMAND
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.WinApi.WM_ACTIVATEAPP">
+            <summary>
+            Constant value was found in the "windows.h" header file.
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.WinApi.SC_CLOSE">
+            <summary>
+            Для использования как wParam при WM_SYSCOMMAND. Отправляет приложению сообщение, что ПОЛЬЗОВТЕЛЬ захотел закрыть окно
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.WinApi.SC_RESTORE">
+            <summary>
+            Для использования как wParam при WM_SYSCOMMAND. Отправляет приложению сообщение,
+            что ПОЛЬЗОВТЕЛЬ захотел восстановить нормальный размер окна
+            </summary>
+        </member>
+        <member name="F:HClassLibrary.WinApi.WM_CLOSE">
+            <summary>
+            Служит для закрытия приложения от имени TaskManager
+            </summary>
+        </member>
+        <member name="M:HClassLibrary.WinApi.EnumWindows(HClassLibrary.WinApi.EnumWindowsProcDel,System.IntPtr)">
+            <summary>
+            Перечисление всех окон
+            </summary>
+            <param name="lpEnumFunc"></param>
+            <param name="lParam"></param>
+            <returns></returns>
+        </member>
+        <member name="T:HClassLibrary.WinApi.EnumWindowsProcDel">
+            <summary>
+            Тип для делегата при использовании в функции поиска
+            </summary>
+            <param name="hWnd">Дескриптор окна</param>
+            <param name="lParam">Аргумент 1</param>
+            <returns>Результат выполнения</returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.IsIconic(System.IntPtr)">
+            <summary>
+            Определяет свернуто ли приложение
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.GetWindowText(System.IntPtr,System.Text.StringBuilder,System.Int32)">
+            <summary>
+            Получает заголовок окна
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <param name="lpString"></param>
+            <param name="nMaxCount"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.GetWindowTextLength(System.IntPtr)">
+            <summary>
+            получает размер заголовка окна
+            </summary>
+            <param name="hWnd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.FindWindowEx(System.IntPtr,System.IntPtr,System.String,System.String)">
+            <summary>
+            Поиск дочерних окон
+            </summary>
+            <param name="parentHandle">имя родителя</param>
+            <param name="childAfter"></param>
+            <param name="lclassName"></param>
+            <param name="windowTitle"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.SendMessage(System.IntPtr,System.Int32,System.IntPtr,System.IntPtr)">
+            <summary>
+            Посылает сообщение оконной функции указанного окна
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <param name="Msg">сообщение</param>
+            <param name="wParam"></param>
+            <param name="lParam"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.PostMessage(System.IntPtr,System.UInt32,System.IntPtr,System.IntPtr)">
+            <summary>
+            Отправить сообщение окну
+            </summary>
+            <param name="hWnd">Дескриптор окна</param>
+            <param name="Msg">Сообщение (идентификатор)</param>
+            <param name="wParam">Аргумент 1</param>
+            <param name="lParam">Аргумент 2</param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.PostThreadMessage(System.UInt32,System.UInt32,System.IntPtr,System.IntPtr)">
+            <summary>
+            Отправить сообщение потоку
+            </summary>
+            <param name="threadId">Тдентификатор потока</param>
+            <param name="msg">Сообщение (идентификатор)</param>
+            <param name="wParam">Аргумент 1</param>
+            <param name="lParam">Аргумент 2</param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.GetWindowThreadProcessId(System.IntPtr,System.Int32@)">
+            <summary>
+            Получение ид потока, который создал окно
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <param name="lpdwProcessId">номер ид</param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.FindWindow(System.String,System.String)">
+            <summary>
+            Найти дескриптор окна
+            </summary>
+            <param name="ClassName"></param>
+            <param name="WindowName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.ShowWindow(System.IntPtr,System.Int32)">
+            <summary>
+            Разворачивает окно
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <param name="nCmdShow"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.SetForegroundWindow(System.IntPtr)">
+            <summary>
+            Выводит поверх всех окон приложение
+            </summary>
+            <param name="hWnd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.IsWindowVisible(System.IntPtr)">
+            <summary>
+            Проверка видимости окна
+            </summary>
+            <param name="hWnd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.GetPlacement(System.IntPtr)">
+            <summary>
+            
+            </summary>
+            <param name="hwnd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HClassLibrary.WinApi.GetWindowPlacement(System.IntPtr,HClassLibrary.WinApi.WINDOWPLACEMENT@)">
+            <summary>
+            Получает данные о состоянии окна (WindowState)
+            </summary>
+            <param name="hWnd">дескриптор окна</param>
+            <param name="lpwndpl">состояние окна</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

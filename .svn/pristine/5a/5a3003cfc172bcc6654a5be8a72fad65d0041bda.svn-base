@@ -1,0 +1,119 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using System.Data.Common;
+
+using StatisticTrans;
+
+using StatisticCommon;
+using ASUTP.Database;
+using ASUTP.Helper;
+using ASUTP;
+using System.ServiceModel;
+using System.ServiceModel.Configuration;
+using System.Configuration;
+using System.ServiceModel.Description;
+using System.Reflection;
+using System.Threading.Tasks;
+using Assignment;
+
+namespace strans
+{
+    class Program
+    {
+        static bool g_bWriteToWinEventLog;
+
+        public static FileINI m_fileINI;
+        private static string m_strProgramNameSectionDB_INI = "Параметры соединения с БД (" + ProgramBase.AppName + @".exe" + ")";
+        private static ASUTP.Core.Crypt m_crypt;
+
+        private static string SignLogStartStop
+        {
+            get
+            {
+                return string.Concat (Enumerable.Repeat ("*", 22));
+            }
+        }
+
+        private static bool HelperProgramBaseOn = true;
+
+        private static void Main(string[] args)
+        {
+            Assignment.Console console = null;
+            //Service service = null;
+            //// TODO: структура файла конфигурации текущего приложения - сложная(отличная от стандартной)
+            //FileAppSettings.RequiredForced = true;
+
+            // 1-ое сообщ. в журнал только после установки значения 'AppName'
+            using (Assignment.CmdArg cmdArg = new CmdArg ())
+                if (HelperProgramBaseOn == false) {
+                // вар. №1
+                    Logging.AppName = cmdArg.AppName;
+                } else if (HelperProgramBaseOn == true) {
+                // вар. №2
+                    ProgramBase.s_AppNameSuffix = string.IsNullOrEmpty(cmdArg.AppName) == false ? cmdArg.AppName : "-services";
+                } else
+                    ;
+
+            if (HelperProgramBaseOn == false) {
+            // вар. №1
+                Logging.SetMode (Logging.LOG_MODE.FILE_EXE);
+                Logging.Logg ().PostStart ($"{SignLogStartStop}Старт{SignLogStartStop}");
+            } else if (HelperProgramBaseOn == true) {
+            // вар. №2
+                ASUTP.Helper.ProgramBase.PerformThreadException += handlerThreadException;
+                ASUTP.Helper.ProgramBase.PerformUnhandledException += handlerUnhandledException;
+                ASUTP.Helper.ProgramBase.Start (Logging.LOG_MODE.FILE_EXE, false);
+            } else
+                ;
+
+            //// TODO: setup.ini уже не нужен; заменен на app.config
+            //m_fileINI = new FileINI ("setup.ini", false);
+
+            if (Assignment.CmdArg.IsConsole == true)
+                do {
+                    try {
+                        console = new Assignment.Console ((mode) => { return mode.HasFlag(MODE.Host) ? typeof (Host) : mode.HasFlag(MODE.Client) ? typeof(Client<NameEndPoint>) : Type.EmptyTypes[0]; });
+                        console.Start ();
+                    } catch (Exception e) {
+                        Assignment.itssAUX.PrintErrorMessage ($"exception: {e.Message}...");
+
+                        Logging.Logg ().Exception (e, "::Main () - new Creator...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+                } while ((Equals (console, null) == true)
+                    || ((Equals (console, null) == false)
+                        && ((!(console.Error == Assignment.ERROR.Ok))
+                            || ((console.Error == Assignment.ERROR.Ok) && (Assignment.itssAUX.IsWaiting == true)))));
+            else if (Assignment.CmdArg.ModeHost.HasFlag (Assignment.MODE.ScNet) == true) {
+                //service = new Service (Assignment.CmdArg.ModeHost, "strans");
+                System.ServiceProcess.ServiceBase.Run (new Service (Assignment.CmdArg.ModeHost, "strans"));
+            } else
+                ;
+
+            if (HelperProgramBaseOn == false) {
+            // вар. №1
+                Logging.Logg ().PostStop ($"{SignLogStartStop}Стоп{SignLogStartStop}");
+            } else if (HelperProgramBaseOn == true) {
+            // вар. №2
+                ASUTP.Helper.ProgramBase.Exit ();
+            } else
+                ;
+        }
+
+        private static bool handlerThreadException (object obj, System.Threading.ThreadExceptionEventArgs ev)
+        {
+            Assignment.itssAUX.PrintErrorMessage (ev.Exception.Message);
+
+            return false;
+        }
+
+        private static bool handlerUnhandledException (object obj, UnhandledExceptionEventArgs ev)
+        {
+            Assignment.itssAUX.PrintErrorMessage (ev.ExceptionObject.ToString());
+
+            return false;
+        }
+    }
+}

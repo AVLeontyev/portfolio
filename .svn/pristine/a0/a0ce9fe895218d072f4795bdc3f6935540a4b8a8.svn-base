@@ -1,0 +1,721 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.Threading;
+
+using ASUTP.Helper;
+using ASUTP;
+using ASUTP.Core;
+using ASUTP.Database;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+
+namespace StatisticCommon
+{
+    public class Constants : ASUTP.Core.Constants
+    {
+        public const string OverDate = "03:04:05";
+
+        public const string FetchWaking = "00:47:48";
+
+        public const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
+        /// <summary>
+        /// Разделитель нескольких значений для параметров в файле конфигурации
+        ///  , например для значений в формате (DateTime, TimeSpan)
+        /// </summary>
+        public static string DELIM = ";";
+
+        #region AdminAlarm, PanelGrasp
+        public static float FrequencyOptimum { get; set; } = 50F;
+        public static float [] FreqDeviation = { float.NegativeInfinity, 1F, 0.995F, 0.990F };
+
+        public static float [] APowDeviation = { float.NegativeInfinity, 1F, 0.9F, 0.8F };
+        #endregion
+
+        public static float MAX_DEAD_POWER = 0.1F;
+    }
+
+    [DataContract]
+    public abstract class HAdmin : HHandlerDb
+    {
+        public static int ID_AREA_NSK = 1;
+        public static int ID_AREA_BIYSK = 4;
+
+        public static int SEASON_BASE = 5;
+        public enum seasonJumpE
+        {
+            None,
+            WinterToSummer,
+            SummerToWinter,
+        }
+
+        /// <summary>
+        /// Очередь индексов компонентов ТЭЦ для последоват. экспорта ПБР-значений
+        ///  , копия '_listTECComponentIndex'
+        /// </summary>
+        [DataMember]
+        protected List<FormChangeMode.KeyDevice> _listTECComponentKey;
+
+        public FormChangeMode.KeyDevice FirstTECComponentKey
+        {
+            get
+            {
+                return (Equals (_listTECComponentKey, null) == false)
+                    && (_listTECComponentKey.Count > 0)
+                        ? _listTECComponentKey [0]
+                            : FormChangeMode.KeyDevice.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Получение списка компонентов ТЭЦ в зависимости от типа компонента
+        /// </summary>
+        /// <param name="mode">Модификатор типа компонентов</param>
+        /// <param name="bLimitLK">Признак учета лимита ЛК при формировании списка</param>
+        /// <returns>Возвращает список ключей, по которым возможен поиск компонента</returns>
+        public virtual List<FormChangeMode.KeyDevice> GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bLimitLK)
+        {
+            List<FormChangeMode.KeyDevice> listRes = new List<FormChangeMode.KeyDevice> ();
+
+            int iLimitIdTec = bLimitLK == true ? (int)TECComponent.ID.LK : (int)TECComponent.ID.GTP;
+
+            switch (mode) {
+                case FormChangeMode.MODE_TECCOMPONENT.TEC:
+                    foreach (TEC tec in m_list_tec) {
+                        if (!(tec.m_id > iLimitIdTec))
+                            listRes.Add (new FormChangeMode.KeyDevice () { Id = tec.m_id, Mode = mode });
+                        else
+                            ;
+                    }
+                    break;
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.TG:
+                    foreach (TECComponent comp in allTECComponents) {
+                        if ((!(comp.tec.m_id > iLimitIdTec))
+                            && (mode == comp.Mode))
+                            listRes.Add (new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = mode });
+                        else
+                            ;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            return listRes;
+        }
+
+        public void TECComponentComplete (int state, bool bResult)
+        {
+            string mesLog = string.Empty;
+            int prevCount = -1;
+
+            prevCount = _listTECComponentKey.Count;
+            //??? а если выполняется не save - обрабатываем в наследуемом классе
+            if (_listTECComponentKey.Count > 0)
+                _listTECComponentKey.RemoveAt (0);
+            else
+                ;
+
+            Logging.Logg ().Debug ($@"AdminMS::TECComponentComplete () - было.Count={prevCount}, осталось.Count={_listTECComponentKey.Count}...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        [DataMember]
+        protected TimeSpan _tsOffsetToMoscow;
+        /// <summary>
+        /// Смещение по часовому поясу
+        /// </summary>
+        public TimeSpan m_tsOffsetToMoscow { get { return _tsOffsetToMoscow; } }
+
+        protected Action<int> requestDone = null;
+        protected DelegateIntFunc saveComplete = null;
+        protected Action<DateTime, bool> readyData = null;
+        protected Action<int, object, bool> readyStateData = null;
+        protected DelegateIntFunc errorData = null;
+
+        protected DelegateDateFunc setDatetime;
+
+        /// <summary>
+        /// Тип текущего объекта (тип оборудования электро-, тепло)
+        /// </summary>
+        [DataMember]
+        protected TECComponentBase.TYPE _type;
+        ///// <summary>
+        ///// ??? Тип текущего объекта нельзя определить до тех пор, пока тепловые компоненты не будут встроены в общий список 'allTECComponents'
+        /////  , поэтому указываем явно при создании объекта; собственно, определить невозможно, если объект - ТЭЦ в целом
+        ///// </summary>
+        //public TECComponentBase.TYPE Type { get { return _type; } }
+        /// <summary>
+        /// Список объектов 'TEC'
+        /// </summary>
+        [DataMember]
+        public volatile List<TEC> m_list_tec;
+        /// <summary>
+        /// Список 
+        /// </summary>
+        [DataMember]
+        protected volatile List<TECComponent> allTECComponents;
+
+        private FormChangeMode.KeyDevice _currentKey;
+        [DataMember]
+        public FormChangeMode.KeyDevice CurrentKey
+        {
+            get
+            {
+                return _currentKey;
+            }
+
+            set
+            {
+                _currentKey = value;
+            }
+        }
+
+        public IDevice CurrentDevice
+        {
+            get
+            {
+                return FindTECComponent (CurrentKey);
+            }
+        }
+
+        /// <summary>
+        /// Хранения значений дыты/времени
+        /// </summary>
+        [DataMember]
+        public DateTime m_prevDate
+            , serverTime
+            , m_curDate;
+
+        //Обрабатывать ли данные?
+        [DataMember]
+        public HMark m_markQueries; //CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE
+
+        [DataMember]
+        private static int m_iSeasonAction;
+
+        public static int SeasonAction
+        {
+            get { return m_iSeasonAction; }
+
+            set { m_iSeasonAction = value; }
+        }
+
+        [DataMember]
+        private static DateTime m_dtSeason;
+
+        public static DateTime SeasonDateTime {
+            get {
+                return m_dtSeason;
+            }
+
+            set {
+                m_dtSeason = value;
+            }
+        }
+
+        public HAdmin (TECComponentBase.TYPE type)
+            : base ()
+        {
+            _type = type;
+        }
+
+        protected override void Initialize () {
+            base.Initialize ();
+
+            allTECComponents = new List<TECComponent> ();
+        }
+
+        /// <summary>
+        /// Удалить ТЭЦ из списка по идентификатору
+        /// </summary>
+        /// <param name="id_tec">идентификатор ТЭЦ</param>
+        public void RemoveTEC (int id_tec)
+        {
+            foreach (TEC t in this.m_list_tec) {
+                if (t.m_id == id_tec) {
+                    this.m_list_tec.Remove (t);
+                    break;
+                } else
+                    ;
+            }
+
+            for (int i = 0; i < allTECComponents.Count; i++) {
+                if (allTECComponents [i].tec.m_id == id_tec) {
+                    allTECComponents.RemoveAt (i);
+
+                    i--;
+                } else
+                    ;
+            }
+        }
+
+        private void initQueries (ASUTP.Core.HMark markQueries)
+        {
+            if (m_markQueries == null)
+                m_markQueries = markQueries;
+            else
+                m_markQueries.Add (markQueries);
+        }
+
+        public virtual void InitTEC (List<StatisticCommon.TEC> listTEC, ASUTP.Core.HMark markQueries)
+        {
+            this.m_list_tec = new DbTSQLConfigDatabase.ListTEC ();
+            ////Вариант №1
+            //this.m_list_tec.AddRange(listTEC);
+            ////Вариант №2
+            //listTEC.ForEach(t => this.m_list_tec.Add(t));
+            //Вариант №3 - позволяет исключить при необходимости элементы в соответствии с установленным правилом
+            foreach (TEC t in listTEC)
+                //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
+                this.m_list_tec.Add (t);
+            //else ;
+
+            initQueries (markQueries);
+            initTECComponents ();
+        }
+
+        public virtual void InitTEC (FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData = false)
+        {
+            int[] areas;
+
+            //Logging.Logg().Debug("Admin::InitTEC () - вход...");
+
+            if (HStatisticUsers.Initialized == false) {
+                using (HStatisticUsers user = new HStatisticUsers (DbTSQLConfigDatabase.DbConfig().ListenerId, HUsers.MODE_REGISTRATION.MIXED, true))
+                    ;
+            } else
+                ;
+
+            areas = (Equals(HStatisticUsers.Area, null) == true)
+                || ((Equals(HStatisticUsers.Area, null) == false) && (HStatisticUsers.Area.m_id == 0))
+                    ? new int[] { }
+                        : new int[] { (int)HStatisticUsers.Area.m_id };
+
+            if ((mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                || (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)) //??? зачем '.ANY'
+                this.m_list_tec = DbTSQLConfigDatabase.DbConfig ().InitTEC (bIgnoreTECInUse
+                    , areas
+                    , arTECLimit
+                    , bUseData) as DbTSQLConfigDatabase.ListTEC;
+            else
+                this.m_list_tec = DbTSQLConfigDatabase.DbConfig ().InitTEC (mode
+                    , bIgnoreTECInUse
+                    , areas
+                    , arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
+
+            initQueries (markQueries);
+            initTECComponents ();
+
+            try {
+                if ((mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                    || (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)) //??? зачем '.ANY'
+                    CurrentKey = new FormChangeMode.KeyDevice () { Id = this.m_list_tec [0].m_id, Mode = mode };
+                else
+                    CurrentKey = new FormChangeMode.KeyDevice () { Id = allTECComponents.First (comp => comp.Mode == mode).m_id, Mode = mode };
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $"HADmin::InitTEC (mode={mode}) - не найден 1-ый элемент для инициализации списка", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+        }
+
+        /// <summary>
+        /// Инициализация списка со всеми компонентами ТЭЦ
+        /// </summary>
+        protected virtual void initTECComponents ()
+        {
+            allTECComponents.Clear ();
+
+            foreach (StatisticCommon.TEC t in this.m_list_tec) {
+                //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
+
+                //if (t.list_TECComponents.Count > 0)
+                foreach (TECComponent g in t.ListTECComponents)
+                    if (g.Type == _type)
+                        allTECComponents.Add (g);
+                    else
+                        ;
+                //else
+                //    //??? исключение - используется индекс вне допустимого диапазона
+                //    allTECComponents.Add(t.list_TECComponents[0]);
+            }
+        }
+
+        protected static bool CheckNameFieldsOfTable (DataTable tbl, string [] nameFields)
+        {
+            bool bRes = true;
+
+            foreach (string nameField in nameFields) {
+                if (tbl.Columns.IndexOf (nameField) < 0) {
+                    bRes = false;
+
+                    Logging.Logg ().Error ($"HAdmin::CheckNameFieldsOfTable (всего столбцов={tbl.Columns.Count}) - не найден столбец: {nameField}", Logging.INDEX_MESSAGE.NOT_SET);
+
+                    break;
+                } else
+                    ;
+            }
+
+            return bRes;
+        }
+
+        private void register (int id, ConnectionSettings connSett, string name, CONN_SETT_TYPE type)
+        {
+            register (id, (int)type, connSett);
+        }
+
+        public override void StartDbInterfaces ()
+        {
+            if (!(m_list_tec == null)) {
+                bool bInitSensorsStrings = (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_AISKUE) == true)
+                    || (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.DATA_SOTIASSO) == true)
+                    || (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.MTERM) == true);
+                foreach (TEC t in m_list_tec) {
+                    if (!(t.connSetts == null)) {
+                        CONN_SETT_TYPE i = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+
+                        if (m_dictIdListeners.ContainsKey (t.m_id) == false) {
+                            m_dictIdListeners.Add (t.m_id, new int [(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE]);
+
+                            for (i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+                                m_dictIdListeners [t.m_id] [(int)i] = -1;
+                        } else
+                            ;
+
+                        for (i = CONN_SETT_TYPE.ADMIN; i < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++) {
+                            if ((!(t.connSetts [(int)i] == null)) && (m_markQueries.IsMarked ((int)i) == true)) {
+                                if (m_dictIdListeners [t.m_id] [(int)i] < 0)
+                                    ;
+                                else
+                                    DbSources.Sources ().UnRegister (m_dictIdListeners [t.m_id] [(int)i]);
+
+                                register (t.m_id, t.connSetts [(int)i], t.name_shr, i);
+                            } else
+                                ;
+                        }
+
+                        if ((bInitSensorsStrings == true)
+                            && (t.GetReadySensorsStrings (_type) == false))
+                            t.InitSensorsTEC ();
+                        else
+                            ;
+                    } else
+                        //Вообще нельзя что-либо инициализировать
+                        Logging.Logg ().Error (@"HAdmin::StartDbInterfaces () - connSetts == null ...", Logging.INDEX_MESSAGE.NOT_SET);
+                } //foreach...
+            } else
+                //Вообще нельзя что-либо инициализировать
+                Logging.Logg ().Error (@"HAdmin::StartDbInterfaces () - m_list_tec == null ...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        public void SetDelegateSaveComplete (DelegateIntFunc f)
+        {
+            saveComplete = f;
+
+            //Logging.Logg().Debug(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + (saveComplete == null ? false.ToString() : true.ToString()) + @" - вЫход", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        public void SetDelegateData (Action<DateTime, bool> s, DelegateIntFunc e)
+        {
+            readyData = s;
+            errorData = e;
+        }
+        public void SetDelegateData ( Action<int> r, Action<DateTime, bool> s1, Action<int, object, bool> s2, DelegateIntFunc e)
+        {
+            SetDelegateData (s1, e);
+
+            requestDone = r;
+            readyStateData = s2;
+        }
+
+        public void SetDelegateDatetime (DelegateDateFunc f) { setDatetime = f; }
+
+        public TECComponent FindTECComponent (int id)
+        {
+            return allTECComponents.FirstOrDefault (tc => tc.m_id == id);
+        }
+
+        public IDevice FindTECComponent (FormChangeMode.KeyDevice key)
+        {
+            IDevice dev;
+
+            if ((key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                || (key.Mode == FormChangeMode.MODE_TECCOMPONENT.ANY))
+                dev = m_list_tec.FirstOrDefault (tec => tec.m_id == key.Id);
+            else
+                dev = FindTECComponent (key.Id);
+
+            return dev;
+        }
+
+        public FormChangeMode.MODE_TECCOMPONENT modeTECComponent (int indx)
+        {
+            FormChangeMode.MODE_TECCOMPONENT modeRes = FormChangeMode.MODE_TECCOMPONENT.ANY;
+            ////Вариант №1
+            //if ((allTECComponents[indx].m_id > 0) && (allTECComponents[indx].m_id < 100))
+            //    //???
+            //    modeRes = FormChangeMode.MODE_TECCOMPONENT.TEC;
+            //else
+            //    if (allTECComponents[indx].IsGTP == true)
+            //        modeRes = FormChangeMode.MODE_TECCOMPONENT.GTP;
+            //    else
+            //        if (allTECComponents[indx].IsPC == true)
+            //            modeRes = FormChangeMode.MODE_TECCOMPONENT.PC;
+            //        else
+            //            if (allTECComponents[indx].IsTG == true)
+            //                modeRes = FormChangeMode.MODE_TECCOMPONENT.TG;
+            //            else
+            //                ;
+            //Вариант №2
+            modeRes = TECComponent.GetMode (allTECComponents [indx].m_id);
+
+            return modeRes;
+        }
+
+        protected virtual int GetCurrentTimeResponse (DataTable table)
+        {
+            if (table.Rows.Count == 1) {
+                serverTime = ((DateTime)table.Rows [0] [0]).Add (m_tsOffsetToMoscow);
+            } else {
+                //DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
+                //int timezone_offset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
+                //if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight) == true)
+                //    timezone_offset++;
+                //else
+                //    ;
+
+                ////serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(3);
+                ////serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
+                //serverTime = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(allTECComponents[indxTECComponents].tec.m_timezone_offset_msc);
+                serverTime = HDateTime.ToMoscowTimeZone ();
+
+                ErrorReport ("Ошибка получения текущего времени сервера. Используется локальное время.");
+            }
+
+            return 0;
+        }
+
+        protected virtual bool IsCanUseTECComponents
+        {
+            get
+            {
+                return CurrentKey.Id > 0;
+            }
+        }
+
+        /// <summary>
+        /// Возвратить смещение индекса часа в ~ от (не)совпадения проверяемой даты-индекса-часа и даты/времени перехода летнего/зимнего исчисления
+        /// </summary>
+        /// <param name="dt">Проверяемая дата</param>
+        /// <param name="h">??? Индекс часа зачем передавать час, если час может содержаться в дате/времени</param>
+        /// <returns>Смещение относительно отображаемого</returns>
+        public static int GetSeasonHourOffset (DateTime dt, int h)
+        {
+            int iRes = 0;
+
+            iRes = dt.Date.Equals (AdminRDG.SeasonDateTime.Date) == true
+                ? h > AdminRDG.SeasonDateTime.Hour
+                    ? 1
+                        : 0
+                : 0;
+
+            return iRes;
+        }
+
+        /// <summary>
+        /// Возвратить смещение индекса часа в ~ от (не)совпадения проверяемой-текущей даты-индекса-часа и даты/времени перехода летнего/зимнего исчисления
+        /// </summary>
+        /// <param name="h">??? Индекс часа зачем передавать час, если час может содержаться в текущей дате/времени</param>
+        /// <returns>Смещение относительно отображаемого</returns>
+        public int GetSeasonHourOffset (int h)
+        {
+            return GetSeasonHourOffset (m_curDate, h);
+        }
+
+        /// <summary>
+        /// Уточнить индекс часа в ~ от (не)совпадения установленной даты-индекса-часа и даты/времени перехода летнего/зимнего исчисления
+        /// </summary>
+        /// <param name="ssn">Признак перехода между сезонами для уточняемого индекса часа</param>
+        /// <param name="h">Ссылка на уточняемый индекс часа</param>
+        protected void GetSeasonHourIndex (int ssn, ref int h) //Это ссылки на ИНДЕКСЫ, НЕ на ЧАСЫ
+        {
+            //Проверка даты перехода сезонов
+            if (m_curDate.Date.Equals (AdminRDG.SeasonDateTime.Date) == true)
+                //??? проверка индекса часа перехода сезонов
+                if (h == AdminRDG.SeasonDateTime.Hour)
+                    //Проверить сезон
+                    if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.WinterToSummer)
+                        h++;
+                    else if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.SummerToWinter)
+                        //??? ничего не делать
+                        ;
+                    else if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.None)
+                        //??? ничего не делать
+                        ;
+                    else
+                        //??? недостижимый код
+                        ;
+                else
+                    if (h > AdminRDG.SeasonDateTime.Hour)
+                    h++;
+                else
+                    ;
+            else
+                ;
+        }
+
+        /// <summary>
+        /// Возвратить строку для форматирования даты(с номером часа) с учетом измнения времяисчисления (зима<->лето)
+        /// </summary>
+        /// <param name="h">Номер часа</param>
+        /// <returns>Строка форматирования для отображения даты</returns>
+        public string GetFmtDatetime (int h)
+        {
+            string strRes = @"dd-MM-yyyy HH";
+
+            if (m_curDate.Date.Equals (AdminRDG.SeasonDateTime.Date) == true) {
+                if ((h) == (AdminRDG.SeasonDateTime.Hour))
+                    strRes += @"*";
+                else
+                    ;
+            } else
+                ;
+
+            strRes += @":00";
+
+            return strRes;
+        }
+
+        /// <summary>
+        /// Возвратиь количество часов в сутках (в ~ периода времяисчисления)
+        /// </summary>
+        /// <param name="dtReq">Дата за которую требуется получить кол-во часов</param>
+        /// <returns>Кол-во часов в сутках</returns>
+        public static int CountHoursOfDate (DateTime dtReq) {
+            int iRes = -1;
+
+            if (dtReq.Date.CompareTo (AdminRDG.SeasonDateTime.Date) == 0)
+                iRes = 25;
+            else
+                iRes = 24;
+
+            return iRes;
+        }
+    }
+
+    public static partial class DateTimeExtensions
+    {
+        public static bool IsTomorrow (this DateTime now, DateTime picker, TimeSpan timeSpan)
+        {
+            DateTime newDateApp = picker.Date.AddDays (1);
+            double diff = 0F;
+
+            diff = (now.Add (timeSpan) - newDateApp).TotalDays;
+
+            return diff > 0F;
+        }
+
+        public enum TIMESPAN_PARSE_FUNC
+        {
+            NATIVE, DIFFERENCE
+        }
+
+        /// <summary>
+        /// Разобрать строку, представляющую собой интервал времени
+        /// </summary>
+        /// <param name="now">Дата/время (как правило - текущее) для определения интервала от него до границы суток</param>
+        /// <param name="values">Строка для распознавания из 2-х частей: формат + значение интервала в этом формате</param>
+        /// <param name="eFunc">Тип функции применямой для распознавания</param>
+        /// <param name="valueDefault">Значение по умолчанию при ошибке распознавания</param>
+        /// <returns>Интервал времени</returns>
+        public static TimeSpan ParseTimeSpan (this DateTime now, string [] values, TIMESPAN_PARSE_FUNC eFunc = TIMESPAN_PARSE_FUNC.NATIVE, string valueDefault = "")
+        {
+            TimeSpan tsRes = TimeSpan.MinValue;
+
+            Func<string, DateTime, TimeSpan> func
+                // обычное извлечение/разбор значения
+                , native = delegate (string value, DateTime datetimeNow) {
+                    // 2-nd argument not used
+                    return TimeSpan.Parse (value);
+                }
+                // функция получения интервала от текущего времени до указанного в аргументе
+            , difference = delegate (string value, DateTime datetimeNow) {
+                TimeSpan tsRet = TimeSpan.Zero
+                    , tsNow = TimeSpan.FromSeconds (datetimeNow.Minute * 60 + datetimeNow.Second)
+                    , tsValue = native (value, DateTime.MinValue); // 2-nd argument not used
+
+                tsValue = tsValue.Add (TimeSpan.FromHours ((int)tsValue.TotalHours).Negate ());
+                tsRet = tsValue - tsNow;
+
+                if (!(tsRet > TimeSpan.Zero))
+                    // если текущее время превысило установленное в аргументе (в текущем часе)
+                    // , то возвратить интервал до установленного в аргументе в следующем
+                    tsRet += TimeSpan.FromHours (1);
+                else
+                    ;
+
+                return tsRet;
+            };
+
+            func = eFunc == TIMESPAN_PARSE_FUNC.NATIVE
+                ? native
+                    : eFunc == TIMESPAN_PARSE_FUNC.DIFFERENCE
+                        ? difference
+                            : null;
+            try {
+                tsRes =
+                    //(TimeSpan.ParseExact (values [1], values [0], System.Globalization.CultureInfo.InvariantCulture))
+                    //TimeSpan.Parse (values [1])
+                    func (values [1], now)
+                    ;
+            } catch (Exception e) {
+                ASUTP.Logging.Logg ().Exception (e, $"DateTimeExtensions.ParseTimeSpan (Length={values.Length}, Values=<{string.Join (StatisticCommon.Constants.DELIM, values)}>, Func={eFunc}) - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            } finally {
+                if (tsRes.Equals (TimeSpan.MinValue) == true) {
+                    tsRes = func (valueDefault, now);
+                } else
+                    ;
+            }
+
+            return tsRes;
+        }
+    }
+
+    public static partial class RDGStructExtensions
+    {
+        /// <summary>
+        /// Рассчитать значение уточненного диспетчерского графика
+        /// </summary>
+        /// <param name="values">This</param>
+        /// <param name="PBR_0">ПБР-значение на границе с предыдущими сутками</param>
+        /// <param name="iHour">Номер(индекс) часа</param>
+        /// <returns>Значение УДГэ</returns>
+        public static double UDGe (this AdminRDG.RDGStruct [] values, double PBR_0, int iHour)
+        {
+            return UDGe(values [iHour], iHour > 0 ? values [iHour - 1].pbr : PBR_0);
+        }
+
+        /// <summary>
+        /// Рассчитать значение уточненного диспетчерского графика
+        /// </summary>
+        /// <param name="value">This</param>
+        /// <param name="prevPbr">ПБР-значение на границе с предыдущим часом</param>
+        /// <returns>Значение УДГэ</returns>
+        public static double UDGe (this AdminRDG.RDGStruct value, double prevPbr)
+        {
+            return CalculateUDGe (prevPbr, value.pbr, value.recomendation);
+        }
+
+        public static double UDGe (this AdminRDG.RDGStruct [] values, int iHour)
+        {
+            return UDGe (values [iHour], values [iHour - 1].pbr);
+        }
+
+        public static double CalculateUDGe (double prevPbr, double currPbr, double rec)
+        {
+            return (prevPbr + currPbr) / 2 + rec;
+        }
+    }
+}

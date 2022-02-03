@@ -1,0 +1,69 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.Text;
+using System.Threading.Tasks;
+using ASUTP.Database;
+using StatisticCommon;
+using StatisticTrans;
+
+namespace STrans.Service.OICDAC
+{
+    [ServiceBehavior (ConcurrencyMode = ConcurrencyMode.Multiple, InstanceContextMode = InstanceContextMode.PerSession, UseSynchronizationContext = false)]
+    // ПРИМЕЧАНИЕ. Команду "Переименовать" в меню "Рефакторинг" можно использовать для одновременного изменения имени класса "ServiceServiceModesTerminale" в коде и файле конфигурации.
+    public class ServiceOICDAC : Service, StatisticTrans.Contract.OICDAC.IServiceOICDAC
+    {
+        private StatisticCommon.OICDAC.Admin _admin
+        {
+            get
+            {
+                return (StatisticCommon.OICDAC.Admin)_arrayAdmin[(int)StatisticTrans.CONN_SETT_TYPE.SOURCE];
+            }
+        }
+
+        public bool Initialize (ConnectionSettings connSett
+            , int iMainSourceData
+            , MODE_MASHINE modeMashine
+            , StatisticCommon.OICDAC.DbInterface.MODE modeInterface
+            , StatisticCommon.OICDAC.Admin.MODE_WRITE modeWrite)
+        {
+            bool bRes = false;
+            
+            int idSourceOICDAC = -1;
+
+            // TODO: нужны ли для мгновенных значений (OverDate, FetchWaking)
+            bRes = preInitialize (connSett, iMainSourceData, TimeSpan.Zero, TimeSpan.Zero);
+
+            if (bRes == true) {
+                idSourceOICDAC = DbTSQLConfigDatabase.DbConfig().GetIdSourceOICDAC (out bRes);
+
+                if (bRes == true) {
+                    StatisticCommon.OICDAC.Admin.ModeWrite = modeWrite;
+                    _arrayAdmin [(int)StatisticTrans.CONN_SETT_TYPE.SOURCE] = new StatisticCommon.OICDAC.Admin (idSourceOICDAC, modeInterface);
+                    report<string> (StatisticCommon.Contract.IdPseudoDelegate.ReportAction, "Создан объект взаимодействия с БД...");
+                    _admin.InitTEC (FormChangeMode.MODE_TECCOMPONENT.TEC, new ASUTP.Core.HMark (new int [] { (int)StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO }), new int [] { 0, (int)TECComponent.ID.LK }, true);
+                } else
+                    ASUTP.Logging.Logg ().Error ($"OICDAC.ServiceOICDAC::Initialize () - не удалось прочитать параметр конфигурации [Key=<{FormParameters.PARAMETR_SETUP.CK_2007}>]..."
+                        , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                ;
+            } else
+                ASUTP.Logging.Logg ().Error ($@"STrans.Service.OICDAC.ServiceOICDAC::Initialize () - создание массива 'Admin', preInitialize () ret is {bRes}..."
+                    , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+            return bRes
+                && postInitialize (FormChangeMode.MODE_TECCOMPONENT.Unknown, new int [] { }.ToList ());
+        }
+
+        public new bool IsServiceOnEvent
+        {
+            get
+            {
+                return
+                    //_admin?.ModeApplication.HasFlag(StatisticCommon.OICDAC.DbInterface.MODE.OICDAC) == true
+                    true
+                    ;
+            }
+        }
+    }
+}

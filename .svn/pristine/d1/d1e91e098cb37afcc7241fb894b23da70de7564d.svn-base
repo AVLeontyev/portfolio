@@ -1,0 +1,210 @@
+﻿using System;
+using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Dispatcher;
+using System.Text;
+using ASUTP;
+using ASUTP.Core;
+using ASUTP.Database;
+using StatisticCommon;
+using StatisticCommon.Communication;
+using StatisticCommon.Contract.Alarm;
+using StatisticCommon.Contract;
+
+namespace SAlarm.Service
+{
+    public class Service : StatisticCommon.Service, StatisticCommon.Contract.Alarm.IServiceAlarm, IDisposable //, ASUTP.PlugIn.IDataHost
+    {
+        private static FormParameters _formParameters;
+
+        public Service ()
+            : base()
+        {
+        }
+
+        protected override void create (bool bForced)
+        {
+           bool bCreate = bForced;
+
+            //TODO: здесь выделяется память под объекты HAdmin, но сами объекты не создаются
+        }
+
+        public bool Initialize (ASUTP.Database.ConnectionSettings connSett
+            , int iMainSourceData
+            , TimeSpan tsOverDate
+            , TimeSpan tsFetchWaking
+            , TYPE_ALARM typeAlarm
+            , FormChangeMode.MODE_TECCOMPONENT modeTECComponent
+            , List<int> listID_TECNotUse)
+        {
+            bool bRes = false;
+
+            SAlarm.Service.AdminAlarm.MODE mode;
+            TYPE_ALARM alarmed;
+            int err = -1;
+            bool bIgnoreTECInUse = false
+                , bWorkChecked = false;
+
+            bRes = preInitialize (connSett, iMainSourceData, tsOverDate, tsFetchWaking);
+
+            mode = AdminAlarm.MODE.SERVICE;
+            alarmed = typeAlarm;
+            //??? всегда 'true'
+            bWorkChecked = (mode == SAlarm.Service.AdminAlarm.MODE.SERVICE) && (!(mode == SAlarm.Service.AdminAlarm.MODE.VIEW));
+
+            if (bRes == true) {
+                if (Equals (_formParameters, null) == true)
+                    try {
+                        _formParameters = new FormParameters_DB ();
+                    } catch (Exception e) {
+                        Logging.Logg ().Exception (e, $@"SAlarm.Service::ctor () - new FormParameters_DB ()...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+                else
+                    ;
+                UpdateParametersSetup (_formParameters);
+
+                try {
+                    _admin = new AdminAlarm(new ConnectionSettings(DbTSQLConfigDatabase.DbConfig ().GetDataTableConnSettingsOfIdSource (iMainSourceData, -1, out err).Rows[0], -1)
+                        , mode
+                        , new AdminAlarm.DatetimeCurrentEventArgs(HDateTime.ToMoscowTimeZone().Date, 0, 24)
+                        , alarmed
+                        , true);
+                    _admin.InitTEC(DbTSQLConfigDatabase.DbConfig ().InitTEC(true, HStatisticUsers.ArrayIdAreas.ToArray() , new int[] { 0, (int)TECComponent.ID.LK }, false)
+                        , new HMark (new int [] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }));
+
+                    _admin.EventAdd += new AlarmNotifyEventHandler(OnViewAlarm_EventAdd);
+                    _admin.EventRetry += new AlarmNotifyEventHandler(OnViewAlarm_EventRetry);
+
+                    //this.EvtDataAskedHost += new DelegateObjectFunc(_admin.OnEvtDataAskedHost);
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, $@"SAlarm.Service.Service::Initialize () - создание '_admin'...", Logging.INDEX_MESSAGE.NOT_SET);
+
+                    bRes = false;
+                }
+            } else
+                Logging.Logg ().Error ($@"SAlarm.Service.Service::Initialize () - создание '_admin', preInitialize () ret is {bRes}...", Logging.INDEX_MESSAGE.NOT_SET);
+
+            return bRes
+                && postInitialize (modeTECComponent, listID_TECNotUse);
+        }
+
+        private void OnViewAlarm_EventAdd (AlarmNotifyEventArgs ev)
+        {
+            report<string> (IdPseudoDelegate.ReportAction, $@"SAlarm.Service.Service::OnViewAlarm_EventAdd () - ...");
+        }
+
+        private void OnViewAlarm_EventRetry (AlarmNotifyEventArgs ev)
+        {
+            report<string> (IdPseudoDelegate.ReportAction, $@"SAlarm.Service.Service::OnViewAlarm_EventRetry () - ...");
+        }
+
+        public override int AdminCount
+        {
+            get
+            {
+                return 1;
+            }
+        }
+
+        protected AdminAlarm _admin;
+
+        public override void Start ()
+        {
+            base.Start ();
+
+            _admin.Start ();
+        }
+
+        public override void Stop ()
+        {
+            _admin.Stop ();
+
+            base.Stop ();
+        }
+
+        public override void Activate (bool actived, int index = -1)
+        {
+            _admin.Activate (actived);
+        }
+
+        protected override void setDelegateWait ()
+        {
+            _admin?.SetDelegateWait (delegateStartWait, delegateStopWait, delegateStatus);
+        }
+
+        protected override void setDelegateReport ()
+        {
+            _admin?.SetDelegateReport (delegateErrorReport, delegateWarningReport, delegateActionReport, delegateClearReport);
+        }
+
+        protected override void setDelegateForceDate ()
+        {
+            _admin?.SetDelegateDatetime (delegateForceDatetime);
+        }
+
+        protected override void setDelegateData ()
+        {
+            _admin?.SetDelegateData (delegateRequestDone, delegateSuccessResult, delegateStateSuccessResult, delegateErrorResult);
+        }
+
+        protected override void setDelegateSaveComplete ()
+        {
+            _admin?.SetDelegateSaveComplete (new DelegateIntFunc (delegateSaveCompleted));
+        }
+
+        public override bool IsValidate ()
+        {
+            return Equals(_admin, null) == false;
+        }
+
+        public override bool IsValidate (int index = -1)
+        {
+            return IsValidate ();
+        }
+
+        public static void UpdateParametersSetup(FormParameters formParameters)
+        {
+            ////Параметры записи сообщений лог-а...
+            //Logging.UpdateMarkDebugLog();
+
+            //Параметры обновления "основной панели"...
+            PanelStatistic.POOL_TIME = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
+            PanelStatistic.ERROR_DELAY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]);
+
+            //Параметры перехода на сезонное времяисчисление...
+            AdminRDG.SeasonDateTime = DateTime.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_DATETIME]);
+            AdminRDG.SeasonAction = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_ACTION]);
+
+            //Параметры обработки запросов к БД...
+            ASUTP.Core.Constants.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
+            ASUTP.Core.Constants.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
+            ASUTP.Core.Constants.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
+
+            //Параметры валидности даты/времени получения данных СОТИАССО...
+            TecViewAlarm.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
+
+            //Параметрвы для ALARM...
+            AdminAlarm.MSEC_ALARM_TIMERUPDATE =
+                //30
+                Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE])
+                * 1000;
+            AdminAlarm.MSEC_ALARM_EVENTRETRY =
+                //90
+                Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY])
+                * 1000;
+            AdminAlarm.MSEC_ALARM_TIMERBEEP = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000;
+            AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_SYSTEMMEDIA_TIMERBEEP];
+
+            //PanelGrasp.FrequencyOptimum = float.Parse (ConfigurationManager.AppSettings["FrequencyOptimum"], System.Globalization.CultureInfo.InvariantCulture);
+            StatisticCommon.Constants.FreqDeviation = (from s in formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.GRASP_DEVIATIONFREQUENCY].Split (',') select float.Parse (s, System.Globalization.CultureInfo.InvariantCulture)).ToArray ();
+            StatisticCommon.Constants.APowDeviation = (from s in formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.GRASP_DEVIATIONAPOWER].Split (',') select float.Parse (s, System.Globalization.CultureInfo.InvariantCulture)).ToArray ();
+
+            StatisticCommon.Constants.MAX_DEAD_POWER = float.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_DEAD_POWER], System.Globalization.CultureInfo.InvariantCulture);
+
+            ////Обновить значения идентификаторов активных источников СОТИАССО
+            //FormParameters.UpdateIdLinkTMSources();
+        }
+    }
+}

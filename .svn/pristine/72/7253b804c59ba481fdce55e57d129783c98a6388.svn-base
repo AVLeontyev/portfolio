@@ -1,0 +1,352 @@
+// Добавление ссылок на типы, определенные в пространстве имен System
+using System;                                                                    
+using System.Collections.Generic;
+//using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+
+using HClassLibrary;
+using StatisticCommon;
+/// <summary>
+/// Пространство имен Statistic 
+/// </summary>
+/// 
+namespace Statistic
+{
+    /// <summary>
+    /// Открытый частичный класс FormGraphicsSettings (настройка графиков) 
+    /// наследуется от базового класса Form
+    /// </summary>
+    public partial class FormGraphicsSettings : Form                                 
+    {
+        #region Перечисления
+        /// <summary>
+        /// Открытое перечисление INDEX_COLOR (индекс цвета)
+        /// </summary>
+        public enum INDEX_COLOR                                                    
+        {
+            /// <summary>
+            /// В перечислении INDEX_COLOR  определены 11 именованных констант, по умолчанию
+            /// первому эл-ту присваивается 0, остальным n+1
+            /// </summary>
+            UDG, DIVIATION, ASKUE, ASKUE_LK_REGULAR, SOTIASSO, REC, TEMP_ASKUTE,
+            BG_ASKUE, BG_SOTIASSO, BG_ASKUTE, GRID, COUNT_INDEX_COLOR                                                     
+        }
+
+        /// <summary>
+        /// Открытое перечисление  TYPE_UPDATEGUI  (типы пользовательских настроек)   
+        /// </summary>
+        public enum TYPE_UPDATEGUI                                                                                              
+        {
+        
+            SCALE, LINEAR, COLOR, SOURCE_DATA                                     
+               , COUNT_TYPE_UPDATEGUI
+        };
+
+        /// <summary>
+        /// Закрытое перечисление  CONN_SETT_TYPE (источники данных)
+        /// </summary>
+        private enum CONN_SETT_TYPE
+        {                                         
+            AISKUE_PLUS_SOTIASSO                                                
+            , AISKUE_3_MIN//, AISKUE_30_MIN
+            , SOTIASSO_3_MIN, SOTIASSO_1_MIN
+            , COSTUMIZE
+                , COUNT_CONN_SETT_TYPE
+        }
+
+        /// <summary>
+        /// Открытое перечисление GraphTypes  (типы графиков)
+        /// </summary>
+        public enum GraphTypes                                                       
+        {
+            //линейный    
+            Linear,
+            //гистограмма                                                     
+            Bar,                                                                
+        }
+        #endregion
+
+        /// <summary>
+        /// Массив признаков использования источников данных
+        /// </summary>
+        HMark m_markSourceData;
+
+        /// <summary>
+        /// открытые поля типа Color. 
+        /// </summary>
+        //public Color udgColor                                                     
+        //    , divColor
+        //    , pColor_ASKUE, pColor_SOTIASSO
+        //    , recColor
+        //    , m_bgColor_ASKUE, m_bgColor_SOTIASSO
+        //    , gridColor;
+
+        #region Поля
+        /// <summary>
+        /// Открытое поле scale (масштаб) типа bool
+        /// </summary>
+        public bool scale;
+
+        /// <summary>
+        /// Открытое поле m_graphTypes (типы графиков) типа GraphTypes
+        /// </summary>
+        public GraphTypes m_graphTypes;
+        #endregion
+
+        /// <summary>
+        /// Открытое поле m_connSettType_SourceData (источник данных) типа StatisticCommon.CONN_SETT_TYPE
+        /// </summary>
+        public StatisticCommon.CONN_SETT_TYPE m_connSettType_SourceData;
+
+        /// <summary>
+        /// ?? обновить активные настройки (поле, а слово делегат)
+        /// </summary>
+        private DelegateIntFunc delegateUpdateActiveGui;
+
+        /// <summary>
+        /// ??закрыть окно настроек графиков (поле, а слово делегат)
+        /// </summary>
+        private DelegateFunc delegateHideGraphicsSettings;
+
+        /// <summary>
+        /// Закрытое поле m_formMain типа FormMain. Зачем оно?
+        /// </summary>
+        private FormMain m_formMain;
+
+        #region Конструктор
+        /// <summary>
+        /// Открытый пользовательский конструктор FormGraphicsSettings инициализирует поля m_formMain, delegateUpdateActiveGui, delegateHideGraphicsSettings
+        /// </summary>
+        /// <param name="fm"></param>
+        /// <param name="delUp"></param>
+        /// <param name="Hide"></param>
+        public FormGraphicsSettings(FormMain fm, DelegateIntFunc delUp, DelegateFunc Hide) 
+        {
+            InitializeComponent();                                                                                                                             
+
+            // инициализация полей заданными пользователем значениями
+            delegateUpdateActiveGui = delUp;                                                            
+            delegateHideGraphicsSettings = Hide;                                                     
+            m_formMain = fm;
+            //масштабирование выключено по умолчанию
+            scale = false;
+            // полю m_markSourceData присваиваем ссылку на экземпляр класса HMark, вызываем конструктор HMark с одним параметром, передаем 0                                                                  
+            m_markSourceData = new HMark(0);          
+
+            bool bGroupBoxSourceData = false;                                                            //переменной bGroupBoxSourceData присваиваем false
+            CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.AISKUE_3_MIN;                          //переменной cstGroupBoxSourceData присваиваем константу=1 (AISKUE_3_MIN)
+            //Проверка условия прав доступа к возможности смены источника данных
+            if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)   
+            //if (m_formMain.m_users.IsAllowed(HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)
+            //if ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsKomDisp == true))
+            {
+                bGroupBoxSourceData = true;                        //переменной bGroupBoxSourceData присваиваем true (групповой источник данных)
+                cstGroupBoxSourceData = CONN_SETT_TYPE.COSTUMIZE;  //переменной cstGroupBoxSourceData присваиваем константу=4 (по умолчанию установлен COSTUMIZE)
+
+                //кнопки АИСКУЭ+СОТИАССО и СОТИАССО(3 мин) становятся активными (да вроде все активные..?)
+                m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
+                m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_SOTIASSO_3_MIN);
+            }
+            else
+                ;
+
+            this.groupBoxSourceData.Enabled = bGroupBoxSourceData;       //??                                 
+            m_markSourceData.Marked((int)cstGroupBoxSourceData);
+
+            checkedSourceData();           // вызов метода проверки источника данных
+
+            m_graphTypes = GraphTypes.Bar; // тип графика-Гистограмма по умолчанию
+        }
+        #endregion
+
+        #region Методы
+        /// <summary>
+        /// Закрытый метод getForeColor (получить цвет надписи) принимает агрумент типа структуры Color (выбранный цвет заднего плана)
+        /// и возвращает цвет надписи (переднего плана)
+        /// </summary>
+        /// <param name="bgColor"></param>
+        /// <returns></returns>
+
+        private Color getForeColor (Color bgColor)  
+        {
+            
+            return Color.FromArgb((bgColor.R + 128) % 256, (bgColor.G + 128) % 256, (bgColor.B + 128) % 256); 
+        }
+
+        /// <summary>
+        /// Открытый метод COLOR принимает аргумент типа INDEX_COLOR (индекс настраиваемого параметра)
+        /// и возвращает соответствующий цвет в палитре
+        /// </summary>
+        /// <param name="indx"></param>
+        /// <returns></returns>
+        public Color COLOR(INDEX_COLOR indx)
+        {
+            return m_arlblColor [(int)indx].BackColor;     
+        }
+        /// <summary>
+        /// Установить признаки использования типов источников данных
+        /// </summary>
+        /// <summary>
+        /// Закрытый метод checkedSourceData (проверить источник данных) ничего не принимает, ничего не возвращает
+        /// </summary>
+        private void checkedSourceData()     
+        {
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO);//??
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_3_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.AISKUE_3_MIN);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_3_MIN);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_1_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_1_MIN);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.COSTUMIZE].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
+            
+            //если нажата кнопка "АИСКУЭ+СОТИАССО", то источнику данных присвоить источник  "АИСКИЭ+СОТИАССО"
+            if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Checked == true)    
+                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO;
+            else
+            //если нажата кнопка "АИСКУЭ(3мин)", то источнику данных присвоить источник  "АИСКУЭ(3мин)"
+                if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_3_MIN].Checked == true)
+                    m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE;
+                else
+                    if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked == true)           //аналогично
+                        m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN;
+                    else
+                        if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_1_MIN].Checked == true)
+                            m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
+                        else
+                            if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.COSTUMIZE].Checked == true)
+                                m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
+                            else
+                                ;
+        }
+        /// <summary>
+        /// Закрытый метод cbxScale_CheckedChanged (проверка изменения масштаба), 
+        /// принимающий событие нажатия на кнопку "масштабирование" и ничего не возвращающий
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void cbxScale_CheckedChanged(object sender, EventArgs e)
+        {
+            scale = cbxScale.Checked;                              //полю присвоить проверенное  значение
+            delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SCALE);    //обновить активную настройку (масштаб)
+        }
+        /// <summary>
+        /// Закрытый метод lbl_color_Click (нажатие цвета), принимающий событие нажатия на выбранный цвет
+        /// и ничего не возвращающий
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void lbl_color_Click(object sender, EventArgs e)   
+        {
+            ColorDialog cd = new ColorDialog();                   //создаем экземпляр cd класса ColorDialog (Диалоговое окно "Цвет")
+            cd.Color = ((Label)sender).BackColor;                 //вызвана структура Color на экземпляре, структуре присвоено значение выбранного цвета
+            if (cd.ShowDialog(this) == DialogResult.OK)           // если выбран цвет и нажат ОК, то
+            {
+                //заднему плану присвоить выбранный цвет
+                ((Label)sender).BackColor = cd.Color;
+                //переднему плану (надписи) присвоить зрительно отличный цвет
+                ((Label)sender).ForeColor = Color.FromArgb((((Label)sender).BackColor.R + 128) % 256, (((Label)sender).BackColor.G + 128) % 256, (((Label)sender).BackColor.B + 128) % 256);
+                //обновить активную настройку (цвет)
+                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
+            } else
+                ;
+        }
+
+        /// <summary>
+        /// Закрытый метод GraphicsSettings_FormClosing (закрытие формы),
+        /// принимающий событие закрытия формы (нажатие на крестик?) и ничего не возвращающий
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void GraphicsSettings_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel = true;                   // отмена=true
+            delegateHideGraphicsSettings();    //вызов поля?
+        }
+
+        /// <summary>
+        /// Открытый метод SetScale (установить масштаб),ничего не принимает и не возвращает
+        /// </summary>
+        public void SetScale()
+        {
+            //инвертировать текущее значение масштаба
+            cbxScale.Checked = !cbxScale.Checked;        
+        }
+
+        /// <summary>
+        /// Закрытый метод rbtnLine_CheckedChanged (проверка изменения типа графика), 
+        /// принимающий события нажатия на кнопку "линейный" или "гистограмма"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void rbtnLine_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbtnBar.Checked == true)               //если кнопка "гистограмма" нажата
+                m_graphTypes = GraphTypes.Bar;         // полю  m_graphTypes присвоить "гистрограмма"
+            else
+                if (rbtnLine.Checked == true)          //если кнопка "линейный" нажата
+                m_graphTypes = GraphTypes.Linear;      // полю  m_graphTypes присвоить "линейный"
+            else
+                    ;
+            
+            delegateUpdateActiveGui((int)TYPE_UPDATEGUI.LINEAR);   //обновить активную настройку (линейный)
+        }
+        /// <summary>
+        /// Закрытый метод rbtnSourceData_Click( нажатие источника данных), ничего не принимает и не возвращает
+        /// </summary>
+        private void rbtnSourceData_Click()
+        {
+            checkedSourceData();                //вызов метода-проверить источник данных
+
+            delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SOURCE_DATA); //обновить активную настройку (источник данных)
+        }
+        /// <summary>
+        /// Перегруженный метод, принимающий индекс источника информации
+        /// </summary>
+        /// <param name="indx"></param>
+        private void rbtnSourceData_Click(CONN_SETT_TYPE indx)   
+        {
+            if (m_arRadioButtonSourceData[(int)indx].Checked == false) 
+            {
+                m_markSourceData.UnMarked();
+                m_markSourceData.Marked((int)indx);
+
+                rbtnSourceData_Click();
+            }
+            else
+                ;
+        }
+
+        /// <summary>
+        /// Закрытый метод rbtnSourceData_ASKUEPLUSSOTIASSO_Click, принимающий событие нажатия на "АИСКУЭ+СОТИАССО"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void rbtnSourceData_ASKUEPLUSSOTIASSO_Click(object sender, EventArgs e)
+        {
+            //вызывается метод rbtnSourceData_Click, принимающий индекс перечисления (в данном случае передается 0)
+            rbtnSourceData_Click(CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO);
+        }
+
+        private void rbtnSourceData_ASKUE_Click(object sender, EventArgs e)        // аналогично
+        {
+                rbtnSourceData_Click(CONN_SETT_TYPE.AISKUE_3_MIN);
+        }
+
+        private void rbtnSourceData_SOTIASSO3min_Click(object sender, EventArgs e)
+        {
+            rbtnSourceData_Click(CONN_SETT_TYPE.SOTIASSO_3_MIN);
+        }
+
+        private void rbtnSourceData_SOTIASSO1min_Click(object sender, EventArgs e)
+        {
+            rbtnSourceData_Click(CONN_SETT_TYPE.SOTIASSO_1_MIN);
+        }
+
+        private void rbtnSourceData_COSTUMIZE_Click(object sender, EventArgs e)
+        {
+            rbtnSourceData_Click(CONN_SETT_TYPE.COSTUMIZE);
+        }
+        #endregion
+    }
+}

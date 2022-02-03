@@ -1,0 +1,90 @@
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.csprojResolveAssemblyReference.cache
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.FormMain.resources
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.Properties.Resources.resources
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.csproj.GenerateResource.Cache
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.exe.config
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.exe.manifest
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.application
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.exe
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Control.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Core.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Database.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Forms.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Helper.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Logging.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Network.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.PlugIn.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\StatisticCommon.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\GemBox.Spreadsheet.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.MSExcel.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ZedGraph.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\MySql.Data.dll
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\StatisticCommon.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Control.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Control.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Core.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Core.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Database.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Database.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Forms.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Forms.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Helper.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Helper.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Logging.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Logging.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Network.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Network.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.PlugIn.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.PlugIn.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\GemBox.Spreadsheet.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.MSExcel.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.MSExcel.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.TrustInfo.xml
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.exe.manifest
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.application
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.exe
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.pdb
+D:\My Project's\C.Net\Statistic\StatisticAnalyzer\bin\Debug\Microsoft.Office.Interop.Excel.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.exe.config
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.exe.manifest
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.application
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.exe
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\StatisticAnalyzer.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\StatisticCommon.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\GemBox.Spreadsheet.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.MSExcel.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\Microsoft.Office.Interop.Excel.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ZedGraph.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\MySql.Data.dll
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\StatisticCommon.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Control.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Control.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Core.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Core.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Database.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Database.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Forms.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Forms.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Helper.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Helper.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Logging.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Logging.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Network.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.Network.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.PlugIn.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.PlugIn.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\GemBox.Spreadsheet.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.MSExcel.pdb
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\bin\Debug\ASUTP.MSExcel.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.csprojAssemblyReference.cache
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.FormMain.resources
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.Properties.Resources.resources
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.csproj.GenerateResource.cache
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.csproj.CoreCompileInputs.cache
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.TrustInfo.xml
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.exe.manifest
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.application
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.csproj.CopyComplete
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.exe
+C:\Users\Ngasta\Desktop\Statistic\StatisticAnalyzer\obj\x86\Debug\StatisticAnalyzer.pdb

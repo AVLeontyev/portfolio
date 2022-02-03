@@ -1,0 +1,90 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using System.Data.Common;
+
+using StatisticTrans;
+
+using StatisticCommon;
+using ASUTP.Database;
+using ASUTP.Helper;
+using ASUTP;
+using System.ServiceModel;
+using System.ServiceModel.Configuration;
+using System.Configuration;
+using System.ServiceModel.Description;
+using System.Reflection;
+using System.Threading.Tasks;
+
+namespace strans
+{
+    class Program
+    {
+        static bool g_bWriteToWinEventLog;
+
+        public static FileINI m_fileINI;
+        private static string m_strProgramNameSectionDB_INI = "Параметры соединения с БД (" + ProgramBase.AppName + @".exe" + ")";
+        private static ASUTP.Core.Crypt m_crypt;
+
+        private static string SignLogStartStop
+        {
+            get
+            {
+                return string.Concat (Enumerable.Repeat ("*", 22));
+            }
+        }
+
+        static void Main(string[] args)
+        {
+            Creator creator;
+            FileAppSettings.RequiredForced = false;
+
+            // 1-ое сообщ. в журнал только после установки значения 'AppName'
+            using (CmdArg cmdArg = new CmdArg (false))
+                Logging.AppName = cmdArg.AppName;
+            // вар. №1
+            Logging.SetMode (Logging.LOG_MODE.FILE_EXE);
+            Logging.Logg ().PostStart ($"{SignLogStartStop}Старт{SignLogStartStop}");
+            //// вар. №2
+            //ASUTP.Helper.ProgramBase.Start (Logging.LOG_MODE.FILE_EXE, false);
+
+            m_fileINI = new FileINI ("setup.ini", false);
+
+            creator = new Creator ();
+
+            if (creator.Error == Creator.ERROR.Ok) {
+                creator.Started += delegate () {
+                    if (creator.Error == Creator.ERROR.Ok) {
+                        itssAUX.Wait ("to shutdown press any key...");
+                    } else
+                        ;
+
+                    creator.Stop ();
+                };
+                creator.Stoped += delegate () {
+                    itssAUX.Wait ($"to exit program <{creator.Error}> press any key...", true, false);
+                    // вар. №1
+                    Logging.Logg ().PostStop ($"{SignLogStartStop}Стоп{SignLogStartStop}");
+                    //// вар. №2
+                    //ASUTP.Helper.ProgramBase.Exit ();
+                };
+
+                creator.Start ();
+            } else {
+                itssAUX.PrintErrorMessage ($"error: {creator.Error}...");
+            }
+        }
+
+        #region в наследство
+        public static bool WriteToWinEventLog
+        {
+            get
+            {
+                return g_bWriteToWinEventLog;
+            }
+        }
+        #endregion
+    }
+}

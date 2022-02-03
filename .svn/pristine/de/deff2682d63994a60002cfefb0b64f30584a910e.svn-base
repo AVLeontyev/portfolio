@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<configuration>
+<configSections>
+    <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+        <section name="trans_mc.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false"/>
+    </sectionGroup>
+</configSections>
+  <appSettings>
+    <add key="MCServiceHost" value="ne1843.ne.ru" />
+    <add key="SetPBRQuery LogPBRNumber" value="False" />
+    <add key="SetPBRQuery LogQuery" value="False" />
+    <add key="Main DataSource" value="671" />
+    <add key="Season DateTime" value="21.10.2014 03:00" />
+    <add key="Season Action" value="-1" />
+    <add key="iapp" value="TRANS_MODES_CENTRE" />
+    <add key="debug" value="False" />
+    <add key="ОкноНазначение" value="Конвертер (Модес-Центр)" />
+    <add key="ID_TECNotUse" value="6,11" />
+    <add key="ОпросСохранениеППБР" value="True,True" />
+    <add key="ОпросСохранениеАдминЗнач" value="False,False" />
+    <add key="ИгнорДатаВремя-ModesCentre" value="False" />
+    <add key="ИгнорДатаВремя-techsite" value="False" />
+    <!---<add key="service" value="on_event" />-->
+    <add key="JEventListener" value="{&quot;OnData53500Modified&quot;:false,&quot;OnMaket53500Changed&quot;:false,&quot;OnPlanDataChanged&quot;:true,&quot;OnModesEvent&quot;:false}" />
+    <add key="OverDate" value="HH:mm:ss;03:04:05" />
+    <add key="FetchWaking" value="HH:mm:ss;00:47:47" />
+  </appSettings>
+<startup><supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.0"/></startup>
+    <userSettings>
+        <trans_mc.Properties.Settings>
+            <setting name="Modes_Centre_Service_Host_Name" serializeAs="String">
+                <value>ne1843</value>
+            </setting>
+        </trans_mc.Properties.Settings>
+    </userSettings>
+	<runtime>
+		<assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+			<dependentAssembly>
+				<assemblyIdentity name="System.Data.SqlServerCe" publicKeyToken="89845DCD8080CC91" culture="neutral"/>
+				<bindingRedirect oldVersion="0.0.0.0-3.5.1.0" newVersion="3.5.1.0"/>
+			</dependentAssembly>
+		</assemblyBinding>
+	</runtime>
+  <system.serviceModel>
+    <services>
+      <service behaviorConfiguration="trans_mc.ServiceMCBehavior"
+        name="trans_mc.ServiceModesCentre">
+        <endpoint address="" binding="basicHttpBinding" contract="trans_mc.IServiceModesCentre">
+          <identity>
+            <dns value="localhost" />
+          </identity>
+        </endpoint>
+        <endpoint address="mex" binding="mexHttpBinding" contract="IMetadataExchange" />
+        <host>
+          <baseAddresses>
+            <add baseAddress="http://10.105.1.136:8733/trans_mc/ServiceMC/" />
+          </baseAddresses>
+        </host>
+      </service>
+    </services>
+    <behaviors>
+      <serviceBehaviors>
+        <behavior name="trans_mc.ServiceMCBehavior">
+          <!--Чтобы избежать раскрытия метаданных, 
+          до развертывания задайте следующему параметру значение "false". -->
+          <serviceMetadata httpGetEnabled="True"/>
+          <!--Чтобы при сбое получать подробные сведения об исключении для отладки, 
+          задайте следующему параметру значение "true". Чтобы сведения об исключении не выдавались, 
+          до развертывания установите значение "false". -->
+          <serviceDebug includeExceptionDetailInFaults="False" />
+        </behavior>
+      </serviceBehaviors>
+    </behaviors>
+  </system.serviceModel>
+</configuration>

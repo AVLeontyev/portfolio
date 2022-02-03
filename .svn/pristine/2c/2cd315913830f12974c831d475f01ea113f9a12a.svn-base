@@ -1,0 +1,171 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Windows.Forms;
+//using System.ComponentModel;
+using System.Data;
+using System.Linq;
+
+using StatisticCommon;
+using System.Drawing;
+
+namespace StatisticTransModes
+{
+    public class DataGridViewAdminModes : DataGridViewAdmin
+    {
+        public enum DESC_INDEX : ushort { DATE_HOUR, PBR, PMIN, PMAX/*, TO_ALL*/, COUNT_COLUMN };
+        private static string[] arDescStringIndex = { "DateHour", "Plan", "Pmin", "Pmax"/*, "ToAll"*/ };
+        private static string[] arDescRusStringIndex = { "Дата, час", "План", "Минимум", "Максимум"/*, "Дозаполнить"*/ };
+
+        public DataGridViewAdminModes()
+            : base(SystemColors.ControlText
+                  , new System.Drawing.Color [] {
+                      SystemColors.Window
+                      , System.Drawing.Color.Yellow
+                      , System.Drawing.Color.Red
+                  })
+        {
+        }
+
+        protected override void InitializeComponents()
+        {
+            base.InitializeComponents();
+
+            Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] {new DataGridViewTextBoxColumn (),
+                                                                                    new DataGridViewTextBoxColumn (),
+                                                                                    new DataGridViewTextBoxColumn (),
+                                                                                    new DataGridViewTextBoxColumn ()/*,
+                                                                                    new DataGridViewButtonColumn ()*/});
+            // 
+            // DateHour
+            // 
+            Columns[(int)DESC_INDEX.DATE_HOUR].Frozen = true;
+            Columns[(int)DESC_INDEX.DATE_HOUR].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.DATE_HOUR];
+            Columns[(int)DESC_INDEX.DATE_HOUR].Name = arDescStringIndex[(int)DESC_INDEX.DATE_HOUR];
+            Columns[(int)DESC_INDEX.DATE_HOUR].ReadOnly = true;
+            Columns[(int)DESC_INDEX.DATE_HOUR].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // Plan
+            // 
+            //Columns[(int)DESC_INDEX.PBR].Frozen = true;
+            Columns[(int)DESC_INDEX.PBR].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PBR];
+            Columns[(int)DESC_INDEX.PBR].Name = arDescStringIndex[(int)DESC_INDEX.PBR];
+            Columns[(int)DESC_INDEX.PBR].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            Columns[(int)DESC_INDEX.PBR].Width = 126;
+            Columns[(int)DESC_INDEX.PBR].ReadOnly = true;
+            // 
+            // Pmin
+            // 
+            Columns[(int)DESC_INDEX.PMIN].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PMIN];
+            Columns[(int)DESC_INDEX.PMIN].Name = arDescStringIndex[(int)DESC_INDEX.PMIN];
+            Columns[(int)DESC_INDEX.PMIN].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            Columns[(int)DESC_INDEX.PMIN].Width = 126;
+            Columns[(int)DESC_INDEX.PMIN].ReadOnly = true;
+            // 
+            // Pmax
+            // 
+            Columns[(int)DESC_INDEX.PMAX].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.PMAX];
+            Columns[(int)DESC_INDEX.PMAX].Name = arDescStringIndex[(int)DESC_INDEX.PMAX];
+            Columns[(int)DESC_INDEX.PMAX].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            Columns[(int)DESC_INDEX.PMAX].Width = 126;
+            Columns[(int)DESC_INDEX.PMAX].ReadOnly = true;
+            // 
+            // ToAll
+            // 
+            /*Columns[(int)DESC_INDEX.TO_ALL].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.TO_ALL];
+            Columns[(int)DESC_INDEX.TO_ALL].Name = arDescStringIndex[(int)DESC_INDEX.TO_ALL];*/
+        }
+
+        protected override int INDEX_COLUMN_BUTTON_TO_ALL
+        {
+            get
+            {
+                return -1;
+            }
+        }
+
+        protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
+        {
+            double value;
+            bool valid;
+
+            if ((e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 1))
+            {
+                valid = double.TryParse((string)Rows[e.RowIndex].Cells[e.ColumnIndex].Value, out value);
+                if ((valid == false) || (value > DataGridViewAdmin.maxRecomendationValue))
+                {
+                    Rows[e.RowIndex].Cells[e.ColumnIndex].Value = 0.ToString("F2");
+                }
+                else
+                {
+                    Rows[e.RowIndex].Cells[e.ColumnIndex].Value = value.ToString("F2");
+                }
+            }
+            else
+                ;
+        }
+
+        protected override void RowsAdd ()
+        {
+            base.RowsAdd ();
+        }
+
+        public override void ClearTables()
+        {
+            for (int i = 0; i < Rows.Count; i++)
+            {
+                Rows[i].Cells[(int)DESC_INDEX.DATE_HOUR].Value = 
+                Rows[i].Cells[(int)DESC_INDEX.PBR].Value =
+                Rows[i].Cells[(int)DESC_INDEX.PMIN].Value =
+                Rows[i].Cells[(int)DESC_INDEX.PMAX].Value = string.Empty;
+            }
+        }
+
+        public void Fill (DateTime date, StatisticTrans.CONN_SETT_TYPE indxDB, IList<HAdmin.RDGStruct> values, Func<StatisticTrans.CONN_SETT_TYPE, int , string> delegateClientGetFormatDatetime, Func<StatisticTrans.CONN_SETT_TYPE, int, int> delegateClientGetSeasonHourOffset)
+        {
+            int offset = 0
+                , iRow = -1
+                , iSkiped = 0;
+
+            //HAdmin.RDGStruct[] values = _client.GetRDGValues (m_IndexDB);
+
+            string strFmtDateHour = string.Empty;
+            for (int i = 0; i < values.Count; i++)
+            {
+                strFmtDateHour = delegateClientGetFormatDatetime (indxDB, i);
+                offset = delegateClientGetSeasonHourOffset (indxDB, i);
+
+                if (string.IsNullOrEmpty (values [i].pbr_number) == true) {
+                    iSkiped++;
+
+                    continue;
+                } else
+                    ;
+
+                iRow = i
+                    //- iSkiped
+                    ;
+
+                Rows [iRow].Tag = new Tuple<DateTime, HAdmin.RDGStruct> (date.AddHours (i + 1 - offset), values [i]);
+
+                Rows [iRow].Cells[(int)DataGridViewAdminModes.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDateHour);
+
+                Rows[iRow].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].Value = values[i].pbr.ToString("F2");
+                //!!! Вспомогательный текст используется далее по тексту
+                Rows [iRow].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PBR].ToolTipText = values[i].pbr_number;
+                Rows[iRow].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMIN].Value = values[i].pmin.ToString("F2");
+                Rows[iRow].Cells[(int)DataGridViewAdminModes.DESC_INDEX.PMAX].Value = values[i].pmax.ToString("F2");
+            }
+        }
+
+        public HAdmin.RDGStruct GetValue (DateTime stamp)
+        {
+            return (from r in Rows.Cast<DataGridViewRow>() where (r.Tag as Tuple<DateTime, HAdmin.RDGStruct>).Item1 == stamp select (r.Tag as Tuple<DateTime, HAdmin.RDGStruct>).Item2).SingleOrDefault();
+        }
+
+        public HAdmin.RDGStruct GetValue (int indx)
+        {
+            return (Rows [indx].Tag as Tuple<DateTime, HAdmin.RDGStruct>).Item2;
+        }
+    }
+}

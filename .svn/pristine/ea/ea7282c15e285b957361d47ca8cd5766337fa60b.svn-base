@@ -1,0 +1,400 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Linq;
+
+using ASUTP.Core;
+using ASUTP;
+using ASUTP.Database;
+using ASUTP.Forms;
+
+namespace StatisticCommon
+{
+    public partial class DbTSQLConfigDatabase
+    {
+        public class ListTEC : List<TEC>
+        {
+            public ListTEC ()
+                : base ()
+            {
+            }
+
+            private void update ()
+            {
+            }
+        }
+
+        //private static ListTEC _tec;
+
+        //public ListTEC CopyTEC
+        //{
+        //    get
+        //    {
+        //        ListTEC tecRes = new ListTEC ();
+
+        //        _tec.ForEach (t => {
+        //            tecRes.Add (new TEC(t));
+        //        });
+
+        //        return tecRes;
+        //    }
+        //}
+
+        private ListTEC _listTEC;
+
+        ///// <summary>
+        ///// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
+        ///// </summary>
+        ///// <param name="connSett">Параметры соединения с БД концигурации</param>
+        ///// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
+        ///// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
+        ///// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
+        //public List<TEC> InitTEC (ConnectionSettings connSett, bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
+        //{
+        //    SetConnectionSettings (connSett);
+
+        //    return InitTEC (bIgnoreTECInUse, arTECLimit, bUseData);
+        //}
+
+        /// <summary>
+        /// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
+        /// </summary>
+        /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
+        /// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
+        /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
+        public List<TEC> InitTEC (bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
+        {
+            //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вход...");
+
+            ListTEC tecRes;
+
+#if MODE_STATIC_CONNECTION_LEAVING
+            ModeStaticConnectionLeave = ModeStaticConnectionLeaving.Yes;
+#endif
+            int err = -1;
+            TEC newTECItem = null;
+
+            tecRes = new ListTEC ();
+            //if (Equals(_tec, null) == true)
+            //    _tec = new ListTEC ();
+            //else {
+            //    return CopyTEC;
+            //}
+
+            string strLog = string.Empty;
+            // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
+            DataTable list_tec = null // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
+                , list_TECComponents = null
+                , all_PARAM_DETAIL = null; // ТГ не аналог "вывода". "Вывод" аналог ГТП(ЩУ), Параметр "вывода" аналог ТГ.
+
+            try
+            {
+                //Получить список ТЭЦ, используя статическую функцию
+                list_tec = GetListTEC(bIgnoreTECInUse, arTECLimit, out err);
+
+                if (err == 0)
+                {
+                    for (int indx_tec = 0; indx_tec < list_tec.Rows.Count; indx_tec++)
+                    {
+                        //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"]);
+
+                        if ((HStatisticUsers.allTEC == 0)
+                            || (HStatisticUsers.allTEC == Convert.ToInt32(list_tec.Rows[indx_tec]["ID"])
+                            /*|| (HStatisticUsers.RoleIsDisp == true)*/)
+                            )
+                        {
+                            //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - tec.Count = " + tec.Count);
+
+                            //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
+                            //Создание объекта ТЭЦ
+                            newTECItem = new TEC(list_tec.Rows[indx_tec], bUseData);
+                            tecRes.Add(newTECItem);
+                            //indx_tec = tec.Count - 1;
+
+                            EventTECListUpdate += newTECItem/*tec[indx_tec]*/.PerformUpdate;
+
+                            initTECConnectionSettings(newTECItem, list_tec.Rows[indx_tec]);
+                            // получить перечень ТГ со всеми значениями всех свойств
+                            all_PARAM_DETAIL = getALL_PARAM_TG(0, out err);
+
+                            if (err == 0)
+                            {
+#region Добавить компоненты ТЭЦ (ГТП, ЩУ)
+                                for (FormChangeMode.MODE_TECCOMPONENT c = FormChangeMode.MODE_TECCOMPONENT.GTP; !(c > FormChangeMode.MODE_TECCOMPONENT.PC); c++)
+                                {
+                                    list_TECComponents = GetListTECComponent(FormChangeMode.getPrefixMode(c), newTECItem.m_id, out err);
+
+                                    //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_TECComponents.Count = " + list_TECComponents.Rows.Count);
+
+                                    if (err == 0)
+                                        try
+                                        {
+                                            initTECComponents (newTECItem, c, list_TECComponents, all_PARAM_DETAIL);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Logging.Logg().Exception(e, "InitTEC::InitTEC (3 параметра) - ...for (int j = 0; j < list_TECComponents.Rows.Count; j++)...", Logging.INDEX_MESSAGE.NOT_SET);
+                                        }
+                                    else
+                                        ; //Ошибка при получении списка компонентов
+                                }
+                                #endregion
+                            }
+                            else
+                                ; // ошибка при получении параметров ТГ
+
+                            // получить перечень параметров выводов со всеми значениями всех свойств
+                            all_PARAM_DETAIL = getALL_ParamVyvod(-1, out err);
+
+                            if (err == 0)
+                            {// ВАЖНО! первоначально добавляются компоненты нижнего уровня
+                                list_TECComponents = GetListTECComponent(FormChangeMode.getPrefixMode(FormChangeMode.MODE_TECCOMPONENT.VYVOD), newTECItem.m_id, out err);
+
+                                if (err == 0)
+                                    initTECComponents (newTECItem, FormChangeMode.MODE_TECCOMPONENT.VYVOD, list_TECComponents, all_PARAM_DETAIL);
+                                else
+                                    ; // ошибка получения перечня выводов
+                            }
+                            else
+                                ; // ошибка получения параметров выводов
+
+                            //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_TG = Ok");
+                        }
+                        else
+                            ;
+                    } // for i
+                }
+                else
+                    ; //Ошибка получения списка ТЭЦ
+            }
+            catch (Exception e) {
+                Logging.Logg().Exception(e, "Ошибка получения параметров для всех ТГ", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+#if MODE_STATIC_CONNECTION_LEAVING
+            ModeStaticConnectionLeave = ModeStaticConnectionLeaving.No;
+#endif
+            //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вЫход...");
+
+            return tecRes;
+        }
+
+        /// <summary>
+        /// Список компонентов (ТЭЦ, ГТП, ЩУ, ТГ) в ~ от индекса компонента
+        /// </summary>
+        /// <param name="idListener">Идентификатор установленного соединения с БД концигурации</param>
+        /// <param name="mode">Индекс компонента - значение из перечисления 'FormChangeMode.MODE_TECCOMPONENT' ('0' или > '0' означает TEC(GTP, PC, TG), '-1' означает VYVOD)</param>
+        /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
+        /// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
+        /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
+        public List<TEC> InitTEC(FormChangeMode.MODE_TECCOMPONENT mode, bool bIgnoreTECInUse, int []arTECLimit, bool bUseData) //indx = {GTP или PC}
+        {
+            //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вход...");
+
+            ListTEC tecRes = new ListTEC ();
+
+            int err = 01;
+            // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
+            DataTable list_tec= null // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
+                , list_TECComponents = null
+                , all_PARAM_DETAIL = null;
+            TEC newTECItem;
+
+            //Использование статической функции
+            list_tec = GetListTEC(bIgnoreTECInUse, arTECLimit, out err);
+            //??? что значит < 0, mode.Unknown < 0!!!
+            if ((!(mode == FormChangeMode.MODE_TECCOMPONENT.VYVOD))
+                && (!(mode == FormChangeMode.MODE_TECCOMPONENT.Unknown)))
+                all_PARAM_DETAIL = getALL_PARAM_TG (0, out err); // самый новый набор
+            else
+                all_PARAM_DETAIL = getALL_ParamVyvod(-1, out err); // для всех ТЭЦ
+
+            if (err == 0)
+                for (int indx_tec = 0; indx_tec < list_tec.Rows.Count; indx_tec ++) {
+
+                    //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - Создание объекта ТЭЦ: " + i);
+
+                    //Создание объекта ТЭЦ
+                    newTECItem =  new TEC(list_tec.Rows[indx_tec], bUseData);
+                    tecRes.Add(newTECItem);
+
+                    EventTECListUpdate += newTECItem.PerformUpdate;
+
+                    initTECConnectionSettings(newTECItem, list_tec.Rows[indx_tec]);
+                    // получить список компонентов, с учетом типа компонентов по 'indx'
+                    list_TECComponents = GetListTECComponent(FormChangeMode.getPrefixMode(mode), Convert.ToInt32(list_tec.Rows[indx_tec]["ID"]), out err);
+
+                    if (err == 0) {
+                    //??? что значит < 0, mode.Unknown < 0!!!
+                        initTECComponents (newTECItem, mode, list_TECComponents, all_PARAM_DETAIL);
+                    } else
+                        ; //Ошибка ???
+                }
+            else
+                ; //Ошибка получения списка ТЭЦ
+
+            //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вЫход...");
+
+            return tecRes;
+        }
+
+        private void initTECComponents (TEC tec, FormChangeMode.MODE_TECCOMPONENT mode, DataTable list_TECComponents, DataTable all_PARAM_Detail)
+        {
+            int id_comp = -1
+                , indx_comp = -1;
+            TECComponent newTECComp;
+
+            for (indx_comp = 0; indx_comp < list_TECComponents.Rows.Count; indx_comp++) {
+                newTECComp = new TECComponent (tec, list_TECComponents.Rows [indx_comp]);
+                id_comp = newTECComp.m_id;
+                tec.AddTECComponent (newTECComp);
+                if (!(mode < 0)) // инициализация "обычных" компонентов ТЭЦ
+                    tec.InitTG (id_comp, all_PARAM_Detail.Select ($@"ID_{FormChangeMode.getPrefixMode (mode)}={id_comp}"));
+                else
+                    tec.InitParamVyvod (newTECComp, all_PARAM_Detail.Select ($"ID_{FormChangeMode.getPrefixMode (mode)}={id_comp}"));
+            }
+        }
+        /// <summary>
+        /// Инициализация параметров для соединения с БД всех источников данных, используемых для сбора отображения
+        /// </summary>
+        /// <param name="indx_tec">Индекс ТЭЦ в списке текущего объекта</param>
+        /// <param name="rTec">Строка таблицы [TEC_LIST], содержащая необходимые значения параметров</param>
+        private void initTECConnectionSettings(TEC tec, DataRow rTec)
+        {
+            int err = -1
+                , idConnSett = -1;
+            string strLog = string.Empty;
+            DataTable tableConnSett = null;
+
+            Action<string, Logging.INDEX_MESSAGE, bool> logging;
+
+            foreach (KeyValuePair<CONN_SETT_TYPE, string> pair in TEC.s_dictIdConfigDataSources) {
+                logging = Logging.Logg ().Warning;
+                err = (rTec [pair.Value] is DBNull) == false ? 0 : -1;
+
+                if (err == 0)
+                {
+                    idConnSett = Convert.ToInt32(rTec[pair.Value]);
+                    tableConnSett = DbTSQLConfigDatabase.DbConfig().GetDataTableConnSettingsOfIdSource (idConnSett, -1, out err);
+
+                    if (err == 0)
+                    {
+                        err = tec.connSettings(tableConnSett, (int)pair.Key);
+
+                        switch (err)
+                        {
+                            case 1:
+                                strLog = string.Format(@"идентификтор <{0}> источника данных для типа с индексом <{1}> не совпадает с базовым"
+                                    , idConnSett
+                                    , pair.Key);
+                                break;
+                            case -1:
+                                strLog = string.Format(@"найден более, чем один источник с идентификатором {0} для типа с индексом {1}"
+                                    , idConnSett
+                                    , pair.Key);
+                                break;
+                            case -2:
+                                strLog = string.Format(@"не найден ни один источник для типа с индексом {0}"
+                                    , pair.Key);
+                                break;
+                            default:
+                                break;
+                        }
+
+                        if (!(err > 0))
+                            if (strLog.Equals (string.Empty) == false)
+                                logging = Logging.Logg ().Error;
+                            else
+                                ;
+                        else
+                            ;
+                    }
+                    else
+                        strLog = string.Format(@"не зарегистрирован источник с идентификатором {0} для ТЭЦ.ID={1}, либо для него не установлен пароль", pair.Key, tec.m_id);
+                }
+                else
+                    strLog = string.Format (@"не установлен идентификатор источника данных {0} для ТЭЦ.ID={1}", pair.Key, tec.m_id);
+
+                if (strLog.Equals (string.Empty) == false)
+                    logging ($"DbTSQLConfigureDatabase::initTECConnectionSettings () - {strLog}...", Logging.INDEX_MESSAGE.NOT_SET, true);
+                else
+                    ;
+            }
+        }
+        /// <summary>
+        /// Событие для инициирования обновления параметров ТЭЦ для всех созданных списков (список ТЭЦ)
+        ///  при указании обработчика события для 'TEC.EventUpdate'
+        /// </summary>
+        public static event DelegateIntFunc EventTECListUpdate;
+
+        public class TECListUpdateEventArgs : EventArgs
+        {
+            public int m_iListenerId;
+        }
+
+        public static void PerformTECListUpdate (int iListenerId)
+        {
+            if (! (EventTECListUpdate == null))
+                EventTECListUpdate (iListenerId);
+            else
+                ;
+        }
+
+        public void OnTECUpdate (object obj, EventArgs ev)
+        {
+            TEC tec = obj as TEC;
+            int iListenerId = (ev as TECListUpdateEventArgs).m_iListenerId
+                , err = -1;
+            string strMesError = string.Empty;
+            DataTable tableRes;
+            DataRow []selRows;
+            DbConnection connConfigDB;
+
+            try {
+                connConfigDB = DbSources.Sources().GetConnection(iListenerId, out err);
+
+                if (err == 0) {
+                    //tableRes = getListTEC(ref connConfigDB, true, new int[] { 0, (int)TECComponent.ID.GTP }, out err);
+                    ////??? обновление параметров ТЭЦ (например: m_IdSOTIASSOLinkSourceTM)
+                    //tec.Update (tableRes);
+
+                    tableRes = GetListTECComponent(ref connConfigDB, @"GTP", tec.m_id, out err);
+                    // обновление параметров ГТП
+                    if (err == 0) {
+                        err = tableRes.Columns.IndexOf ("KoeffAlarmPcur") > 0 ? 0 : -2; // ранее возвращалось значение "-1"
+
+                        if (err == 0)
+                            // поиск ГТП
+                            foreach (TECComponent tc in tec.ListTECComponents)
+                                if (tc.IsGTP == true) {
+                                    selRows = tableRes.Select (@"ID=" + tc.m_id);
+                                    // проверить наличие значения
+                                    if ((selRows.Length == 1)
+                                        && (!(selRows [0] ["KoeffAlarmPcur"] is System.DBNull)))
+                                        // обновить значение коэффициента
+                                        tc.m_dcKoeffAlarmPcur = Convert.ToInt32 (selRows [0] ["KoeffAlarmPcur"]);
+                                    else
+                                        ;
+                                } else
+                                    ;
+                        else
+                            strMesError = "результ. табл. не содержит поле [KoeffAlarmPcur]";
+                    } else
+                        //strMesError = "не удалось получить таблицу - список компонентов ТЭЦ"
+                        throw new InvalidOperationException (string.Format (@"DbTSQLConfigureDatabase::OnTECUpdate (ID={0}, NAME={1}) - {2} ..."
+                            , (obj as TEC).m_id, (obj as TEC).name_shr, @"не удалось получить таблицу - список компонентов ТЭЦ"))
+                            ;
+                } else
+                    strMesError = "не удалось получить объект соединения с БД конфигурации";
+            } catch (Exception e) {
+                Logging.Logg().Exception(e, string.Format(@"DbTSQLConfigureDatabase::OnTECUpdate (ID={0}, NAME={1}) - ...", (obj as TEC).m_id, (obj as TEC).name_shr), Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            if (err < 0)
+                Logging.Logg ().Error (string.Format (@"DbTSQLConfigureDatabase::OnTECUpdate (ID={0}, NAME={1}) - {2} ..."
+                    , (obj as TEC).m_id, (obj as TEC).name_shr, strMesError), Logging.INDEX_MESSAGE.NOT_SET);
+            else
+                ;
+        }
+    }
+}

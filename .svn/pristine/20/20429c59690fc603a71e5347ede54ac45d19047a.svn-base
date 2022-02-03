@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="trans_mc_cmd.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="TechsiteMySQLconnectionString" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Driver={MySQL ODBC 3.51 Driver};database=techsite_cfg;server=10.100.104.22;uid=techsite;pwd=;port=3306</Value>
+    </Setting>
+    <Setting Name="accessPart" Type="System.String" Scope="User">
+      <Value Profile="(Default)">xXi9N8pfMrJ9/NeFs/00Cw==</Value>
+    </Setting>
+    <Setting Name="accessKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">asfd9</Value>
+    </Setting>
+    <Setting Name="Modes_Centre_Service_Host_Name" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ne1843</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

@@ -1,0 +1,123 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+
+namespace strans
+{
+    static class itssAUX
+    {
+        public static bool IsWaiting
+        {
+            get;
+
+            private set;
+        }
+
+        private static bool _stateNewLine = false;
+
+        /// <summary>
+        /// Признак фиксации сообщений в журнале ОС (по умолчанию, без установки значения = false)
+        /// </summary>
+        public static bool WriteToWinEventLog { set; private get; }
+
+        private static CancellationTokenSource _cancelTokenSource;
+
+        public static void Cancel ()
+        {
+            _cancelTokenSource.Cancel ();
+        }
+
+        /// <summary>
+        /// Ожидать нажатия клавиши (получение кода из окна стандартного ввода/вывода-консоли)
+        /// </summary>
+        /// <param name="sWaitMess">Сообщение, предваряющее ожидание нажатия</param>
+        /// <param name="bNewLineBegined">Признак наличия перевода строки перед сообщением</param>
+        /// <param name="bNewLineEnded">Признак наличия перевода строки после получения кода нажатой клавиши</param>
+        public static void Wait (string sWaitMess, bool bNewLineBegined = true, bool bNewLineEnded = true)
+        {
+            System.Threading.Tasks.Task<ConsoleKeyInfo> task;
+            ConsoleKeyInfo key;
+
+            printMessage (sWaitMess, ConsoleColor.White, bNewLineBegined, false);
+
+            IsWaiting = true;
+
+            _cancelTokenSource = new CancellationTokenSource ();
+            task = System.Threading.Tasks.Task<ConsoleKeyInfo>.Factory.StartNew (delegate () {
+                return Console.ReadKey (false);
+            });
+            task.Wait (_cancelTokenSource.Token);
+            
+            if (task.IsCompleted == true) {
+                key = task.Result;
+
+                IsWaiting = false;
+            } else
+            // IsWaiting as is - sign a canceled
+                ;
+
+            if (bNewLineEnded == true)
+                Console.WriteLine ();
+            else
+                ;
+        }
+
+        public static void PrintActionMessage (string sActMess, bool bWriteToWinEventLog = false)
+        {
+            printMessage (sActMess, ConsoleColor.White, true, bWriteToWinEventLog);
+        }
+
+        public static void PrintDebugMessage (string sActMess, bool bWriteToWinEventLog = false)
+        {
+            printMessage (sActMess, ConsoleColor.Gray, true, bWriteToWinEventLog);
+        }
+
+        public static void PrintWarningMessage (string sWarMess, bool bWriteToWinEventLog = false)
+        {
+            printMessage (sWarMess, ConsoleColor.Yellow, true, bWriteToWinEventLog);
+        }
+
+        /// <summary>
+        /// Выводит сообщение об ошибке на консоль красным шрифтом и (или) в журнал Windows.
+        /// </summary>
+        public static void PrintErrorMessage (string sErrMess, bool bWriteToWinEventLog = false)
+        {
+            printMessage (sErrMess, ConsoleColor.Red, true, bWriteToWinEventLog);
+        }
+
+        private delegate void DelegatePrint (string mes, params object[] args);
+
+        private static void printMessage (string mes, ConsoleColor cc, bool bNewLine, bool bWriteToWinEventLog)
+        {
+            string sAppName = string.Empty
+                , mesWrite = string.Empty;
+            DelegatePrint print;
+
+            mesWrite = string.Format ("[{1}]: {2}", Environment.NewLine, DateTime.Now.ToString ("HH:mm:ss.fff"), mes);
+
+            print =
+                (bNewLine == true) ?
+                (DelegatePrint)Console.WriteLine :
+                Console.Write
+                ;
+
+            ConsoleColor cc_copy = Console.ForegroundColor;
+            Console.ForegroundColor = cc;
+            print (mesWrite);
+            Console.ForegroundColor = cc_copy;
+
+            if ((WriteToWinEventLog == true)
+                && (bWriteToWinEventLog == true)
+                && (Environment.OSVersion.Version.Major < 6))     //На Windows Vista и выше в журнал таким способом записать прав не хватит
+            {
+                //Для Win7 надо палочкой махнуть, но не кашерно: Try giving the following registry key Read permission for NETWORK SERVICE: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security
+                sAppName = ASUTP.Helper.ProgramBase.AppName + ".exe";
+                //sAppName = "trans_mc_cmd.exe";
+                System.Diagnostics.EventLog.WriteEntry (sAppName, mes, System.Diagnostics.EventLogEntryType.Error);
+            } else
+                ;
+        }
+    }
+}

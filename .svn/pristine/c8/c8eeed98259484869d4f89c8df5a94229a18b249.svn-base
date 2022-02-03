@@ -1,0 +1,399 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Statistic</RootNamespace>
+    <AssemblyName>Statistic</AssemblyName>
+    <ApplicationIcon>Resources\statistic2.ico</ApplicationIcon>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile />
+    <PublishUrl>V:\Statistic\2.X.X-Test\</PublishUrl>
+    <Install>false</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>false</MapFileExtensions>
+    <TargetCulture>ru</TargetCulture>
+    <PublisherName>ЗАО Информационные технологии и связь</PublisherName>
+    <ApplicationRevision>5</ApplicationRevision>
+    <ApplicationVersion>2.0.9.5</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>EA6D98CE4B9E16E71CFAB7DDB7110A860DCAD70F</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Statistic_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup />
+  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>true</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>true</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup />
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ASUTP.Control">
+      <HintPath>..\..\ExternalDLL\ASUTP.Control.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Core">
+      <HintPath>..\..\ExternalDLL\ASUTP.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Database, Version=1.1.5.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\ExternalDLL\ASUTP.Database.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="ASUTP.Forms">
+      <HintPath>..\..\ExternalDLL\ASUTP.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Helper">
+      <HintPath>..\..\ExternalDLL\ASUTP.Helper.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Logging">
+      <HintPath>..\..\ExternalDLL\ASUTP.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.MSExcel">
+      <HintPath>..\..\ExternalDLL\ASUTP.MSExcel.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.PlugIn">
+      <HintPath>..\..\ExternalDLL\ASUTP.PlugIn.dll</HintPath>
+    </Reference>
+    <Reference Include="GemBox.Spreadsheet, Version=33.1.0.1000, Culture=neutral, PublicKeyToken=b1b72c69714d4847, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\GemBox.Spreadsheet.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\ExternalDLL\Microsoft.Office.Interop.Excel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="MySQL.Data, Version=6.2.2.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDll\MySQL.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="ZedGraph">
+      <HintPath>..\..\ExternalDLL\ZedGraph.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AdminTS_LK.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="AdminTS_Vyvod.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="dgwTables.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="FormGraphicsSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormGraphicsSettings.designer.cs">
+      <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMain.designer.cs">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HStatisticTabCtrlEx.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PanelAdmin.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAdminKomDisp.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAdminLK.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAdminNSS.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\DataGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\HandlerDbSignalValue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\HandlerSignalQueue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\PanelAISKUESOTIASSODay.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\PanelManagement.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\ZedGraphControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelCurPower.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelCustomTecView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelLastMinutes.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelQuickData.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSOHour.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelTECComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelTecView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelTecViewBase.cs" />
+    <Compile Include="PanelTecViewLK.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelTMSNPower.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelUser.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelVzletTDirect.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="PanelSobstvNyzhdy.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelTecViewStandard.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAdminVyvod.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <EmbeddedResource Include="FormGraphicsSettings.resx">
+      <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormMain.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="bin\Debug\connsett.ini" />
+    <None Include="bin\Debug\setup.ini" />
+    <None Include="ClassDiagram1.cd" />
+    <Content Include="connsett.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Properties\app.manifest" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Resources\statistic2.ico" />
+    <None Include="Template\Отчет по подинтервальной мощности_TEC_DATE.xls">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>Клиентский профиль .NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Установщик Windows 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CommonAux\CommonAux.csproj">
+      <Project>{7a57e6be-c9eb-4382-b369-57da7c4ca1a4}</Project>
+      <Name>CommonAux</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\StatisticAlarm\StatisticAlarm.csproj">
+      <Project>{205A2B13-F4AC-42AC-8BB7-5B02DE932019}</Project>
+      <Name>StatisticAlarm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\StatisticAnalyzer\StatisticAnalyzer.csproj">
+      <Project>{2133e9d0-7f92-4ce3-b768-a09a3864bb60}</Project>
+      <Name>StatisticAnalyzer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\StatisticDiagnostic\StatisticDiagnostic.csproj">
+      <Project>{2f11223c-00cf-4d6c-b234-1b8fa95f8b2f}</Project>
+      <Name>StatisticDiagnostic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
+      <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
+      <Name>StatisticCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\StatisticTimeSync\StatisticTimeSync.csproj">
+      <Project>{8A0AA5BC-3486-466C-A9F9-ED438A096E41}</Project>
+      <Name>StatisticTimeSync</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PublishFile Include="HClassLibrary.pdb">
+      <Visible>False</Visible>
+      <Group>Отладка</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Auto</PublishState>
+      <IncludeHash>False</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="Statistic.pdb">
+      <Visible>False</Visible>
+      <Group>Отладка</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="StatisticCommon.pdb">
+      <Visible>False</Visible>
+      <Group>Отладка</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="StatisticTimeSync.pdb">
+      <Visible>False</Visible>
+      <Group>Отладка</Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

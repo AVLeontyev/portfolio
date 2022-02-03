@@ -1,0 +1,31 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+
+namespace strans
+{
+    /// <summary>
+    /// Обработки аргументов командной строки
+    /// </summary>
+    public class CmdArg : Assignment.CmdArg
+    {
+        public CmdArg ()
+            : base (false)
+        {
+        }
+
+        public override string AppName
+        {
+            get
+            {
+                return IsHostRunable == true
+                    ? ((ConfigSectionServiceSettings)ConfigurationManager.GetSection ($"{ConfigSectionServiceSettings.NameSection}")).Logging.Prefix
+                        : IsClientRunable == true
+                            ? ((ConfigSectionClientItems)ConfigurationManager.GetSection ($"{ConfigSectionClientItems.NameSection}")).Logging.Prefix
+                                : "-strans-error";
+            }
+        }
+    }
+}

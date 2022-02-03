@@ -1,0 +1,96 @@
+﻿using ASUTP.Core;
+using ASUTP.Database;
+using StatisticCommon;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.Text;
+
+namespace StatisticCommon.Contract
+{
+    public enum IdPseudoDelegate
+    {
+        Unknown = -1
+        , Started
+        , Stopped
+        //, Closed
+        , WaitStart
+        , WaitStop
+        , WaitStatus
+        , ReportError
+        , ReportWarning
+        , ReportAction
+        , ClearReport
+        , SetForceDate
+        , Request
+        , Ready
+        , Error
+        , SaveCompleted
+        #region Modes-Centre
+        , ModesCentre_PlanDataChanged
+        #endregion
+            ,
+    }
+
+    [ServiceContract (SessionMode = SessionMode.Required, CallbackContract = typeof (Communication.IServiceCallback))]
+    public interface IService
+    {
+        //[OperationContract (IsOneWay = true)]
+        //void Connect ();
+
+        [OperationContract (IsOneWay = true)]
+        void Started ();
+
+        [OperationContract (IsOneWay = true)]
+        void Stopped ();
+
+        /// <summary>
+        /// Подготовить(установить соединение с БД, запустить необходимые потоки/задачи ожидания запросов) все объекты взаимодействия с БД к работе
+        /// </summary>
+        [OperationContract (IsOneWay = true)] // ??? IsOneWay = false
+        void Start ();
+
+        /// <summary>
+        /// Остановить все объекты взаимодействия с БД
+        ///  , 'IsOneWay = true' т.к. в ходе выполнения клиету несколько раз отправляется ReportClear
+        /// </summary>
+        [OperationContract (IsOneWay = true)]
+        void Stop ();
+
+        [OperationContract (IsOneWay = true)] // ??? IsOneWay = false
+        void Close ();
+
+        [OperationContract (IsOneWay = true, Name ="StatisticCommon.Contract.IService")]
+        void Activate (bool actived, int index = -1);
+
+        [OperationContract] //IsOneWay = false, wait callback bool-result
+        bool IsValidate (int index = -1);
+
+        int AdminCount
+        {
+            [OperationContract] //IsOneWay = false, wait callback int-result
+            get;
+        }
+
+        bool IsServiceOnEvent
+        {
+            [OperationContract] //IsOneWay = false, wait callback int-result
+            get;
+        }
+
+        TimeSpan OverDate
+        {
+            [OperationContract] //IsOneWay = false, wait callback TimeSpan-result
+            get;
+        }
+
+        TimeSpan FetchWaking
+        {
+            [OperationContract] //IsOneWay = false, wait callback TimeSpan-result
+            get;
+        }
+    }
+}

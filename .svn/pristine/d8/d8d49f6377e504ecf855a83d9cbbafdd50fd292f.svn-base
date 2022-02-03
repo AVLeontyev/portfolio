@@ -1,0 +1,106 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using StatisticCommon;
+using StatisticTransModes;
+using System.Collections.ObjectModel;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using Modes;
+using ModesApiExternal;
+
+using ASUTP;
+using System.Threading;
+using StatisticTrans.Contract.ModesCentre;
+using StatisticTrans.Contract;
+using StatisticTrans;
+
+namespace STrans.Service.TransGTP
+{
+    public class AdminGTP : AdminTS
+    {
+        public AdminGTP(bool[] arMarkPPBRValues)
+            : base(arMarkPPBRValues, TECComponentBase.TYPE.ELECTRO)
+        {
+
+        }
+
+        public override void Start()
+        {
+            base.Start();
+
+        }
+
+        public override bool Activate(bool active)
+        {
+            bool bRes = base.Activate(active);
+
+            return bRes;
+        }
+
+        public override void ClearValues()
+        {
+            base.ClearValues();
+        }
+
+        protected override INDEX_WAITHANDLE_REASON StateErrors(int /*StatesMachine*/ state, int request, int result)
+        {
+            INDEX_WAITHANDLE_REASON reasonRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+
+            return reasonRes;
+
+        }
+
+        /// <summary>
+        /// Подготовить список идентификаторов ГТП для формирования запроса на получение данных
+        ///  , ??? копия AdminTS_KomDisp
+        /// </summary>
+        /// <returns>Ключ 0-го оборудования из списка</returns>
+        public override FormChangeMode.KeyDevice PrepareActionRDGValues()
+        {
+            List<FormChangeMode.KeyDevice> listKey;
+
+            listKey = GetListKeyTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP, true);
+
+            if (_listTECComponentKey == null)
+                _listTECComponentKey = new List<FormChangeMode.KeyDevice>();
+            else
+                ;
+
+            try
+            {
+                // проверить на наличие дубликатов
+                if (listKey.Count - listKey.Distinct().Count() == 0)
+                {
+                    _listTECComponentKey.Clear();
+                    listKey.ForEach((key) => {
+                        if (_listTECComponentKey.Contains(key) == false)
+                            _listTECComponentKey.Add(key);
+                        else
+                            Logging.Logg().Error(string.Format("trans_mc.AdminMC::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", key.ToString()), Logging.INDEX_MESSAGE.NOT_SET);
+                    });
+
+                    //TODO:
+                    // аварийно прекратить выполнение предыдущей операции сохранения ПБР-значений
+                }
+                else
+                    Logging.Logg().Error(string.Format("trans_mc.AdminMC::PrepareExportRDGValues () - в переданном списке <{0}> есть дубликаты...", string.Join(",", listKey.Select(key => key.ToString()).ToArray()))
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                Logging.Logg().Action($"trans_mc.AdminMC::PrepareExportRDGValues () - подготовлен список для опроса: <{string.Join(", ", _listTECComponentKey.ConvertAll<string>(key => key.Id.ToString()).ToArray())}>..."
+                    , Logging.INDEX_MESSAGE.NOT_SET);
+            }
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, string.Format("trans_mc.AdminMC::PrepareExportRDGValues () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            return base.PrepareActionRDGValues();
+        }
+
+    }
+}

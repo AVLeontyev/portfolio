@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
+using System.ServiceProcess;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Assignment;
+
+namespace salarm
+{
+    public class Service : Assignment.Service
+    {
+        public Service (MODE mode, string name)
+            : base (mode, name, typeof(NameEndPoint))
+        {
+        }
+
+        protected override Assignment.IDeployment createHost (MODE mode)
+        {
+            return new Host (mode);
+        }
+    }
+}

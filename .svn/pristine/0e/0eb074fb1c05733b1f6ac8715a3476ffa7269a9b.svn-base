@@ -1,0 +1,341 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+
+namespace strans
+{
+    /// <summary>
+    /// Перечисление - индекс(или тип) объектов для которых может юыть установлен режим 'MODE'
+    /// </summary>
+    public enum INDEX_MODE
+    {
+        Unknown = -1
+        , Host
+        , Client
+        , All
+    }
+
+    /// <summary>
+    /// Перечисление - составная часть режима работы приложения
+    ///  , в ~ от аргументов командной строки
+    ///  , некоторые элементы несовместимы друг с другом; например: Install+Uninstall
+    /// </summary>
+    [Flags]
+    public enum MODE
+    {
+        Unknown = 0x0
+        , Host = 0x1
+        , Client = 0x2
+        , Console = 0x4
+        , ScNet = 0x8
+        , Gui = 0x10
+        , Install = 0x20
+        , Remove = 0x40
+        , Start = 0x100
+        , Stop = 0x200
+        , Restart = 0x400
+        , Error = 0x800
+    }
+
+    /// <summary>
+    /// Обработки аргументов командной строки
+    /// </summary>
+    public class CmdArg : IDisposable
+    {
+        private static MODE [] _mode
+        {
+            get; set;
+        }
+
+        public static MODE ModeHost
+        {
+            get
+            {
+                return _mode [(int)INDEX_MODE.Host];
+            }
+        }
+
+        public static MODE ModeClient
+        {
+            get
+            {
+                return _mode [(int)INDEX_MODE.Client];
+            }
+        }
+
+        public static bool IsConsole
+        {
+            get
+            {
+                return (CmdArg.ModeHost.HasFlag (MODE.Console) == true)
+                    || (CmdArg.ModeClient.HasFlag (MODE.Console) == true);
+            }
+        }
+
+        public static bool IsScNet
+        {
+            get
+            {
+                return (CmdArg.ModeHost.HasFlag (MODE.ScNet) == true)
+                    && (CmdArg.ModeClient.HasFlag (MODE.Unknown) == true);
+            }
+        }
+
+        public static bool IsHostRunable
+        {
+            get
+            {
+                return ModeHost.Equals (MODE.Unknown) == false;
+            }
+        }
+
+        public static bool IsClientRunable
+        {
+            get
+            {
+                return ModeClient.Equals (MODE.Unknown) == false;
+            }
+        }
+
+        private bool validate (IEnumerable<ARGUMENT> args, out INDEX_MODE indxMode)
+        {
+            bool bRes = false;
+            indxMode = INDEX_MODE.Unknown;
+
+            Dictionary<LARGUMENT, IEnumerable<ARGUMENT>> verifies;
+
+            // правила проверки
+            // 0) мин. кол-во элементов "2"
+            // 1) наличие элемента с уровнем LARGUMENT.Mode, LARGUMENT.SubMode
+            // 2) на каждый уровень по одному значению
+            // 3) совместимость 2-го к 1-му
+            // 4)* совместимость 3-го ко 2-му
+            // 5)* совместимость 3-го к 1-му
+            // * - при наличии 3-го
+
+            verifies = new Dictionary<LARGUMENT, IEnumerable<ARGUMENT>> () {
+                    { LARGUMENT.Mode, from arg in args where arg.Level == LARGUMENT.Mode select arg }
+                    , { LARGUMENT.SubMode, from arg in args where arg.Level == LARGUMENT.SubMode select arg }
+                    , { LARGUMENT.Action, from arg in args where arg.Level == LARGUMENT.Action select arg }
+                };
+
+            bRes =
+                // правила №№0-2
+                verifies.ToList ().TrueForAll (verify => verify.Value.Count () == 1)
+                    // правило №3
+                    && !(verifies [LARGUMENT.Mode].ElementAt (0).Index > verifies [LARGUMENT.SubMode].ElementAt (0).Index)
+                ;
+
+            indxMode = ((verifies.ContainsKey (LARGUMENT.Mode) == true)
+                && (verifies [LARGUMENT.Mode].Count () == 1))
+                ? verifies [LARGUMENT.Mode].ElementAt (0).Index
+                    : INDEX_MODE.Unknown;
+
+            return bRes;
+        }
+
+        /// <summary>
+        /// Перечисление - типы аргументов
+        /// </summary>
+        private enum LARGUMENT
+        {
+            Unknown = -1
+            , Mode
+            , SubMode
+            , Action
+        }
+
+        /// <summary>
+        /// Перечисление - минимальная составная часть аргумента командной строки
+        /// </summary>
+        private enum KARGUMENT
+        {
+            unknown = -1
+            , host
+            , client
+            , console
+            , gui
+            , scnet
+            , install
+            , remove
+            , start
+            , stop
+            , restart
+        }
+
+        /// <summary>
+        /// Структура для описания части аргумента для любого из типов объектов (host, client)
+        /// </summary>
+        private struct ARGUMENT
+        {
+            public LARGUMENT Level;
+
+            public KARGUMENT Key;
+
+            public MODE Mode;
+
+            public INDEX_MODE Index;
+        }
+
+        /* [Примеры допустимых аргументов командной строки] - [с пояснением поведения приложения]
+         * [---host--console] - [развертывание служб в консоли, клиент на выполнение не запускается]
+         * [---host--ScNet-install] - [проверка ранее выполненной регистрации служб в качестве "служб ОС", клиент на выполнение не запускается]
+         * [---host--ScNet-start] - [службы запускаются на выполнение, клиент на выполнение не запускается]
+         * [---host--ScNet-restart] - [службы последовательно останавливаются/запускаются, клиент на выполнение не запускается]
+         * [---host--ScNet-stop] - [службы останавливаются, клиент на выполнение не запускается]
+         * [---host--ScNet-uninstall] - [проверяется регистрация служб в ОС - при наличии устанавливается признак "к удалению", клиент на выполнение не запускается]
+         * [---client--gui-start] - [развертывание служб не выполняется, клиент выполненяется в реж. с граф. интерфейсом]
+         * [---client--gui-stop] - [развертывание служб не выполняется, клиенту передается аргумент на прекращение выполнения]
+         * [---client--console-start] - [развертывание служб не выполняется, клиент выполненяется в реж. с граф. интерфейсом]
+         * [---client--console-stop] - [развертывание служб не выполняется, клиенту передается аргумент на прекращение выполнения]
+        */
+
+        /// <summary>
+        /// Конструктор - основной (без аргументов)
+        /// </summary>
+        public CmdArg ()
+            : this (Environment.GetCommandLineArgs ().Skip (1).ToArray (), false)
+        {
+        }
+
+        public CmdArg (bool bDebug)
+            : this (Environment.GetCommandLineArgs ().Skip (1).ToArray (), bDebug)
+        {
+        }
+
+        /// <summary>
+        /// Конструктор - основной (без аргументов)
+        /// </summary>
+        public CmdArg (string [] args, bool bDebug)
+        {
+            _mode = new MODE [(int)INDEX_MODE.All];
+            _mode [(int)INDEX_MODE.Host] =
+            _mode [(int)INDEX_MODE.Client] =
+                MODE.Unknown;
+
+            if (bDebug == true) {
+                // по умолчанию
+                _mode [(int)INDEX_MODE.Host] = MODE.Host | MODE.Console | MODE.Start;
+                _mode [(int)INDEX_MODE.Client] =
+                    //MODE.Client | MODE.Console | MODE.Start
+                    MODE.Unknown
+                    ;
+            } else {
+                parse (args);
+            }
+        }
+
+        private const string _delimeter_argv = "-";
+
+        public static bool Default
+        {
+            get;
+
+            private set;
+        }
+
+        private IList<string> DefaultSensed
+        {
+            get
+            {
+                return new List<string> { string.Join("", (from m in new List<MODE> {
+                    MODE.Host
+                    , MODE.ScNet
+                    , MODE.Start
+                } select _delimeter_argv + m.ToString ().ToLower() ).ToList()) };
+            }
+        }
+
+        private void parse (IEnumerable<string> sensed)
+        {
+            INDEX_MODE indxMode = INDEX_MODE.Unknown;
+            IEnumerable<KARGUMENT> arg_parts;
+            IEnumerable<ARGUMENT> args;
+
+            // Список, определяющий соотношения тип аргумента - минимальная часть аргумента
+            List<ARGUMENT> listArgumentTemplate;
+            listArgumentTemplate = new List<ARGUMENT> () {
+                    new ARGUMENT { Level = LARGUMENT.Unknown    , Key = KARGUMENT.unknown   , Mode = MODE.Unknown   , Index = INDEX_MODE.Unknown }
+                    , new ARGUMENT { Level = LARGUMENT.Mode     , Key = KARGUMENT.host      , Mode = MODE.Host      , Index = INDEX_MODE.Host }
+                    , new ARGUMENT { Level = LARGUMENT.Mode     , Key = KARGUMENT.client    , Mode = MODE.Client    , Index = INDEX_MODE.Client }
+                    , new ARGUMENT { Level = LARGUMENT.SubMode  , Key = KARGUMENT.console   , Mode = MODE.Console   , Index = INDEX_MODE.All }
+                    , new ARGUMENT { Level = LARGUMENT.SubMode  , Key = KARGUMENT.scnet     , Mode = MODE.ScNet     , Index = INDEX_MODE.Host }
+                    , new ARGUMENT { Level = LARGUMENT.SubMode  , Key = KARGUMENT.gui       , Mode = MODE.Gui       , Index = INDEX_MODE.Client }
+                    , new ARGUMENT { Level = LARGUMENT.Action   , Key = KARGUMENT.install   , Mode = MODE.Install   , Index = INDEX_MODE.Host }
+                    , new ARGUMENT { Level = LARGUMENT.Action   , Key = KARGUMENT.remove , Mode = MODE.Remove , Index = INDEX_MODE.Host }
+                    , new ARGUMENT { Level = LARGUMENT.Action   , Key = KARGUMENT.start     , Mode = MODE.Start     , Index = INDEX_MODE.All }
+                    , new ARGUMENT { Level = LARGUMENT.Action   , Key = KARGUMENT.stop      , Mode = MODE.Stop      , Index = INDEX_MODE.All }
+                    , new ARGUMENT { Level = LARGUMENT.Action   , Key = KARGUMENT.restart   , Mode = MODE.Restart   , Index = INDEX_MODE.All }
+                };
+
+            Default = sensed.Count () == 0;
+            if (Default == true)
+                sensed = DefaultSensed;
+            else
+                ;
+
+            foreach (string s in sensed) {
+                try {
+                    // в случае неизвестного ключа - произойдет исключение - режим останется "как в конструкторе" (MODE.Unknown)
+                    arg_parts = from karg in s.Split (new string [] { _delimeter_argv }, StringSplitOptions.RemoveEmptyEntries)
+                                select (KARGUMENT)Enum.Parse (typeof (KARGUMENT), karg);
+                    args = from argTemplate in listArgumentTemplate
+                            join argPart in arg_parts on argTemplate.Key equals argPart
+                            select argTemplate;
+                    //TODO: проверить 'Mode' на совместимость
+                    if (validate (args, out indxMode) == true) {
+                        // установить режим для указанного в аргументе индекса, разобрать (при наличии) дополнительные
+                        args.ToList ().ForEach (arg => {
+                            _mode [(int)indxMode] |= arg.Mode;
+                        });
+                    } else
+                        // $"Аргумент не разобран: argument=[{s}]..."
+                        // проверить наличие определяющей части для режима
+                        if (!(indxMode == INDEX_MODE.Unknown))
+                            _mode [(int)indxMode] = MODE.Error;
+                        else
+                            ;
+                } catch (Exception e) {
+                    ASUTP.Logging.Logg ().Exception (e, $"strans.CmdArg::setMode () - argument=<{s}>...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                }
+            }
+        }
+
+        public void Dispose ()
+        {
+
+        }
+
+        public string AppName
+        {
+            get
+            {
+                return IsHostRunable == true
+                    ? ((ConfigSectionServiceSettings)ConfigurationManager.GetSection ($"{ConfigSectionServiceSettings.NameSection}")).Logging.Prefix
+                        : IsClientRunable == true
+                            ? ((ConfigSectionClientItems)ConfigurationManager.GetSection ($"{ConfigSectionClientItems.NameSection}")).Logging.Prefix
+                                : "-strans-error";
+            }
+        }
+
+        #region в наследство
+        /// <summary>
+        /// Обрабатывает переданные при вызове параметры. Возвращает флаг необходимости выхода из программы.
+        /// </summary>
+        private static bool proc_args (string [] args)
+        {
+            //??? Properties.Settings sett = new Properties.Settings();
+
+            itssAUX.PrintWarningMessage (System.Diagnostics.FileVersionInfo.GetVersionInfo (AppDomain.CurrentDomain.SetupInformation.ApplicationName).FileDescription, false);
+            itssAUX.PrintWarningMessage (System.Diagnostics.FileVersionInfo.GetVersionInfo (AppDomain.CurrentDomain.SetupInformation.ApplicationName).CompanyName, false);
+            itssAUX.PrintWarningMessage (System.Diagnostics.FileVersionInfo.GetVersionInfo (AppDomain.CurrentDomain.SetupInformation.ApplicationName).LegalCopyright, false);
+
+            itssAUX.PrintWarningMessage (Environment.NewLine + "Known command line arguments: /? /list[=DD.MM.YYYY] /nowait /setmysqlpassword" + Environment.NewLine, false);
+
+            return false;
+        }
+        #endregion
+    }
+}

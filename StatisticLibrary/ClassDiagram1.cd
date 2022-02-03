@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="StatisticCommon.PanelStatisticWithTableHourRows" Collapsed="true">
+    <Position X="12.5" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=</HashCode>
+      <FileName>PanelStatistic.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.HAdmin" Collapsed="true">
+    <Position X="3" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>hCAygQBAAICQSwyggIHIAFAQSkApIAAkAYxBghQQoDA=</HashCode>
+      <FileName>Admin.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.AdminAlarm" Collapsed="true">
+    <Position X="12.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CCQCAAAAAiAQBQBgAAxAAAAAAAJgAQIEIAAGAAAAAQA=</HashCode>
+      <FileName>AdminAlarm.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.AdminTS" Collapsed="true">
+    <Position X="4" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ggAAIAhAAWAChwFgQJCp1BBQDoQoAJIgYQBQHNgKiwA=</HashCode>
+      <FileName>AdminTS.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.AdminTS_KomDisp" Collapsed="true">
+    <Position X="3" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAABAAAkBAAAAAAAAAIIAAAQIAAAAAAAAAAI=</HashCode>
+      <FileName>AdminTS_KomDisp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.AdminTS_NSS" Collapsed="true">
+    <Position X="5.25" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>wAAAoAHAAIEAAkmAAAAMIAAABAgQAABAQABAAAAAgAA=</HashCode>
+      <FileName>AdminTS_NSS.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.DataGridViewBase" Collapsed="true">
+    <Position X="1.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>dgwAdmin.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.DataGridViewAdmin" Collapsed="true">
+    <Position X="1.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAQIEAAAAAiCAAAQAAAAAAAAAACAQAAAAAA=</HashCode>
+      <FileName>dgwAdmin.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.DataGridViewAdminKomDisp" Collapsed="true">
+    <Position X="0.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAEAAAAEgAAAAARIAAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>dgwAdminKomDisp.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.DataGridViewAdminNSS" Collapsed="true">
+    <Position X="2.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAQABAAEIAAAAgAAAAAIAAAAAAAAAAAQABIAAA=</HashCode>
+      <FileName>dgwAdminNSS.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormAbout" Collapsed="true">
+    <Position X="14.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAABAAAASAAAACAAAQQAAAAIAAAABQIAA=</HashCode>
+      <FileName>FormAbout.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormChangeMode" Collapsed="true">
+    <Position X="16" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IUkAAIYZwCEAACZAAICMAOMTACATBAAiAOAAMEABQCA=</HashCode>
+      <FileName>FormChangeMode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormMainAnalyzer" Collapsed="true">
+    <Position X="14" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAgCAAAAAAAAiAAAAGAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FormMainAnalyzer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormMainAnalyzer_TCPIP" Collapsed="true">
+    <Position X="12.5" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FormMainAnalyzer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormMainAnalyzer_DB" Collapsed="true">
+    <Position X="15.5" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>FormMainAnalyzer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormParameters" Collapsed="true">
+    <Position X="6.75" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAIAAACAAAAAAAACABQADCAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>FormParameters.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormParameters_FIleINI" Collapsed="true">
+    <Position X="5.5" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAQAAAAAAAAAAAAAAAAAUAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>FormParameters.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormParameters_DB" Collapsed="true">
+    <Position X="7.75" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAYAAAAAQAAAAAAAAAAAAAAAAAQAAQAAAAEACAAAIAA=</HashCode>
+      <FileName>FormParameters.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormParametersTG" Collapsed="true">
+    <Position X="1.75" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAMAAADAAAAIAAACAAIACGAQAAAAAAAAAAAAICAA=</HashCode>
+      <FileName>FormParametersTG.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormParametersTG_FileINI" Collapsed="true">
+    <Position X="0.5" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAgAAAAAQAAAEAAAAAAAAAAAAAQAAAACAQAAAAAAAAA=</HashCode>
+      <FileName>FormParametersTG.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.FormParametersTG_DB" Collapsed="true">
+    <Position X="2.75" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQCAAAJAAAAAAIAAAAAQAAAAAIAQARAIAIAA=</HashCode>
+      <FileName>FormParametersTG.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.InitTECBase" Collapsed="true">
+    <Position X="8.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAAAEAIAAEEAAIAAABAAAAAAgACAEAAA=</HashCode>
+      <FileName>InitTEC.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.InitTEC_200" Collapsed="true">
+    <Position X="7.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAACAAAAAgAAAAAAAAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>InitTEC.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.InitTEC_190" Collapsed="true">
+    <Position X="9.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>InitTEC.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.PanelStatistic" Collapsed="true">
+    <Position X="12.5" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>PanelStatistic.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.PanelStatisticView" Collapsed="true">
+    <Position X="12.5" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAgAAAAAhAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>PanelStatistic.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.TEC" Collapsed="true">
+    <Position X="16" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAWCAAAABEtAiBBQBAGCgJAwEkBIARRwCkQGDAAHBA=</HashCode>
+      <FileName>TEC.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.TECComponentBase" Collapsed="true">
+    <Position X="6.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAAAAQAAAAAAAgAAAAAQAAAAIAAAACAA=</HashCode>
+      <FileName>TECComponent.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.TG" Collapsed="true">
+    <Position X="5.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAGAAAAAAAAEAAAAAAQAACAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TECComponent.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.TECComponent" Collapsed="true">
+    <Position X="7.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAgAAAEAIACAAAAAAAAAAAAAAQAAAAAAAA=</HashCode>
+      <FileName>TECComponent.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.TecView" Collapsed="true">
+    <Position X="0.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>owIGjpFDNiGCF2tgsonoHIZZWII5wYI5oDekUJBMlB4=</HashCode>
+      <FileName>TecView.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.HStatisticUsers" Collapsed="true">
+    <Position X="12.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAAAAAEAAAAAAAAAAAAAABgAAAAAAAAAA=</HashCode>
+      <FileName>Users.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StatisticCommon.Properties.Resources" Collapsed="true">
+    <Position X="14.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAAIAAABEAAAAQAAgAACAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="StatisticCommon.CONN_SETT_TYPE" Collapsed="true">
+    <Position X="12.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>RAAAIEAAAAAAAAAAAAAIAAAAAAAhAQAAAABAAAABAAA=</HashCode>
+      <FileName>TEC.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Tahoma" Size="8.25" />
+</ClassDiagram>

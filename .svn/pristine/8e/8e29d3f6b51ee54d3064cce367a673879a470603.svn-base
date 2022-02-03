@@ -1,0 +1,121 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using StatisticCommon.OICDAC;
+using interop.OICDAC;
+using System.Linq;
+
+namespace UnitTest
+{
+    [TestClass]
+    public class OICDAC
+    {
+        private class OIRequestResultComparer : IEqualityComparer<DbInterface.OIRequestResult>
+        {
+            public bool Equals (DbInterface.OIRequestResult x, DbInterface.OIRequestResult y)
+            {
+                return x.KeySignal.Name.Equals(y.KeySignal.Name);
+            }
+
+            public int GetHashCode (DbInterface.OIRequestResult obj)
+            {
+                return obj.KeySignal.Name.GetHashCode()
+                    | obj.KindRefresh.GetHashCode()
+                    | obj.Stamp1.GetHashCode()
+                    | obj.Sign.GetHashCode()
+                    | obj.Tag.GetHashCode();
+            }
+        }
+
+        [TestMethod]
+        public void TestMethodDistinctLastUpdated ()
+        {
+            string DateTimeFormat = "yyyyMMdd HH:mm:ss.fff";
+
+            IEnumerable<DbInterface.OIRequestResult> input = null // входные значения
+                , output = null;
+            IEnumerable<int> expected_ret = null; // правильные ответы
+            List<int> actual;
+
+            try {
+                input = new List<DbInterface.OIRequestResult> () {
+                    // 0
+                    new DbInterface.OIRequestResult("I285", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 21:22:23.456", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 23.456F, 128, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I285", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 21:22:23.654", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 23.654F, 16, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I285", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 21:22:23.654", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 23.654F, 16, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    // 2
+                    , new DbInterface.OIRequestResult("I385", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20150910 01:02:03.123", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), -03.123F, 8, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I385", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20160910 04:05:06.789", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 6.789F, 512, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I385", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20170910 10:11:12.345", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 12.345F, 64, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I385", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 06:07:08.901", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), -8.901F, 2, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    // 6
+                    , new DbInterface.OIRequestResult("I485", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 02:03:04.567", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 4.567F, 256, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    // 7
+                    , new DbInterface.OIRequestResult("I585", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20150910 08:09:10.123", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), -10.123F, 8, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I585", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20160910 04:05:06.789", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 6.789F, 512, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I585", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20170910 10:11:12.345", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), -12.345F, 32, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I585", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 06:07:08.901", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 8.901F, 2, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    // 11
+                    , new DbInterface.OIRequestResult("I685", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20150910 02:03:04.567", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), -4.567F, 128, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I685", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20160910 08:09:10.123", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 10.123F, 8, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I685", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20170910 04:05:06.789", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 6.789F, 512, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I685", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 00:01:02.345", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 2.345F, 32, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    // 15
+                    , new DbInterface.OIRequestResult("I785", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20170910 06:07:08.901", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), -8.901F, 2, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I785", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 02:03:04.567", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 4.567F, 128, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    // 17
+                    , new DbInterface.OIRequestResult("I885", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20170910 08:09:10.123", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 10.123F, 8, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I885", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 03:04:05.678", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), -1F, 512, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    // 19
+                    , new DbInterface.OIRequestResult("I985", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20160910 09:10:11.234", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 11.234F, 16, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I985", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20170910 15:16:17.890", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 17.89F, 512, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                    , new DbInterface.OIRequestResult("I985", KindRefreshEnum.kr_Unknown, DateTime.ParseExact("20180910 00:01:02.345", DateTimeFormat, System.Globalization.CultureInfo.InvariantCulture), 2.345F, 32, DateTime.MinValue, DbInterface.OIKParameter.UNKNOWN)
+                };
+            } catch (Exception e) {
+                Assert.Fail ($"Input values: {e.Message}");
+            }
+
+            // крайние индексы, в каждой группе, т.к. входной массив исходно сортированный (фактически не сортированный)
+            // кол-во должно совпадать с кол-ом групп
+            try {
+                expected_ret = new List<int> {
+                    /*"I285"*/1
+                    , /*"I385"*/6 // = 11
+                    , /*"I485"*/7
+                    , /*"I585"*/11 // = 6
+                    , /*"I685"*/15 // = 22
+                    , /*"I785"*/17
+                    , /*"I885"*/19
+                    , /*"I985"*/22 /* = 15 */ };
+            } catch (Exception e) {
+                Assert.Fail ($"Expected return(input) values: {e.Message}");
+            }
+
+            try {
+                output = input?.DistinctLastUpdated ();
+                // исключить дубликаты по наим. сигнала
+                output = output.Distinct (new OIRequestResultComparer());
+            } catch (Exception e) {
+                Assert.Fail ($"Target run: {e.Message}");
+            }
+
+            try {
+                actual = new List<int> ();
+
+                Assert.IsNotNull (expected_ret);
+                // кол-во должно совпадать с кол-ом групп (см. выше)
+                Assert.AreEqual (expected_ret.Count(), output.Count());
+
+                output.ToList ().ForEach (o => {
+                    int indx = -1;
+
+                    indx = input.ToList ().IndexOf (o);
+                    actual.Add (indx);
+                    Assert.IsTrue (expected_ret.Contains (indx), "{0} <> {1}:{2}", indx, o.KeySignal.Name, o.Stamp1);
+                });
+            } catch (Exception e) {
+                Assert.Fail ($"Control output values: {e.Message}");
+            }
+        }
+    }
+}

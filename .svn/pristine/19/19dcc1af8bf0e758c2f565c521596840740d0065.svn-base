@@ -1,0 +1,77 @@
+--НЕ НАДО
+--Добавить столбец в TG_LIST для наименований сигналов ТМ
+ALTER TABLE `techsite_cfg`.`TG_LIST` ADD COLUMN `NAME_SIGNAL_MST` VARCHAR(16) NOT NULL  AFTER `ID_PC` ; 
+
+--НЕ НАДО
+--Добавить имена сигналов
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#1G_I_10_V' WHERE `ID`='1001';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#2G_I_10_V' WHERE `ID`='1002';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#3G_I_10_V' WHERE `ID`='1003';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#4G_I_10_V' WHERE `ID`='1004';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='BT#5G_I_10_V' WHERE `ID`='1005';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#G3_I_10_V' WHERE `ID`='1006';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#G4_I_10_V' WHERE `ID`='1007';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#G5_I_10_V' WHERE `ID`='1008';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#GT6_I_10_V' WHERE `ID`='1009';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#GT7_I_10_V' WHERE `ID`='1010';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#GT8_I_10_V' WHERE `ID`='1011';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T2#GT9_I_10_V' WHERE `ID`='1012';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#1G_I_10_V' WHERE `ID`='1013';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#5G_I_10_V' WHERE `ID`='1014';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#7G_I_10_V' WHERE `ID`='1015';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#8G_I_10_V' WHERE `ID`='1016';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#9G_I_10_V' WHERE `ID`='1017';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#10G_I_10_V' WHERE `ID`='1018';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#11G_I_10_V' WHERE `ID`='1019';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#12G_I_10_V' WHERE `ID`='1020';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#13G_I_10_V' WHERE `ID`='1021';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T3#14G_I_10_V' WHERE `ID`='1022';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG3_I_10_V' WHERE `ID`='1023';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG4_I_10_V' WHERE `ID`='1024';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG5_I_10_V' WHERE `ID`='1025';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG6_I_10_V' WHERE `ID`='1026';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG7_I_10_V' WHERE `ID`='1027';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T4#TG8_I_10_V' WHERE `ID`='1028';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG1_I_10_V' WHERE `ID`='1029';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG2_I_10_V' WHERE `ID`='1030';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG3_I_10_V' WHERE `ID`='1031';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG4_I_10_V' WHERE `ID`='1032';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG5_I_10_V' WHERE `ID`='1033';
+UPDATE `techsite_cfg`.`TG_LIST` SET `NAME_SIGNAL_MST`='T5#TG6_I_10_V' WHERE `ID`='1034';
+
+--Изменить идентификаторы в SOURCE для DATA_FACT, добавить строки с DATA_TM (1, 2)
+UPDATE `techsite_cfg`.`SOURCE` SET `ID`='11' WHERE `ID`='1'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='21' WHERE `ID`='2'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='31' WHERE `ID`='3'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='41' WHERE `ID`='4'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='51' WHERE `ID`='5'; UPDATE `techsite_cfg`.`SOURCE` SET `ID`='61' WHERE `ID`='6'; INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('12', '192.168.30.102', '1433', 'HISTORY', 'client', '0', 'БТЭЦ (ТМ-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('13', '192.168.30.103', '1433', 'HISTORY', 'client', '0', 'БТЭЦ (ТМ-2)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('22', '192.168.32.128', '1433', 'HISTORY', 'client', '0', 'НТЭЦ-2 (ТМ-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('23', '192.168.32.129', '1433', 'HISTORY', 'client', '0', 'НТЭЦ-2 (ТМ-2)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('32', '192.168.33.157', '1433', 'HISTORY', 'client', '0', 'НТЭЦ-3 (ТМ-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('33', '192.168.33.158', '1433', 'HISTORY', 'client', '0', 'НТЭЦ-3 (ТМ-2)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('42', '192.168.34.177', '1433', 'HISTORY', 'client', '0', 'НТЭЦ-4 (ТМ-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('43', '192.168.34.177', '1433', 'HISTORY', 'client', '0', 'НТЭЦ-4 (ТМ-2)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('52', '192.168.35.202', '1433', 'HISTORY', 'client', '0', 'НТЭЦ-5 (ТМ-1)', 'client'); INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('53', '192.168.35.203', '1433', 'HISTORY', 'client', '0', 'НТЭЦ-5 (ТМ-2)', 'client');
+
+--Изменить идентификаторы в TEC_LIST в соответствии с SOURCE
+UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='11' WHERE `ID`='1'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='21' WHERE `ID`='2'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='31' WHERE `ID`='3'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='41' WHERE `ID`='4'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='51' WHERE `ID`='5'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA`='61' WHERE `ID`='6';
+
+--Добавить столбец для идентификаторов TM, переименовать столбец для идентификаторов FACT
+ALTER TABLE `techsite_cfg`.`TEC_LIST` CHANGE COLUMN `ID_SOURCE_DATA` `ID_SOURCE_DATA_FACT` INT(11) NOT NULL  , ADD COLUMN `ID_SOURCE_DATA_TM` INT(11) NOT NULL  AFTER `NAME_SHR` ;
+
+--НЕ НАДО
+--Установить значения  для идентификаторов источников данных TM
+UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA_TM`='12' WHERE `ID`='1'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA_TM`='22' WHERE `ID`='2'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA_TM`='32' WHERE `ID`='3'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA_TM`='42' WHERE `ID`='4'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA_TM`='52' WHERE `ID`='5'; UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA_TM`='' WHERE `ID`='6';
+
+--Добавить столбцы для шаблонов наименований сигналов "факт" и "ТМ"
+ALTER TABLE `techsite_cfg`.`TEC_LIST` ADD COLUMN `TEMPLATE_NAME_SGN_DATA_TM` VARCHAR(29) NOT NULL  AFTER `PATH_RDG_EXCEL` , ADD COLUMN `TEMPLATE_NAME_SGN_DATA_FACT` VARCHAR(29) NOT NULL  AFTER `TEMPLATE_NAME_SGN_DATA_TM` ;
+
+--Добавить значения для столбцов с шаблонами наименований сигналов "факт", "ТМ"
+UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='BT#%G_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='1'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='T2#G%_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='2'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='T3#%G_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='3'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='T4#TG%_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='4'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='T5#TG%_I_10_V', `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='5'; UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_FACT`='ТГ%P%+' WHERE `ID`='6';
+
+--Добавить источник Бийск СОТИАССО 'SOURCE'
+INSERT INTO `techsite_cfg`.`SOURCE` (`ID`, `IP`, `PORT`, `DB_NAME`, `UID`, `IGNORE`, `NAME_SHR`, `PASSWORD`) VALUES ('62', '10.100.104.248', '1433', 'HISTORY', 'cllient', '0', 'БиТЭЦ (ТМ-1)', 'client'); 
+
+--Изменить источник СОТИАССО 'TEC_LIST'
+UPDATE `techsite_cfg`.`TEC_LIST` SET `ID_SOURCE_DATA_TM`='62' WHERE `ID`='6';
+
+--Изменить шаблон сигналов ТГ 'TEC_LIST' для Бийской ТЭЦ
+UPDATE `techsite_cfg`.`TEC_LIST` SET `TEMPLATE_NAME_SGN_DATA_TM`='BiTEC#TG%_I_10_V' WHERE `ID`='6'; 
+
+> 1 (5) = 0
+фактические значения 0.00 -> 0
+59мин. - видимый
+сравнение 30 сек. по обновлению
+разрешить рекомендации за тек./час
+монитор 2% шрифт уменьшать
+монитор 2% 2014 -> 14
+Главное меню - Activate (false) для активной вкладки

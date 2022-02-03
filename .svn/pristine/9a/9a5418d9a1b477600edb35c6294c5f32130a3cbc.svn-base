@@ -1,0 +1,160 @@
+﻿using ASUTP;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Configuration;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Assignment
+{
+    public partial class Console : ICreator, IDisposable
+    {
+        private ERROR _error;
+
+        public ERROR Error
+        {
+            get
+            {
+                return _error;
+            }
+
+            private set
+            {
+                _error = value;
+
+                if (!(_error == ERROR.Ok))
+                    ErrorChanged?.Invoke (this);
+                else
+                    ;
+            }
+        }
+
+        public event Action<ICreator> Started
+            , Stoped
+            , ErrorChanged;
+
+        public static List<ChannelEndpointElement> ListEndPoint
+        {
+            get
+            {
+                return ((ClientSection)ConfigurationManager.GetSection ("system.serviceModel/client")).Endpoints.Cast<ChannelEndpointElement> ().ToList ();
+            }
+        }
+
+        private IDeployment _deployment;
+
+        private bool IsClientRunable
+        {
+            get
+            {
+                return (CmdArg.IsClientRunable == true) // нет необходимости выполнять клиент
+                    && (((CmdArg.IsHostRunable == true) && (!(Error == ERROR.Host))) // произошла ошибка при развертывании служб - выполнение клиента не имеет смысла
+                        || (CmdArg.IsHostRunable == false)); // развертывание служб не учитывать
+            }
+        }
+
+        public Console(Func<MODE, Type> fGetTypeDeployment)
+        {
+            ConfigurationSection configSection;
+
+            MODE mode;
+            ERROR error;
+            Type typeDeployment;
+
+            Error = ERROR.Unknown;
+
+            //TODO: аргумент командной строки должен быть единственным (только 'Host' ИЛИ только 'Client')
+            if (CmdArg.IsHostRunable == true) {
+                mode = CmdArg.ModeHost;
+                error = ERROR.Host;
+            } else if (IsClientRunable == true) {
+                mode = CmdArg.ModeClient;
+                error = ERROR.Client;
+            } else {
+                mode = MODE.Unknown;
+                error = ERROR.Mode;
+            }
+
+            if (!(error == ERROR.Unknown)) {
+                ASUTP.Logging.Logg ().Action ($"Mode{error}={mode.ToString ()}", Logging.INDEX_MESSAGE.NOT_SET);
+
+                typeDeployment = fGetTypeDeployment (mode);
+                _deployment = (IDeployment)Activator.CreateInstance (typeDeployment, new object [] { mode });
+                _deployment.Stoped += onStoped;
+                Error = _deployment.Error == Deployment.ERROR.Ok
+                    ? ERROR.Ok
+                        : error;
+
+                if (Error == ERROR.Ok) {
+                    Started += OnStarted;
+                    Stoped += OnStoped;
+                    ErrorChanged += OnErrorChanged;
+                } else
+                    throw new Exception ($"Assignment.Console::ctor () - {Error}");
+            } else
+                ;
+        }
+
+        public void Start (object obj = null)
+        {
+            // TODO: проверить одновременый запуск хоста/клиента
+
+            _deployment?.Start ();
+            Error = _deployment.Error == Deployment.ERROR.Ok
+                ? ERROR.Ok
+                    : ERROR.Host;
+            
+            Started?.Invoke (this);
+        }
+
+        public void Stop ()
+        {
+            _deployment?.Stop ();
+        }
+
+        private void onStoped ()
+        {
+            if (((CmdArg.IsHostRunable == true) && (_deployment.State == CommunicationState.Closed))
+                || ((IsClientRunable == true) && (_deployment.State == CommunicationState.Closed)))
+                Stoped?.Invoke (this);
+            else
+                ;
+        }
+
+        public void Dispose ()
+        {
+            _deployment = null;
+        }
+
+        public static void OnStarted (ICreator creator)
+        {
+            if ((creator.Error == ERROR.Ok)
+                && (CmdArg.IsScNet == false)) {
+                itssAUX.Wait ("to shutdown press any key...");
+            } else
+                ;
+
+            creator?.Stop ();
+        }
+
+        public static void OnStoped (ICreator creator)
+        {
+            if ((CmdArg.IsScNet == false))
+                itssAUX.Wait ($"to exit program <{creator.Error}> press any key...", true, false);
+            else
+                ;
+        }
+
+        public static void OnErrorChanged (ICreator creator) {
+            itssAUX.PrintErrorMessage ($"error: {creator.Error}...");
+
+            if (itssAUX.IsWaiting == true)
+                itssAUX.Cancel ();
+            else
+                ;
+        }
+    }
+}

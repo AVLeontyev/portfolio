@@ -1,0 +1,75 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace strans
+{
+    static class itssAUX
+    {
+        private static bool _stateNewLine = false;
+
+        public static void Wait (string sWaitMess, bool bNewLineBegined = true, bool bNewLineEnded = true)
+        {
+            printMessage (sWaitMess, ConsoleColor.White, bNewLineBegined, false);
+            Console.ReadKey (false);
+            if (bNewLineEnded == true)
+                Console.WriteLine ();
+            else
+                ;
+        }
+
+        public static void PrintActionMessage (string sActMess, bool bWriteToWinEventLog = false)
+        {
+            printMessage (sActMess, ConsoleColor.White, true, bWriteToWinEventLog);
+        }
+
+        public static void PrintDebugMessage (string sActMess, bool bWriteToWinEventLog = false)
+        {
+            printMessage (sActMess, ConsoleColor.Gray, true, bWriteToWinEventLog);
+        }
+
+        public static void PrintWarningMessage (string sWarMess, bool bWriteToWinEventLog = false)
+        {
+            printMessage (sWarMess, ConsoleColor.Yellow, true, bWriteToWinEventLog);
+        }
+
+        /// <summary>
+        /// Выводит сообщение об ошибке на консоль красным шрифтом и (или) в журнал Windows.
+        /// </summary>
+        public static void PrintErrorMessage (string sErrMess, bool bWriteToWinEventLog = false)
+        {
+            printMessage (sErrMess, ConsoleColor.Red, true, bWriteToWinEventLog);
+        }
+
+        private delegate void DelegatePrint (string mes, params object[] args);
+
+        private static void printMessage (string mes, ConsoleColor cc, bool bNewLine, bool bWriteToWinEventLog)
+        {
+            string sAppName = string.Empty;
+            DelegatePrint print;
+
+            print =
+                (bNewLine == true) ?
+                (DelegatePrint)Console.WriteLine :
+                Console.Write
+                ;
+
+            ConsoleColor cc_copy = Console.ForegroundColor;
+            Console.ForegroundColor = cc;
+            print (mes);
+            Console.ForegroundColor = cc_copy;
+
+            if ((Program.WriteToWinEventLog == true)
+                && (bWriteToWinEventLog == true)
+                && (Environment.OSVersion.Version.Major < 6))     //На Windows Vista и выше в журнал таким способом записать прав не хватит
+            {
+                //Для Win7 надо палочкой махнуть, но не кашерно: Try giving the following registry key Read permission for NETWORK SERVICE: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security
+                sAppName = ASUTP.Helper.ProgramBase.AppName + ".exe";
+                //sAppName = "trans_mc_cmd.exe";
+                System.Diagnostics.EventLog.WriteEntry (sAppName, mes, System.Diagnostics.EventLogEntryType.Error);
+            } else
+                ;
+        }
+    }
+}

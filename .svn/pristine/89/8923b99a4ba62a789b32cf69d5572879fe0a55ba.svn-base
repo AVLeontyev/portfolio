@@ -1,0 +1,601 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Windows.Forms;
+//using System.ComponentModel;
+using System.Data;
+//using System.Security.Cryptography;
+using System.IO;
+using System.Threading; //для ManualResetEvent
+using System.Globalization;
+
+
+using StatisticCommon;
+using ASUTP.Core;
+using Microsoft.Office.Interop.Excel;
+using ASUTP;
+using  ASUTP.Helper;
+
+namespace Statistic
+{
+    public abstract class PanelAdmin : PanelStatisticWithTableHourRows
+    {
+        /// <summary>
+        /// Перечисление - значения для режимов чтения данных (админ. + ПБР) БД
+        ///  , режим изменяется при инициировании операции обращения к БД
+        /// </summary>
+        protected enum MODE_GET_RDG_VALUES { DISPLAY, EXPORT }
+        /// <summary>
+        /// Режим чтения данных (админ. + ПБР) БД
+        ///  , для отображения значений одного из ГТП
+        ///  , всех ГТП при экспорте значений в файл для ком./дисп с целью сравнения значений ПБР с аналогичными значениями из других источников
+        /// </summary>
+        protected MODE_GET_RDG_VALUES modeGetRDGValues;
+        /// <summary>
+        /// Класс для разделителя(сепаратора) групп элементов интерфейса на панели с управляющими элементами интерфейса
+        /// </summary>
+        protected class GroupBoxDividerChoice : System.Windows.Forms.GroupBox
+        {
+            private static int counter = 0;
+
+            public GroupBoxDividerChoice()
+                : base ()
+            {
+                counter++;
+
+                InitializeComponent();
+            }
+
+            private void InitializeComponent()
+            {
+                Name = string.Format("gbxDividerChoice_{0}", (counter + 1));
+                Size = new System.Drawing.Size(154, 8);
+                TabIndex = (counter + 1) * 4;
+                TabStop = false;
+            }
+
+            public void Initialize(int posY)
+            {
+                Location = new System.Drawing.Point(10, posY + 2 * (m_iSizeY + m_iMarginY));                
+            }
+        }
+
+        //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+        /// <summary>
+        /// Панели для размещения активных(управляющих), пассивных элементов интерфейса
+        /// </summary>
+        protected Panel m_panelManagement
+            , m_panelRDGValues;
+        /// <summary>
+        /// Календарь для выбора даты, за котору. требуется прочитать(отобразить/экспортировать) значения из БД
+        /// </summary>
+        protected System.Windows.Forms.MonthCalendar mcldrDate;
+        /// <summary>
+        /// Объект синхронизации при изменении кол-ва сторок в представлении для отображения значений
+        /// </summary>
+        protected ManualResetEvent m_evtAdminTableRowCount;
+        /// <summary>
+        /// Элемент управления(представление) для отображения значений
+        /// </summary>
+        protected DataGridViewAdmin dgwAdminTable;
+        /// <summary>
+        /// Элемент упарвления(управляющий) для инициирования операции сохранения значений в БД из представления
+        /// </summary>
+        private System.Windows.Forms.Button btnSet;
+        /// <summary>
+        /// Элемент упарвления(управляющий) для инициирования операции обновления значений в представлении
+        /// </summary>
+        protected System.Windows.Forms.Button btnRefresh;
+        /// <summary>
+        /// Элемент управления(управляющий) для выбора компонента ТЭЦ(ГТП), для кторого требуется
+        /// </summary>
+        protected System.Windows.Forms.ComboBox comboBoxTecComponent;
+        /// <summary>
+        /// Объект разделителя групп управляющих элементов интерфейса
+        /// </summary>
+        private GroupBoxDividerChoice gbxDividerChoice;
+        /// <summary>
+        /// Объект для обращения к БД
+        /// </summary>
+        protected AdminTS m_admin;
+        /// <summary>
+        /// Список индексов в списке идентификаторов компонентов ТЭЦ, 
+        /// </summary>
+        protected List <int>m_listTECComponentIndex;
+        /// <summary>
+        /// Индекс
+        /// </summary>
+        protected volatile int prevSelectedIndex;
+        /// <summary>
+        /// Список ТЭЦ, собирается автоматически при запуске приложения
+        ///  , передается в панель при создании объекта панели
+        /// </summary>
+        public List <StatisticCommon.TEC> m_list_tec { get { return m_admin.m_list_tec; } }
+        /// <summary>
+        /// Значения для позиционирования элементов управления
+        /// </summary>
+        protected static int m_iSizeY = 22
+            , m_iMarginY = 3;
+        /// <summary>
+        /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
+        ///  (должна быть вызвана явно)
+        /// </summary>
+        /// <param name="col">Количество столбцов в макете</param>
+        /// <param name="row">Количество строк в макете</param>
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            this.ColumnCount = cols;
+            this.RowCount = rows;            
+
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 172));
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+
+            this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        }
+
+        protected virtual void InitializeComponents()
+        {
+            this.m_panelManagement = new Panel ();
+            this.m_panelRDGValues = new Panel();
+            
+            this.btnSet = new System.Windows.Forms.Button();
+            this.btnRefresh = new System.Windows.Forms.Button();
+
+            //this.dgwAdminTable = new DataGridViewAdmin();
+            this.mcldrDate = new System.Windows.Forms.MonthCalendar();
+            this.comboBoxTecComponent = new System.Windows.Forms.ComboBox();
+            this.gbxDividerChoice = new GroupBoxDividerChoice();
+
+            initializeLayoutStyle (2, 1);
+
+            this.SuspendLayout();
+
+            //((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
+
+            //
+            //m_panelManagement
+            //
+            this.m_panelManagement.Dock = DockStyle.Fill;
+
+            //
+            //m_panelRDGValues
+            //
+            this.m_panelRDGValues.Dock = DockStyle.Fill;
+
+            this.Controls.Add (m_panelManagement, 0, 0);
+            this.Controls.Add(m_panelRDGValues, 1, 0);            
+
+            this.m_panelManagement.Controls.Add(this.mcldrDate);
+            this.m_panelManagement.Controls.Add(this.comboBoxTecComponent);
+            this.m_panelManagement.Controls.Add(this.gbxDividerChoice);
+
+            this.m_panelManagement.Controls.Add(this.btnSet);
+            this.m_panelManagement.Controls.Add(this.btnRefresh);
+
+            //this.Controls.Add(this.dgwAdminTable);
+
+            this.Dock = System.Windows.Forms.DockStyle.Fill;
+            //this.Location = new System.Drawing.Point(8, 8);
+            this.Name = "pnlAdmin";
+            //this.Size = new System.Drawing.Size(760, 610);
+            this.TabIndex = 1;
+            // 
+            // mcldrDate
+            // 
+            this.mcldrDate.Location = new System.Drawing.Point(10, 38);
+            this.mcldrDate.Name = "mcldrDate";
+            this.mcldrDate.TabIndex = 0;
+            this.mcldrDate.DateSelected += new System.Windows.Forms.DateRangeEventHandler(this.mcldrDate_DateSelected);
+            this.mcldrDate.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.mcldrDate.MaxSelectionCount = 1;
+            this.mcldrDate.ShowToday = false;
+            this.mcldrDate.ShowTodayCircle = false;
+
+            int posY = 207;
+            // 
+            // btnSet
+            // 
+            this.btnSet.Location = new System.Drawing.Point(10, posY);
+            this.btnSet.Name = "btnSet";
+            this.btnSet.Size = new System.Drawing.Size(154, m_iSizeY);
+            this.btnSet.TabIndex = 2;
+            this.btnSet.Text = "Сохранить в базу";
+            this.btnSet.UseVisualStyleBackColor = true;
+            this.btnSet.Click += new System.EventHandler(this.btnSet_Click);
+            // 
+            // btnRefresh
+            // 
+            this.btnRefresh.Location = new System.Drawing.Point(10, posY + 1 * (m_iSizeY + m_iMarginY));
+            this.btnRefresh.Name = "btnRefresh";
+            this.btnRefresh.Size = new System.Drawing.Size(154, m_iSizeY);
+            this.btnRefresh.TabIndex = 2;
+            this.btnRefresh.Text = "Обновить из базы";
+            this.btnRefresh.UseVisualStyleBackColor = true;
+            this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
+            // 
+            // gbxDividerChoice
+            // 
+            this.gbxDividerChoice.Initialize(posY);
+            // 
+            // btnLoadLayout
+            // 
+            //this.btnLoadLayout.Location = new System.Drawing.Point(10, 282);
+            //this.btnLoadLayout.Name = "btnLoad";
+            //this.btnLoadLayout.Size = new System.Drawing.Size(154, 23);
+            //this.btnLoadLayout.TabIndex = 2;
+            //this.btnLoadLayout.Text = "Загрузить макет";
+            //this.btnLoadLayout.UseVisualStyleBackColor = true;
+            //this.btnLoadLayout.Click += new System.EventHandler(this.btnLoadLayout_Click);
+            // 
+            // comboBoxTecComponent
+            // 
+            this.comboBoxTecComponent.FormattingEnabled = true;
+            this.comboBoxTecComponent.Location = new System.Drawing.Point(10, 10);
+            this.comboBoxTecComponent.Name = "comboBoxTecComponent";
+            this.comboBoxTecComponent.Size = new System.Drawing.Size(154, 21);
+            this.comboBoxTecComponent.TabIndex = 3;
+            this.comboBoxTecComponent.SelectionChangeCommitted += new System.EventHandler(this.comboBoxTecComponent_SelectionChangeCommitted);
+            this.comboBoxTecComponent.DropDownStyle = ComboBoxStyle.DropDownList;
+            //((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
+            this.ResumeLayout();
+        }
+
+        public PanelAdmin(int idListener, HMark markQueries, int [] arTECLimit)
+            : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
+        {
+            createAdmin ();
+
+            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.ANY, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false, arTECLimit); }
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            if (!(m_admin.m_list_tec.Count > 0))
+            {
+                Logging.Logg().Error(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+            else
+                ;
+
+            initialize ();
+        }
+
+        public PanelAdmin(List<StatisticCommon.TEC> tec)
+            : base (MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
+        {
+            createAdmin ();
+            
+            //Для установки типов соединения (оптимизация кол-ва соединений с БД)
+            HMark markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR});
+            //markQueries.Marked ((int)CONN_SETT_TYPE.ADMIN);
+            //markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+
+            try { m_admin.InitTEC(tec, markQueries); }
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            if (!(m_admin.m_list_tec.Count > 0))
+            {
+                Logging.Logg().Error(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+            else
+                ;
+
+            initialize ();
+        }
+
+        protected abstract void createAdmin ();
+
+        private void initialize () {
+            m_evtAdminTableRowCount = new ManualResetEvent (false);
+
+            m_admin.SetDelegateData(this.setDataGridViewAdmin, null);
+            m_admin.SetDelegateDatetime(this.CalendarSetDate);
+
+            //m_admin.m_typeFields = s_typeFields;
+
+            InitializeComponents();
+        }
+
+        public override void SetDelegateWait(DelegateFunc fstart, DelegateFunc fstop, DelegateFunc fev)
+        {
+            base.SetDelegateWait(fstart, fstop, fev);
+
+            m_admin.SetDelegateWait(fstart, fstop, fev);
+        }
+
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            m_admin.SetDelegateReport(ferr, fwar, fact, fclr);
+        }
+
+        public override void Start () {
+            base.Start ();
+
+            initTableHourRows();
+            
+            m_admin.Start ();
+        }
+
+        public override void Stop()
+        {
+            CalendarSetDate(DateTime.Now.Date);
+
+            if (m_admin.IsStarted == true) m_admin.Stop(); else ;
+
+            base.Stop ();
+        }
+
+        public override bool Activate (bool active)
+        {
+            bool bRes = base.Activate (active);
+
+            if (bRes == true) {
+                m_admin.Activate (active);
+            } else
+                ;
+
+            return bRes;
+        }
+
+        protected virtual void getDataGridViewAdmin() {}
+
+        public abstract void setDataGridViewAdmin (DateTime date, bool bNewValues);
+
+        /// <summary>
+        /// Установка значения даты/времени в элементе управления 'календарь' и
+        /// выполнение функции, связанной с изменением значения даты/времени
+        /// </summary>
+        /// <param name="dt">Устанавливаемая дата</param>
+        private void setDate(DateTime dt)
+        {
+            mcldrDate.SetDate(dt);
+
+            initTableHourRows();
+        }
+
+        /// <summary>
+        /// Делегат для установки значения в элементе управления 'календарь'
+        /// при вызове из 'другого' потока
+        /// </summary>
+        /// <param name="date">Дата/время нового значения</param>
+        public void CalendarSetDate(DateTime date)
+        {
+            if (IsHandleCreated/*InvokeRequired*/ == true)
+                BeginInvoke(new DelegateDateFunc(setDate), date);
+            else
+                ;
+        }
+
+        /// <summary>
+        /// инициализация даты/времени для определения размера массива с данными и
+        /// кол-ва строк таблицы в соответствии с этим размером
+        /// </summary>
+        protected override void initTableHourRows()
+        {
+            //Установить признак "[НЕ]обычного" размера массива 'm_curRDGValues'
+            m_admin.m_curDate = mcldrDate.SelectionStart.Date;
+
+            if (m_admin.m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == false)
+            {
+                dgwAdminTable.InitRows(24, false);
+            }
+            else {
+                dgwAdminTable.InitRows(25, true);                
+            }
+        }
+
+        /// <summary>
+        /// Приведение кол-ва строк таблицы в соответствие с кол-ом элементов в массиве с данными
+        /// решение (по объекту синхронизации 'PanelAdminKomDisp::setDataGridViewAdmin () - ...') далеко не изящное, НО временное ???
+        /// <param name="bSyncReq">Признак необходимости синхронизации</param>
+        /// </summary>
+        protected void normalizedTableHourRows (bool bSyncReq)
+        {
+            if (!(this.dgwAdminTable.Rows.Count == m_admin.m_curRDGValues.Length))
+                if (this.dgwAdminTable.Rows.Count < m_admin.m_curRDGValues.Length)
+                    this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, true);
+                else
+                    this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, false);
+
+            if (bSyncReq == true)
+                m_evtAdminTableRowCount.Set();
+            else
+                ;
+        }
+
+        private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)
+        {
+            DialogResult result;
+            ASUTP.Helper.Errors resultSaving;
+
+            bool bRequery = false;
+
+            getDataGridViewAdmin ();
+
+            if (m_admin.WasChanged())
+            {
+                result = MessageBox.Show(this, "Данные были изменены но не сохранялись.\nЕсли Вы хотите сохранить изменения, нажмите \"да\".\nЕсли Вы не хотите сохранять изменения, нажмите \"нет\".\nДля отмены действия нажмите \"отмена\".", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
+            }
+            else
+                result = DialogResult.No;
+
+            switch (result)
+            {
+                case DialogResult.Yes:
+                    resultSaving = m_admin.SaveChanges();
+                    if (resultSaving == ASUTP.Helper.Errors.NoError)
+                    {
+                        bRequery = true;
+                    }
+                    else
+                    {
+                        if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
+                            MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                        else
+                            MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        mcldrDate.SetDate(m_admin.m_prevDate);
+                    }
+                    break;
+                case DialogResult.No:
+                    bRequery = true;
+                    break;
+                case DialogResult.Cancel:
+                    mcldrDate.SetDate(m_admin.m_prevDate);
+                    break;
+            }
+
+            if (bRequery == true) {
+                ClearTables();
+
+                initTableHourRows();
+
+                m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            }
+            else
+                ;
+        }
+
+        public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) 
+        {
+            m_listTECComponentIndex = m_admin.GetListIndexTECComponent(mode, !(this is PanelAdminLK));
+
+            //m_admin.m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+
+            comboBoxTecComponent.Items.Clear ();
+        }
+
+        protected virtual void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            DialogResult result;
+            ASUTP.Helper.Errors resultSaving;
+
+            bool bRequery = false;
+
+            getDataGridViewAdmin();
+
+            if (m_admin.WasChanged() == true)
+            {
+                result = MessageBox.Show(this, "Данные были изменены но не сохранялись.\nЕсли Вы хотите сохранить изменения, нажмите \"да\".\nЕсли Вы не хотите сохранять изменения, нажмите \"нет\".\nДля отмены действия нажмите \"отмена\".", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
+            }
+            else
+                result = DialogResult.No;
+
+            switch (result)
+            {
+                case DialogResult.Yes:
+                    resultSaving = m_admin.SaveChanges();
+                    if (resultSaving == ASUTP.Helper.Errors.NoError)
+                    {
+                        bRequery = true;
+                    }
+                    else
+                    {
+                        if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
+                            MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                        else
+                            MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                        comboBoxTecComponent.SelectedIndex = prevSelectedIndex;
+                    }
+                    break;
+                case DialogResult.No:
+                    bRequery = true;
+                    break;
+                case DialogResult.Cancel:
+                    comboBoxTecComponent.SelectedIndex = prevSelectedIndex;
+                    break;
+            }
+
+            if (bRequery == true) {
+                ClearTables();
+
+                m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            }
+            else
+                ;
+        }
+
+        private void btnSet_Click(object sender, EventArgs e)
+        {
+            modeGetRDGValues = MODE_GET_RDG_VALUES.DISPLAY;
+
+            getDataGridViewAdmin();
+
+            ASUTP.Helper.Errors resultSaving = m_admin.SaveChanges();
+            if (resultSaving == ASUTP.Helper.Errors.NoError)
+            {
+                ClearTables();
+
+                m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            }
+            else
+            {
+                if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
+                    MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                else
+                    MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            modeGetRDGValues = MODE_GET_RDG_VALUES.DISPLAY;
+
+            ClearTables();
+
+            m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+        }
+
+        public override bool MayToClose()
+        {
+            DialogResult result;
+            ASUTP.Helper.Errors resultSaving;
+
+            getDataGridViewAdmin();
+
+            if (m_admin.WasChanged())
+            {
+                result = MessageBox.Show(this, "Данные были изменены но не сохранялись.\nЕсли Вы хотите сохранить изменения, нажмите \"да\".\nЕсли Вы не хотите сохранять изменения, нажмите \"нет\".\nДля отмены действия нажмите \"отмена\".", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation);
+            }
+            else
+                result = DialogResult.No;
+
+            switch (result)
+            {
+                case DialogResult.Yes:
+                    resultSaving = m_admin.SaveChanges();
+                    if (resultSaving == ASUTP.Helper.Errors.NoError)
+                        return true;
+                    else
+                    {
+                        if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
+                            if (MessageBox.Show(this, "Изменение ретроспективы недопустимо!\nПродолжить выход?", "Внимание", MessageBoxButtons.YesNo, MessageBoxIcon.Asterisk) == DialogResult.Yes)
+                                return true;
+                            else
+                                return false;
+                        else
+                            if (MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.\nВыйти без сохранения?", "Ошибка сохранения", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
+                                return true;
+                            else
+                                return false;
+                    }
+                case DialogResult.No:
+                    return true;
+                case DialogResult.Cancel:
+                    return false;
+            }
+            return false;
+        }
+
+        public virtual void ClearTables() { }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            setDataGridViewAdmin (mcldrDate.SelectionStart.Date, false);
+        }
+    }
+}

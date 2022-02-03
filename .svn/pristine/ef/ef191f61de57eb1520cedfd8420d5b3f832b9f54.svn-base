@@ -1,0 +1,60 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace StatisticCommon
+{
+    public class Area : IObject
+    {
+        public int m_id { get; private set; }
+
+        public string name_shr { get; private set; }
+
+        public string Name { get; private set; }
+
+        public string Abbr { get; }
+
+        private Area ()
+        {
+            m_id = -1;
+            name_shr =
+            Name =
+            Abbr =
+                string.Empty;
+        }
+
+        public Area (int id,  string name_shr, string name, string abbr)
+            : this ()
+        {
+            m_id = id;
+            this.name_shr = name_shr;
+            this.Name = name;
+            Abbr = abbr;
+        }
+    }
+
+    public class AreaComparer : IEqualityComparer<Area>
+    {
+        public bool Equals (Area obj1, Area obj2)
+        {
+            return ((Equals(obj1, null) == false)
+                    && (Equals(obj2, null) == false))
+                && (obj1.m_id == obj2.m_id);
+        }
+
+        public bool Equals<Area> (object obj1, object obj2)
+        {
+            return (typeof(Area).IsAssignableFrom(obj1.GetType()) == true)
+                && (obj1.GetType().Equals(obj2.GetType()) == true)
+                && obj1.Equals(obj2);
+        }
+
+        public int GetHashCode (Area obj)
+        {
+            return base.GetHashCode();
+        }
+    }
+}

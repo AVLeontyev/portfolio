@@ -1,0 +1,47 @@
+﻿using ASUTP;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Reflection;
+using System.ServiceModel;
+using System.ServiceModel.Configuration;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
+using System.Text;
+using StatisticTrans.Contract;
+using System.ServiceProcess;
+using StatisticCommon.Contract;
+using Assignment;
+
+namespace strans
+{
+    internal class Host : Assignment.Host, Assignment.IDeployment
+    {
+        /// <summary>
+        /// ??? Внимание - копия 'strans.Deployment'
+        /// </summary>
+        private ConfigSectionServiceSettings _serviceSettingsSection
+        {
+            get
+            {
+                return (ConfigSectionServiceSettings)ConfigurationManager.GetSection ($"{ConfigSectionServiceSettings.NameSection}");
+            }
+        }
+
+        public Host (Assignment.MODE mode)
+            : base (Deployment.LoadAssemblies, mode, typeof(NameEndPoint))
+        {
+        }
+
+        public override string GetContractName (Assignment.ServiceHost host)
+        {
+            return $@"contract <{((ConfigSectionServiceSettings.ServiceSettingsElement)GetSSE (host.Description)).Contract}>";
+        }
+
+        public override void Start (object obj = null)
+        {
+            base.Start (obj);
+        }
+    }
+}

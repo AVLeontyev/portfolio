@@ -1,0 +1,63 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.Text;
+using System.Threading.Tasks;
+using StatisticCommon.Communication;
+
+namespace Assignment
+{
+    public class ServiceChannelFactory<T, TNEP>
+    {
+        // Вариант №2 (T - требуемый тип контракта)
+
+        #region Вариант №3 (T - базовый класс контрактов IServiceTransModes)
+        //Type _typeChannelFactory
+        //    , _typeContract
+        //    , _typeService;
+        #endregion
+
+        public ServiceChannelFactory (
+            //// вариант №3
+            //Type typeChannelFactory, Type typeContract, Type typeService
+            )
+        {
+            #region Вариант №3
+            //if (typeContract.IsAssignableFrom (typeService) == true) {
+            //    _typeChannelFactory = typeChannelFactory;
+            //    _typeContract = typeContract;
+            //    _typeService = typeService;
+            //} else
+            //    throw new InvalidCastException ($"<{_typeContract.FullName}> can't cast to target type <{_typeService.FullName}>");
+            #endregion
+        }
+
+        public T Create (Action<ServiceCallbackResultEventArgs> fCallback, TNEP nameEndPoint)
+        {
+            T tRes;
+
+            InstanceContext instContext;
+
+            instContext = new InstanceContext (new ServiceCallback (fCallback));
+
+            #region Вариант №3
+            //object channelFactory;
+            //MethodInfo createChannel;
+
+            //channelFactory = Activator.CreateInstance (_typeChannelFactory.MakeGenericType (new Type [] { _typeContract }), new object [] {instContext , nameEndPoint });
+            //createChannel = _typeChannelFactory.GetMethod ("CreateChannel", new Type [] { });
+            #endregion
+
+            tRes =
+                //(T2)Activator.CreateInstance(typeof(T1), new InstanceContext (new ServiceCallback (fCallback)), nameEndPoint)
+                // вариант №2
+                new System.ServiceModel.DuplexChannelFactory<T> (instContext, nameEndPoint.ToString()).CreateChannel()
+                //// вариант №3, исключение, т.к. '_typeChannelFactory' содержит обязательный тип при инициализации
+                //(T)createChannel.Invoke (channelFactory, null)
+                ;
+
+            return tRes;
+        }
+    }
+}

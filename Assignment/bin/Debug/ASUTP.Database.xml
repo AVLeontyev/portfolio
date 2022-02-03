@@ -1,0 +1,1143 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASUTP.Database</name>
+    </assembly>
+    <members>
+        <member name="T:ASUTP.Database.ConnectionSettingsError">
+            <summary>
+            Перечисление - возможные ошибки при попытке установки значений для параметров соединения
+            </summary>
+        </member>
+        <member name="T:ASUTP.Database.AtomConnectionSettings">
+            <summary>
+            Параметры(элементарные) соединения с источником данных (БД)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.AtomConnectionSettings.id">
+            <summary>
+            Идентификатор источника данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.AtomConnectionSettings.name">
+            <summary>
+            Наименование источника данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.AtomConnectionSettings.server">
+            <summary>
+            Сервер-источник данных (может быть указан как доменное имя, IP-адрес)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.AtomConnectionSettings.port">
+            <summary>
+            Номер порта при подключении к источнику данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.AtomConnectionSettings.MethodFuture1">
+            <summary>
+            Зарезервирован для использования в будущем
+             (например, для указания типа соединения: Windows/MS SQLServer)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.AtomConnectionSettings.MethodFuture2">
+            <summary>
+            Зарезервирован для использования в будущем
+             (например, для указания дополн. инф. по соединению)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.AtomConnectionSettings.Validate">
+            <summary>
+            Проверить корректность значений параметров соединения
+            </summary>
+            <returns>Набор признаков(флагов) ошибок</returns>
+        </member>
+        <member name="P:ASUTP.Database.AtomConnectionSettings.IsEmpty">
+            <summary>
+            Признак наличия значений основных параметров для установления соединения
+            </summary>
+        </member>
+        <member name="T:ASUTP.Database.ConnectionSettings">
+            <summary>
+            Класс для описания параметров соединения с источником данных (БД)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.ConnectionSettings.instance">
+            <summary>
+            Дополнительное наименование источника (экземпляр MS SQLServer)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.ConnectionSettings.dbName">
+            <summary>
+            Нименование БД
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.ConnectionSettings.userName">
+            <summary>
+            Имя пользователя при подключении к источнику данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.ConnectionSettings.password">
+            <summary>
+            Пароль пользователя при подключении к источнику данных
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.op_Equality(ASUTP.Database.ConnectionSettings,ASUTP.Database.ConnectionSettings)">
+            <summary>
+            Оператор сравнения 2-х объектов с параметрами соединения
+            </summary>
+            <param name="csLeft">Объект для сравнения(слева)</param>
+            <param name="csRight">Объект для сравнения(справа)</param>
+            <returns>Признак результата сравнения</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.op_Inequality(ASUTP.Database.ConnectionSettings,ASUTP.Database.ConnectionSettings)">
+            <summary>
+            Оператор сравнения 2-х объектов с параметрами соединения
+            </summary>
+            <param name="csLeft">Объект для сравнения(слева)</param>
+            <param name="csRight">Объект для сравнения(справа)</param>
+            <returns>Признак результата сравнения</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.IP(System.String)">
+            <summary>
+            Возвраить наименование сервера (IP-адрес)
+            </summary>
+            <param name="server">Полная строка наименования сервера</param>
+            <returns>Наименование сервера</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.Instance(System.String)">
+            <summary>
+            Возвратить наименование экземпляра сервера
+            </summary>
+            <param name="server">Полная строка наименования сервера</param>
+            <returns>Наименование экземпляра сервера</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.IpInstance(System.String,System.String)">
+            <summary>
+            Возвратить полную строку наименования сервера - источника информации (хост + наимнование экземпляра)
+            </summary>
+            <param name="ip">IP-адрес</param>
+            <param name="instance">Наимнование экземпляра</param>
+            <returns>Полная строка наименования сервера</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.#ctor">
+            <summary>
+            Конструктор - основной (без аргументов)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.#ctor(ASUTP.Database.ConnectionSettings)">
+            <summary>
+            Конструктор - дополнительный (с аргументами)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.#ctor(System.String,System.String,System.String,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            Конструктор - основной (с аргументами - значениями параметров соединения)
+            </summary>
+            <param name="nameConn">Наименование соединения</param>
+            <param name="srv">IP-адрес или доменное наименование сервера</param>
+            <param name="instance">Наименование экземпляра сервера</param>
+            <param name="port">Номер порта обмена данными с сервером</param>
+            <param name="dbName">Наименование БД</param>
+            <param name="uid">Имя входа/подключения пользователя</param>
+            <param name="pswd">Пароль для имени входа/подключения</param>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.#ctor(System.Int32,System.String,System.String,System.String,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            Конструктор - основной (с аргументами - значениями параметров соединения)
+            </summary>
+            <param name="id">Идентификатор источника данных</param>
+            <param name="nameConn">Наименование соединения</param>
+            <param name="srv">IP-адрес или доменное наименование сервера</param>
+            <param name="instance">Наименование экземпляра сервера</param>
+            <param name="port">Номер порта обмена данными с сервером</param>
+            <param name="dbName">Наименование БД</param>
+            <param name="uid">Имя входа/подключения пользователя</param>
+            <param name="pswd">Пароль для имени входа/подключения</param>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.#ctor(System.Data.DataRow,System.Int32)">
+            <summary>
+            Конструктор для параметров соединения с БД
+            </summary>
+            <param name="r">Строка таблицы с параметрами соединения</param>
+            <param name="iLogConnSett">Признак предназначения параметров соединения (БД логирования/обычная)</param>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.SetDefault">
+            <summary>
+            Установить значения по умолчанию
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.Validate">
+            <summary>
+            Проверить корректность значений параметров соединения
+            </summary>
+            <returns>Набор признаков(флагов) ошибок</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.GetConnectionStringMSSQL">
+            <summary>
+            Возвратить строку соединения СУБД MSSQLServer
+            </summary>
+            <returns>Строка соединения СУБД MSSQLServer</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.GetConnectionStringMySQL">
+            <summary>
+            Возвратить строку соединения СУБД MySql
+            </summary>
+            <returns>Строка соединения СУБД MySql</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.GetConnectionStringExcel(System.String)">
+            <summary>
+            Возвратить строку соединения СУБД MS Excel
+            </summary>
+            <returns>Строка соединения СУБД MS Excel</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.GetConnectionStringCSV(System.String)">
+            <summary>
+            Возвратить строку соединения ядра OLE.DB для обработки CSV-файла
+            </summary>
+            <returns>Строка соединения ядра OLE.DB для обработки CSV-файла</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.GetConnectionStringDBF(System.String)">
+            <summary>
+            Возвратить строку соединения ядра OLE.DB для обработки DBF-файла
+            </summary>
+            <returns>Строка соединения ядра OLE.DB для обработки DBF-файла</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettings.GetConnectionStringOracle">
+            <summary>
+            Возвратить строку соединения СУБД Oracle
+            </summary>
+            <returns>Строка соединения СУБД Oracle</returns>
+        </member>
+        <member name="P:ASUTP.Database.ConnectionSettings.IsEmpty">
+            <summary>
+            Признак наличия значений основных параметров для установления соединения
+            </summary>
+        </member>
+        <member name="T:ASUTP.Database.ConnectionSettingsSource">
+            <summary>
+            Класс для работы с параметрами списка источников данных
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettingsSource.ConnectionSettingsRequest(System.Int32)">
+            <summary>
+            Запрос для получения таблицы (одна строка) с параметрами источника данных
+            </summary>
+            <param name="id">идентификатор источника данных в таблице 'SOURCE'</param>
+            <returns>строка с параметрами источника данных</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettingsSource.PasswordRequest(System.Int32,System.Int32)">
+            <summary>
+            Запрос пароля (шифрованного для 2.Х.Х и не шифрованного для 1.9.Х)
+            </summary>
+            <param name="id">идентификатор пользователя(роли) - часть составного ключа</param>
+            <param name="id_role">роль пользователя (только для 2.Х.Х), "роль" источника данных 501</param>
+            <returns>текст запроса</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettingsSource.GetConnectionSettings(System.Data.DataTable@,System.Int32,System.Data.DataTable@,System.Int32)">
+            <summary>
+            Получение таблицы с параметрами соединения источника данных дешифрованным паролем
+            </summary>
+            <param name="src">таблица - рез-т выполнения функции 'GetConnectionSettings'</param>
+            <param name="row_src"></param>
+            <param name="psw"></param>
+            <param name="row_psw"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettingsSource.GetConnectionSettings(System.Int32,System.Int32,System.Int32,System.Int32@)">
+            <summary>
+            Возвратить таблицу (!одна строка) с параметрами для устанвления соединения с БД
+            </summary>
+            <param name="iListenerId">Идентификатор актуального соединения с БД, в которой размещается информация о запрашиваемых параметрах (БД конфигурации)</param>
+            <param name="id_ext">Идентификатор источника данных (параметры для соединения с источником данных)</param>
+            <param name="id_role">Идентификатор типа источника данных</param>
+            <param name="er">Признак ошибки впри выполнении запроса значений</param>
+            <returns>Таблица (!одна строка) с параметрами соединения</returns>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettingsSource.GetConnectionSettings(System.Data.Common.DbConnection@,System.Int32,System.Int32,System.Int32@)">
+            <summary>
+            Возвратить таблицу (!одна строка) с параметрами для устанвления соединения с БД
+            </summary>
+            <param name="conn">Объект для соединения с БД, в которой размещается информация о запрашиваемых параметрах (БД конфигурации)</param>
+            <param name="id_ext">Идентификатор источника данных (параметры для соединения с источником данных)</param>
+            <param name="id_role">Идентификатор типа источника данных</param>
+            <param name="er">Признак ошибки впри выполнении запроса значений</param>
+            <returns>Таблица (!одна строка) с параметрами соединения</returns>
+        </member>
+        <member name="T:ASUTP.Database.DbInterface">
+            <summary>
+            Класс для описания объекта для обращения к БД нескольких подписчиков
+            </summary>
+        </member>
+        <member name="T:ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_ID">
+            <summary>
+            Перечисление - идентификаторы типов поддерживаемых интерфейсов
+             номера портов (при наличии)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_ID.MySQL">
+            <summary>My Sql</summary>
+        </member>
+        <member name="T:ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE">
+            <summary>
+            Перечисление - типы поддерживаемых интерфейсов
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE.MySQL">
+            <summary>My Sql</summary>
+        </member>
+        <member name="T:ASUTP.Database.DbInterface.STATE_LISTENER">
+            <summary>
+            Перечисление - возможные состояния подписчика на выполнение запросов
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.STATE_LISTENER.READY">
+            <summary>
+            Зарегистрирован
+            </summary>
+        </member>
+        <member name="T:ASUTP.Database.DbInterface.DbInterfaceListener">
+            <summary>
+            Класс для описания подписчика еа выполнение запросов к БД
+            </summary>
+        </member>
+        <member name="P:ASUTP.Database.DbInterface.DbInterfaceListener.State">
+            <summary>
+            Состояние подписчика
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.DbInterfaceListener._dataError">
+            <summary>
+            Признак ошибки по результатам запроса
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.DbInterfaceListener._requestDB">
+            <summary>
+            Строка запроса на получение данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.DbInterfaceListener._dataTable">
+            <summary>
+            Результат запроса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.DbInterfaceListener.#ctor">
+            <summary>
+            конструктор - основной (без аргументов)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.DbInterfaceListener.Reset">
+            <summary>
+            Привести объект в исходное состояние
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.DbInterfaceListener.SetRequest(System.String,System.Boolean,System.Object[])">
+            <summary>
+            Привести объект в состояние для использования в запросе
+            </summary>
+            <param name="req">Содержание запроса</param>
+            <param name="bIsStoredProcedure">Признак - является ли запрос выполнением хранимой процедуры</param>
+            <param name="parameters">Массив - параметры запроса, если он параметрический</param>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.DbInterfaceListener.SetResult(System.Boolean)">
+            <summary>
+            Установить финальное состояние (после выполнения запроса)
+            </summary>
+            <param name="bResult">Результатт выполнения запроса</param>
+        </member>
+        <member name="P:ASUTP.Database.DbInterface.DbInterfaceListener.IsSelected">
+            <summary>
+            Тип запроса (выборка или вставка/обновление/удаление)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.m_dictListeners">
+            <summary>
+            Словарь с подписчиками для выполнения запросов
+            </summary>
+        </member>
+        <member name="P:ASUTP.Database.DbInterface.ListenerCount">
+            <summary>
+            Количество подписчиков в интерфейсе
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.m_connectionSettings">
+            <summary>
+            Объект соединения с БД
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.lockListeners">
+            <summary>
+            Объект для синхпрнизации доступа к подписчикам
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.lockConnectionSettings">
+            <summary>
+            Объект для синхронизации изменения параметров соединения
+            </summary>
+        </member>
+        <member name="P:ASUTP.Database.DbInterface.Name">
+            <summary>
+            Наименование интерфейса
+            </summary>
+        </member>
+        <member name="T:ASUTP.Database.DbInterface.RECONNECT">
+            <summary>
+            Тип ожидаемоего соединения: мягкий/штатный, жесткий/полный
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface.RECONNECT.NOT_REQ">
+            <summary>
+            Не требуется
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface._needReconnect">
+            <summary>
+            Признак необходимости выполнить повторное соединение с БД
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface._connected">
+            <summary>
+            Признак установленного соединения с БД
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.setName(System.String)">
+            <summary>
+            Установить новое наименование интерфейса обмена данными с источником данных
+             , возможно только для синхронного (без рабочего потока) интерфейса
+             , новое наименование может быть установлено в конструкторе
+             , и при изменени параметров соедиения с источником
+            </summary>
+            <param name="newName">Новое наименование интерфейса</param>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.#ctor(System.String,System.Boolean)">
+            <summary>
+            Конструктор - основной (с аргументом)
+            </summary>
+            <param name="name">Наименование интерфейса (рабочего потока)</param>
+            <param name="bIsActive">Признак необходимости запуска рабочего потока(асинхронное обращение к БД)</param>
+        </member>
+        <member name="P:ASUTP.Database.DbInterface.Connected">
+            <summary>
+            Признак наличия соединения с источником данных
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.EqualeConnectionSettings(ASUTP.Database.AtomConnectionSettings)">
+            <summary>
+            Сравнить объекты с параметрами соединения с БД
+            </summary>
+            <param name="acs">Объект с параметрами соединения для </param>
+            <returns>Признак идентичности текущегоо объекта и объекта, полученного в аргументе для сравнения</returns>
+        </member>
+        <member name="P:ASUTP.Database.DbInterface.IsEmptyConnectionSettings">
+            <summary>
+            Признак наличия значений основных параметров для установления соединения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.ListenerRegister">
+            <summary>
+            Зарегистрировать нового подписчика, вернуть его идентификатор
+            </summary>
+            <returns>Идентификатор нового подписчика</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.ListenerUnregister(System.Int32)">
+            <summary>
+            Отменить регистрацию подписчика по идентификатору
+            </summary>
+            <param name="listenerId">Идентификатор подписчика</param>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.Start">
+            <summary>
+            Запустить поток выполнения запросов
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.Stop">
+            <summary>
+            Остановить выполнение всех запросов
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.Request(System.Int32,System.String,System.Boolean,System.Object[])">
+            <summary>
+            Отправить запрос источнику данных
+            </summary>
+            <param name="listenerId">Идентификатор подписчика - инициатора запроса</param>
+            <param name="request">Строка - содержание запроса</param>
+            <param name="bIsStoredProcedure">Признак - является ли запрос выполнением хранимой процедуры</param>
+            <param name="parameters">Массив - параметры запроса, если он параметрический</param>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.Response(System.Int32,System.Boolean@,System.Data.DataTable@)">
+            <summary>
+            Получить результат запроса для подписчика с диагностическими признаками
+            </summary>
+            <param name="listenerId">Идентификатор подписчика - инициатора запроса</param>
+            <param name="error">Признак ошибки при получении данных</param>
+            <param name="table">Таблица - результат запроса к источнику данных</param>
+            <returns>Результат выполнения метода</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.setConnectionSettings">
+            <summary>
+            Применить параметры соединения с источником данных - активировать объект доступа к нему
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.SetConnectionSettings(ASUTP.Database.AtomConnectionSettings,System.Boolean)">
+            <summary>
+            Установить параметры соединения с источником данных
+            </summary>
+            <param name="acs">Объект с параметрами соединения</param>
+            <param name="bStarted">Признак немедленной активации объекта доступа к источнику данных</param>
+        </member>
+        <member name="F:ASUTP.Database.DbInterface._eventDbInterface_ThreadFunctionRun">
+            <summary>
+            Объект синхронизации для распознования команды на аварийное завершение подпотока получения данных запроса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.Connect">
+            <summary>
+            Установить соединение с БД
+            </summary>
+            <returns>Результат попытки установить соединенние с БД</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.Disconnect">
+            <summary>
+            Разорвать установленное ранее соединение с БД
+            </summary>
+            <returns>Результат попытки разорвать соединенние с БД</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.Disconnect(System.Int32@)">
+            <summary>
+            Разорвать установленное ранее соединение с БД
+            </summary>
+            <param name="err">Результат попытки разорвать соединенние с БД</param>
+        </member>
+        <member name="M:ASUTP.Database.DbInterface.GetData(System.Data.DataTable,System.Object,ASUTP.Database.DbInterface.SP_PARAMETER[])">
+            <summary>
+            Заполнить таблицу значениями - результатом запроса
+            </summary>
+            <param name="table">Таблица для значений</param>
+            <param name="query">Запрос для получения значений</param>
+            <param name="parameters">Параметры для запроса</param>
+            <returns>Результат попытки получения значений</returns>
+        </member>
+        <member name="T:ASUTP.Database.DelegateRegisterDbSource">
+            <summary>
+            Тип обработчика события для регистрации новогоо источника данных
+            </summary>
+            <param name="connSett">Параметры для соединения с источником данных</param>
+            <param name="active">Признак активности интерфейса (запуск потока обработки состояний)</param>
+            <param name="desc">Описание интерфейса</param>
+            <param name="bReq">Признак принудительного создания отдельного экземпляра соединения</param>
+            <returns></returns>
+        </member>
+        <member name="T:ASUTP.Database.IDbSources">
+            <summary>
+            Интерфейс для класса с описанием управления установленными соединениями с источниками данных
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.IDbSources.GetConnection(System.Int32,System.Int32@)">
+            <summary>
+            Возвратить объект соединения с БД
+            </summary>
+            <param name="id">Идентификатор соединения (ключ для словаря - задается при установлении соединения в парметрах для соединения)</param>
+            <param name="err">Признак ошибки при получении объекта соединения</param>
+            <returns>Объект соединения с БД</returns>
+        </member>
+        <member name="M:ASUTP.Database.IDbSources.Register(ASUTP.Database.AtomConnectionSettings,System.Boolean,System.String,System.Boolean)">
+            <summary>
+            Зарегистрировать и установить соединение с БД
+            </summary>
+            <param name="connSett">Объект с параметрами для соединения с БД</param>
+            <param name="active">Признак активности (ожидание запросов в отдельном потоке)</param>
+            <param name="desc">Описание соединения с БД</param>
+            <param name="bReq">Признак принудительного создания отдельного экземпляра соединения
+             (при наличии уже установленного, для использования в будущем)</param>
+            <returns>Идентификатор соединения</returns>
+        </member>
+        <member name="M:ASUTP.Database.IDbSources.Request(System.Int32,System.String,System.Boolean,System.Object[])">
+            <summary>
+            Отправить запрос для обработки
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+            <param name="query">Запрос для обработки</param>
+            <param name="bIsStoredProcedure">Признак выполнения обычного запроса или хранимой процедуры</param>
+            <param name="parameters">Параметры для запроса</param>
+        </member>
+        <member name="M:ASUTP.Database.IDbSources.Response(System.Int32,System.Boolean@,System.Data.DataTable@)">
+            <summary>
+            Получить ответ на запрос к БД
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+            <param name="err">Признак ошибки при получении результата запроса</param>
+            <param name="tableRes">Таблица-результат запроса</param>
+            <returns>Признак результата выполнения</returns>
+        </member>
+        <member name="M:ASUTP.Database.IDbSources.SetConnectionSettings(System.Int32,ASUTP.Database.AtomConnectionSettings,System.Boolean)">
+            <summary>
+            Установить новые параметры для соединения с БД
+             , старое при необходимости разрывается
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+            <param name="connSett">Параметры для нового соединения</param>
+            <param name="active">Признак акивности нового соединения</param>
+        </member>
+        <member name="M:ASUTP.Database.IDbSources.UnRegister">
+            <summary>
+            Разорвать (отменить регистрацию) все установленные соединения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.IDbSources.UnRegister(System.Int32)">
+            <summary>
+            Разорвать (отменить регистрацию) указанного соединения
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+        </member>
+        <member name="T:ASUTP.Database.DbSources">
+            <summary>
+            Класс для описания управлением установленными соединениями с источниками данных
+            </summary>
+        </member>
+        <member name="P:ASUTP.Database.DbSources._interfaceParams">
+            <summary>
+            Делегат для ретрансляции событий Модес-Центр
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbSources.m_this">
+            <summary>
+            Ссылка на "самого себя" - для исключения создания 2-х объектов класса
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbSources.m_dictDbInterfaces">
+            <summary>
+            Словарь с объектами-потоками обработки запросов
+            </summary>
+        </member>
+        <member name="T:ASUTP.Database.DbSources.DbSourceListener">
+            <summary>
+            Класс для описания подписчика на установленное соединение
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbSources.DbSourceListener.dbConn">
+            <summary>
+            Объект соединения с БД
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbSources.DbSourceListener.idDbInterface">
+            <summary>
+            Идентификатор объекта-потока для обработки запросов
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbSources.DbSourceListener.iListenerId">
+            <summary>
+            Идентификатор подписчика
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.DbSourceListener.#ctor(System.Int32,System.Int32,System.Data.Common.DbConnection)">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+            <param name="id">Идентификатор объекта-потока для обработки запросов</param>
+            <param name="indx">Идентификатор подписчика</param>
+            <param name="conn">Объект соединения с БД</param>
+        </member>
+        <member name="F:ASUTP.Database.DbSources.m_dictListeners">
+            <summary>
+            Словарь объектов-подписчиков на установленные соединения
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbSources.m_objDictListeners">
+            <summary>
+            Объект для блокирования доступа к словарю 'm_dictListeners'
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.#ctor">
+            <summary>
+            Конструктор - основной (защищенный)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.Sources">
+            <summary>
+            Функция для доступа к объекту
+            </summary>
+            <returns>Объект для управления установленными соединениями с источниками данных</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.SetConnectionSettings(System.Int32,ASUTP.Database.AtomConnectionSettings,System.Boolean)">
+            <summary>
+            Установить новые параметры для соединения с БД
+             , старое при необходимости разрывается
+            </summary>
+            <param name="id">Идентификатор соединения</param>
+            <param name="connSett">Параметры для нового соединения</param>
+            <param name="active">Признак акивности нового соединения</param>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.registerListener(System.Int32,System.Int32,System.Int32,System.Boolean,System.Int32@)">
+            <summary>
+             Регистрировать подписчика на установленное соединение - получить идентификатор для передачи в 'registerListener'
+            </summary>
+            <param name="idReg">Новый внешний идентификатор подписчика для регистрации</param>
+            <param name="id">Идентификатор объекта-потока обработки запросов</param>
+            <param name="idListener">Идентификатор</param>
+            <param name="active"></param>
+            <param name="err"></param>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.UnRegister">
+            <summary>
+            Отменить регитсрацию всех подписчиков
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.UnRegister(System.Int32)">
+            <summary>
+            Отменить регистрацию подписчика по идентификатору
+            </summary>
+            <param name="id">Идентификатор подписчика - активного соединения с БД</param>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.Request(System.Int32,System.String,System.Boolean,System.Object[])">
+            <summary>
+            Отправляет запрос к источнику БД с идентификатором
+            </summary>
+            <param name="id">идентификатор</param>
+            <param name="query">запрос</param>
+            <param name="bIsStoredProcedure">Признак выполнения обычного запроса или хранимой процедуры</param>
+            <param name="parameters">Параметры для запроса</param>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.Response(System.Int32,System.Boolean@,System.Data.DataTable@)">
+            <summary>
+            Получает рез-т запроса  - таблицу, от источника с идентификатором, с признаком ошибки
+            </summary>
+            <param name="id">идентификатор</param>
+            <param name="err">признак4 ошибки</param>
+            <param name="tableRes">результирующая таблица</param>
+        </member>
+        <member name="M:ASUTP.Database.DbSources.GetConnection(System.Int32,System.Int32@)">
+            <summary>
+            Возвратить объект установленного соединения для указанного идентификатора
+            </summary>
+            <param name="id">Идентификатор подписчика</param>
+            <param name="err">Признак ошибки</param>
+            <returns>Объект установленного соединения</returns>
+        </member>
+        <member name="T:ASUTP.Database.DbTSQLInterface">
+            <summary>
+            Класс для бращения к источнику данных посредством запросов на T-SQL
+            </summary>
+        </member>
+        <member name="T:ASUTP.Database.DbTSQLInterface.Error">
+            <summary>
+            Перечисление - перечень возможных ошибок при работе с источником данных
+            </summary>
+        </member>
+        <member name="T:ASUTP.Database.DbTSQLInterface.QUERY_TYPE">
+            <summary>
+            Перечисление - типы запросов
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE">
+            <summary>
+            Обновление данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbTSQLInterface.MessageDbOpen">
+            <summary>
+            Строка - сообщение об успешно установленном соединении
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbTSQLInterface.MessageDbClose">
+            <summary>
+            Строка - сообщение о разрыве соедиения с источником данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbTSQLInterface.MessageDbException">
+            <summary>
+            Строка - сообщение при возникновении исключительной ситуации при работе с БД
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbTSQLInterface.m_dbConnection">
+            <summary>
+            Непосредственный объект соединения с источником данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbTSQLInterface.lockConn">
+            <summary>
+            Объект синхронизации при доступе к параметрам соединения с источником данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Database.DbTSQLInterface.m_connectionType">
+            <summary>
+            Тип источника данных
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.#ctor(ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE,System.String,System.Boolean)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="type">Тип источника данных</param>
+            <param name="name">Наименование объекта для доступа к источнику данных</param>
+            <param name="bIsActive">Признак необходимости запуска рабочего потока(асинхронное обращение к БД)</param>
+        </member>
+        <member name="P:ASUTP.Database.DbTSQLInterface.Timeout">
+            <summary>
+            Длительность интервала ожидания результатат запроса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.createDbConnection">
+            <summary>
+            Создать объект соединения с БД
+            </summary>
+            <returns>Объект соединения с БД</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.createDbConnection(ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE)">
+            <summary>
+            Создать объект соединения с БД
+            </summary>
+            <param name="type">Тип источника данных</param>
+            <returns>Объект соединения с БД</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.disconnect(System.Data.Common.DbConnection@,System.Boolean,System.Boolean,ASUTP.Database.DbTSQLInterface.Error@)">
+            <summary>
+            Разорвать соединение с БД
+            </summary>
+            <param name="conn">Объект соединения с БД</param>
+            <param name="bIsActive">Признак активного соединения (проверять счетчик или нет)</param>
+            <param name="bConnIsLogging">Признак определяющий, является ли объект соединения с БД соединением для логгирования</param>
+            <param name="err">Признак ошибки при выполнении операции</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.Connect">
+            <summary>
+            Установить соединение с источником данных
+            </summary>
+            <returns>Признак установки соединения</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.SetConnectionSettings(ASUTP.Database.AtomConnectionSettings,System.Boolean)">
+            <summary>
+            Установить параметры соединения с источником данных
+            </summary>
+            <param name="acs">Объект с параметрами соединения</param>
+            <param name="bStarted">Признак немедленной активации объекта доступа к источнику данных</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.Disconnect">
+            <summary>
+            Отменить установку соединения с источником данных
+            </summary>
+            <returns>Признак выполнения операции разъединения</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.Disconnect(System.Int32@)">
+            <summary>
+            Разорвать установленное соединение с источником данных
+            </summary>
+            <param name="er">Признак наличия ошибки при выполнении операции</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.GetDataCancel">
+            <summary>
+            Инициировать отмену выполняющегося запроса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.GetData(System.Data.DataTable,System.Object,ASUTP.Database.DbInterface.SP_PARAMETER[])">
+            <summary>
+            Получить результат запроса (KhryapinAN DD.09.2017 выполняется в отдельном потоке)
+            </summary>
+            <param name="table">Таблица - результат запроса</param>
+            <param name="query">Запрос к источнику данных на T-SQL</param>
+            <param name="parameters">Параметры для запроса</param>
+            <returns>Признак получения результата</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.ConnectionStringToLog(System.String)">
+            <summary>
+            Строка соединения для логгирования с усечением значения пароля
+            </summary>
+            <param name="strConnSett">Строка соединения с БД</param>
+            <returns>Строка для размещения в журнале приложения</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.logging_catch_db(System.Data.Common.DbConnection,System.Exception)">
+            <summary>
+            Зафиксировать/разместить в журнале сообщение о возникновении исключительной ситуации
+            </summary>
+            <param name="conn">Объект соединения с БД(источником данных)</param>
+            <param name="e">Исключение, требуещще журналирования</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.logging_close_db(System.Data.Common.DbConnection)">
+            <summary>
+            Зафиксировать/разместить в журнале сообщение о разрыве соединения с БД (источником данных)
+            </summary>
+            <param name="conn">Объект соединения с БД(источником данных)</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.logging_open_db(System.Data.Common.DbConnection)">
+            <summary>
+            Зафиксировать/разместить в журнале сообщение об установке соединения с БД (источником данных)
+            </summary>
+            <param name="conn">Объект соединения с БД(источником данных)</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.getTypeDB(ASUTP.Database.ConnectionSettings)">
+            <summary>
+            Возвратить тип источника данных по объекту с параметрами для соединения
+            </summary>
+            <param name="connSett">Объект с параметрами для установления соединения</param>
+            <returns>Тип источника данных</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.getTypeDB(System.String)">
+            <summary>
+            Возвратить тип источника данных по строке соединения
+             (извлекается номер порта, по нему и определяется искомый тип)
+             , не применим, если в строке соединения не указан номер порта
+             , по умолчанию возвращается 'MS SQL'
+            </summary>
+            <param name="strConn">Строка соединения с источником данных</param>
+            <returns>Тип источника данных</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.getTypeDB(System.Int32)">
+            <summary>
+            Возвратить тип источника данных по номеру порта
+             , если не удается идентифицировать источник, возвращается 'неизвестный тип'
+            </summary>
+            <param name="port">Номер порта для связи с источником данных</param>
+            <returns>Тип источника данных</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.GetConnection(System.Int32@)">
+            <summary>
+            Возвратить объект соединения с БД (для синхронных операций)
+            </summary>
+            <param name="err">Признак ошибки при выполнении метода, актуальности возвращаемого значения</param>
+            <returns></returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.IsNameField(System.Data.DataTable,System.String)">
+            <summary>
+            Подтвердить наличие поля в таблице-результате запроса
+            </summary>
+            <param name="data">Таблица</param>
+            <param name="nameField">Наименование поля</param>
+            <returns>Признак наличия поля</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.IsNameField(System.Data.DataRow,System.String)">
+            <summary>
+            Подтвердить наличие поля в строке таблицы-результата запроса
+            </summary>
+            <param name="data">Строка таблицы</param>
+            <param name="nameField">Наименование поля</param>
+            <returns>Признак наличия поля</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.ValueToQuery(System.Data.DataTable,System.Int32,System.Int32)">
+            <summary>
+            Преобразование/подготовка значение для использования его в строке запроса
+             - добавление в начале и в конце значения одинарные кавычки
+             , если тип значения "простой"
+            </summary>
+            <param name="table">Таблица со значениями</param>
+            <param name="row">Номер записи в таблице со значениями</param>
+            <param name="col">Номер столбца в записи таблицы со значениями</param>
+            <returns>Строка - значение из таблицы с одинарными кавычками или без них</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.ValueToQuery(System.Object,System.Type)">
+            <summary>
+            Преобразование/подготовка значение для использования его в строке запроса
+            </summary>
+            <param name="val">Значение для преобразования</param>
+            <param name="type">Тип столбца в таблице, для размещения в него значения</param>
+            <returns>Строка - значение из таблицы с одинарными кавычками или без них</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.queryValidateOfTypeDB(System.String,System.String@)">
+            <summary>
+            Проверка и преобразование запроса к БД в зависимости от типа БД (MSSQL, MySql)
+            </summary>
+            <param name="strConn">строка соединения объекта DbConnection</param>
+            <param name="query">преобразуемый запрос</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.CSVImport(System.String,System.String,System.Int32@)">
+            <summary>
+            Импорт содержания текстового файла с разделителем в таблицу
+            </summary>
+            <param name="path">путь к файлу</param>
+            <param name="fields">наименования полей таблицы (не используется)</param>
+            <param name="er">Признак ошибки при выполнении операции</param>
+            <returns></returns>
+        </member>
+        <member name="T:ASUTP.Database.DbTSQLInterface.DelegateSelectAsync">
+            <summary>
+            Тип делегата для функции обратного вызова при аснхронном запросе к источнику данных синхронного типа
+            </summary>
+            <param name="table">Таблица - результат запроса</param>
+            <param name="err">Признак ошибки при выполнении запроса</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.Select(System.String,System.String,System.Int32@)">
+            <summary>
+            Отправить/выполнить запрос к источнику данных
+            </summary>
+            <param name="path">Путь к источнику данных (MS Excel, MS Access)</param>
+            <param name="query">Строка - запрос</param>
+            <param name="er">Признак ошибки при отправлении запроса</param>
+            <returns>Результат выполнения запроса</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.Select(System.String,System.String,ASUTP.Database.DbTSQLInterface.DelegateSelectAsync)">
+            <summary>
+            Отправить/выполнить запрос асинхронно к источнику данных синхронного типа
+            </summary>
+            <param name="path">Путь к источнику данных (MS Excel, MS Access)</param>
+            <param name="query">Строка - запрос</param>
+            <param name="fCallback">Делегат(метод/функция) обратного вызова</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.Select(System.Data.Common.DbConnection@,System.String,System.Data.DbType[],System.Object[],System.Int32@)">
+            <summary>
+            Отправить/выполнить запрос(параметризованный) к источнику данных
+            </summary>
+            <param name="conn">Объект соединения с источником данных</param>
+            <param name="query">Строка - запрос к источнику данных</param>
+            <param name="types">Список типов параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="parametrs">Список параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="er">Признак ошибки при выпонении запроса</param>
+            <returns>Результат - таблица выполнения запроса</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.Select(System.Data.Common.DbConnection@,System.String,System.Data.DbType[],System.Object[],ASUTP.Database.DbTSQLInterface.DelegateSelectAsync)">
+            <summary>
+            Отправить/выполнить запрос(параметризованный) асинхронно к источнику данных синхронного типа
+            </summary>
+            <param name="conn">Объект соединения с источником данных</param>
+            <param name="query">Строка - запрос</param>
+            <param name="types">Список типов параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="parametrs">Список значений параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="fCallback">Делегат(метод/функция) обратного вызова</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.ParametrsAdd(System.Data.Common.DbCommand,System.Data.DbType[],System.Object[])">
+            <summary>
+            Добавить параметр к запросу
+            </summary>
+            <param name="cmd">Объект 'команда' в составе запроса к источнику данных</param>
+            <param name="types">Тип парметра</param>
+            <param name="parametrs">Значение параметра</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.ParametrsValidate(System.Data.DbType[],System.Object[],System.Int32@)">
+            <summary>
+            Проверить параметры для возможности использования в запросе
+            </summary>
+            <param name="types">Список типов параметров в запросе</param>
+            <param name="parametrs">Список значений параметров в запросе</param>
+            <param name="err">Признак ошибки при выполнеии метода</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.ExecNonQuery(System.Data.Common.DbConnection@,System.String,System.Data.DbType[],System.Object[],System.Int32@)">
+            <summary>
+            Выполнить запрос, не требущий возвращения результатат, синхронно 
+            </summary>
+            <param name="conn">Объект соединения с источником данных</param>
+            <param name="query">Строка - запрос</param>
+            <param name="types">Список типов параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="parametrs">Список значений параметров в запросе(НЕ РЕАЛИЗОВАНО)</param>
+            <param name="er">Признак ошибки при выполнеини запроса</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.ExecNonQuery(System.String,System.String,System.Int32@)">
+            <summary>
+            Выполнить запрос не требующий возвращения результата
+            </summary>
+            <param name="path">Путь к источнику данных (файловому: MS Excel, MS Access)</param>
+            <param name="query">Запрос для выполнения</param>
+            <param name="er">Признак ошибки при выполнении операции</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.GetIdNext(System.Data.Common.DbConnection@,System.String,System.Int32@,System.String,System.Int32,System.Int32)">
+            <summary>
+            Возвратить идентификатор для очередной записи в диапазоне [min...max]
+            </summary>
+            <param name="conn">Объект с установленным соединениес с БД</param>
+            <param name="nameTable">Наименование таблицы для вставки записи</param>
+            <param name="nameFieldID">Наименование целочисленного поля с идентификатором</param>
+            <param name="min">Минимальное значение диапазона для поиска идентификатора</param>
+            <param name="max">Максимальное значение диапазона для поиска идентификатора</param>
+            <returns>Очередной(по сквозной нумерации) идентификатор</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.GetIdNext(System.Data.DataTable,System.Int32@,System.String,System.Int32,System.Int32)">
+            <summary>
+            Возвратить идентификатор для очередной записи в диапазоне [min...max]
+            </summary>
+            <param name="table">Таблица для вставки записи</param>
+            <param name="nameFieldID">Наименование целочисленного поля</param>
+            <param name="min">Минимальное значение диапазона для поиска идентификатора</param>
+            <param name="max">Максимальное значение диапазона для поиска идентификатора</param>
+            <returns>Целочисленный идентификатор записи в таблице</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.RecUpdateInsertDelete(System.Data.Common.DbConnection@,System.String,System.String,System.String,System.Data.DataTable,System.Data.DataTable,System.Int32@)">
+            <summary>
+            Изменение (вставка), удаление
+            </summary>
+            <param name="conn">Объект соединения с БД</param>
+            <param name="nameTable">Наименование таблицы</param>
+            <param name="keyFields">Наименования полей таблицы в составе ключа по поиску записей</param>
+            <param name="unchangeableColumn">Наименования полей таблицы не подлежащие изменению</param>
+            <param name="origin">Таблица со значениями - исходная</param>
+            <param name="data">Таблица со значениями - с изменениями</param>
+            <param name="err">Признак ошибки выполнения функции</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.getWhereSelect(System.String,System.Data.DataRow)">
+            <summary>
+            Возвратить предложение 'WHERE' для запроса
+            </summary>
+            <param name="fields">Список полей в предложении WHERE</param>
+            <param name="r">Строка со значенями для включения в результирующую строку</param>
+            <returns>Строка - предложение 'WHERE (часть запроса)'</returns>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.RecUpdateInsert(System.Data.Common.DbConnection@,System.String,System.String,System.String,System.Data.DataTable,System.Data.DataTable,System.Int32@)">
+            <summary>
+            Изменение (вставка) в оригинальную таблицу записей измененных (добавленных) в измененную таблицу (обязательно наличие поля: ID)
+            </summary>
+            <param name="conn">Объект с параметрами соединения с БД</param>
+            <param name="nameTable">Наименование таблицы в БД</param>
+            <param name="keyFields">Набор ключевых полей по которым определяется изменение/добавление/удаление записи</param>
+            <param name="unchangeableColumn">Наименование поля, которое не проверяется на изменение/добавление/удаление</param>
+            <param name="origin">Оригинальная таблица со значениями</param>
+            <param name="data">Таблица с внесенными изменениями</param>
+            <param name="err">Признак ошибки выполнения функции</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.RecDelete(System.Data.Common.DbConnection@,System.String,System.String,System.Data.DataTable,System.Data.DataTable,System.Int32@)">
+            <summary>
+            Удаление из оригинальной таблицы записей не существующих в измененной таблице (обязательно наличие поля: ID)
+            </summary>
+            <param name="conn">Объект с параметрами соединения с БД</param>
+            <param name="nameTable">Наименование таблицы в БД</param>
+            <param name="keyFields">Набор ключевых полей по которым определяется изменение/добавление/удаление записи</param>
+            <param name="origin">Оригинальная(исходная) таблица со значениями</param>
+            <param name="data">Таблица с внесенными изменениями</param>
+            <param name="err">Признак ошибки выполнения функции</param>
+        </member>
+        <member name="M:ASUTP.Database.DbTSQLInterface.IsConnected(System.Data.Common.DbConnection@)">
+            <summary>
+            Признак наличия соединения с БД
+            </summary>
+            <param name="obj">Объект соединения с БД, подвергающийся проверке</param>
+            <returns>Признак наличия соединения с БД</returns>
+        </member>
+        <member name="T:ASUTP.Database.ConnectionSettingsExtension">
+            <summary>
+            Класс расширение для 'class ConnectionSettings'
+            </summary>
+        </member>
+        <member name="M:ASUTP.Database.ConnectionSettingsExtension.GetConnectionString(ASUTP.Database.ConnectionSettings,ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE)">
+            <summary>
+            Возвратить строку соединения СУБД в ~ от аргумента
+            </summary>
+            <param name="connSett">Объект с параметрами соединения</param>
+            <param name="type">Тип СУБД</param>
+            <returns>Строка соединения СУБД</returns>
+        </member>
+        <member name="M:ASUTP.Database.FIleConnSett.ParseSettingsFile(System.Collections.Generic.List{ASUTP.Database.ConnectionSettings}@,System.String@)">
+            <summary>
+            Разбор зашифрованного файла с параметрами соединения
+            </summary>
+            <param name="connSetts">выходной список с объектами с параметрами соединения</param>
+            <param name="msgErr">Текст сообщения при наличии ошибки</param>
+            <returns>Признак выполнения: 0 - успех</returns>
+        </member>
+        <member name="M:ASUTP.Database.FIleConnSett.ReadSettingsFile(System.Int32,System.Collections.Generic.List{ASUTP.Database.ConnectionSettings}@,System.Int32@,System.String@)">
+            <summary>
+            Чтение зашифрованного файла конфигурации с параметрами соединения
+            </summary>
+            <param name="notUsed">не используется (-1), для совместимости с типом делегата</param>
+            <param name="listConnSett">выходной список объектов с параметрами соедений</param>
+            <param name="res">результат выполнения функции</param>
+            <param name="mes">сообщение после выполнения операции</param>
+        </member>
+        <member name="M:ASUTP.Database.FIleConnSett.SaveSettingsFile(System.Int32,System.Collections.Generic.List{ASUTP.Database.ConnectionSettings},System.Int32@)">
+            <summary>
+            Шифрование и сохранение параметров соедиений
+            </summary>
+            <param name="notUsed">не используется (-1), для совместимости с типом делегата</param>
+            <param name="listConnSett"></param>
+            <param name="err"></param>
+        </member>
+        <member name="P:ASUTP.Database.Writer.ConnSett">
+            <summary>
+            Объект с параметрами для соедиения с БД при режиме журналирования "БД"
+            </summary>
+        </member>
+    </members>
+</doc>

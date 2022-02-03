@@ -1,0 +1,444 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.Threading;
+
+using ASUTP.Helper;
+using ASUTP;
+using ASUTP.Core;
+using ASUTP.Database;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+
+namespace StatisticCommon
+{
+    [DataContract]
+    public abstract class AdminRDG : HAdmin
+    {
+        /// <summary>
+        /// Подготовить список идентификаторов ГТП для формирования запроса на получение данных
+        /// </summary>
+        /// <returns>Ключ 0-го оборудования из списка</returns>
+        public virtual FormChangeMode.KeyDevice PrepareActionRDGValues ()
+        {
+            return FirstTECComponentKey;
+        }
+
+        protected int GetSeasonValue (int h) {
+            int iRes = SEASON_BASE;
+
+            if (m_curDate.Date.Equals (AdminRDG.SeasonDateTime.Date) == true) {
+
+            } else {
+                if (m_curDate.Date.CompareTo (AdminRDG.SeasonDateTime.Date) < 0) {
+                    //ДО перехода
+                    iRes += (int)seasonJumpE.SummerToWinter;
+                } else {
+                    //ПОСЛЕ перехода
+                    iRes += (int)seasonJumpE.WinterToSummer;
+                }
+            }
+
+            return iRes;
+        }
+
+        /// <summary>
+        /// структура дл яхранения данных элемента (час) расписания диспетчерского графика (РДГ)
+        /// </summary>
+        [DataContract]
+        public struct RDGStruct
+        {
+            //[DataMember]
+            //public double [] ppbr;
+            [DataMember]
+            public double pbr;
+            [DataMember]
+            public double pmin;
+            [DataMember]
+            public double pmax;
+            [DataMember]
+            public double recomendation;
+            [DataMember]
+            public bool deviationPercent;
+            [DataMember]
+            public double deviation;
+            [DataMember]
+            public bool fc;
+
+            [DataMember]
+            public string pbr_number;
+            [DataMember]
+            public DateTime dtRecUpdate;
+
+            //public RDGStruct (RDGStruct src, bool bPBRNumberEmptyChecked = false)
+            //{
+            //    From (src, bPBRNumberEmptyChecked);
+            //}
+
+            public void From (RDGStruct src, bool bPBRNumberEmptyChecked = false)
+            {
+                pbr = src.pbr;
+                pmin = src.pmin;
+                pmax = src.pmax;
+                recomendation = src.recomendation;
+                deviationPercent = src.deviationPercent;
+                deviation = src.deviation;
+                fc = src.fc;
+
+                if (bPBRNumberEmptyChecked == true)
+                    if (src.pbr_number.Equals (string.Empty) == false)
+                        pbr_number = src.pbr_number;
+                    else
+                        ;
+                else
+                    pbr_number = src.pbr_number;
+                dtRecUpdate = src.dtRecUpdate;
+            }
+
+            public RDGStruct Copy (bool bPBRNumberEmptyChecked = false)
+            {
+                RDGStruct oRes = new RDGStruct ();
+
+                oRes.From (this, bPBRNumberEmptyChecked);
+
+                return oRes;
+            }
+
+            public static bool operator == (RDGStruct s1, RDGStruct s2)
+            {
+                bool bRes = false;
+
+                bRes = (s1.pbr == s2.pbr)
+                    && (s1.recomendation == s2.recomendation)
+                    && (s1.fc == s2.fc)
+                    && ((s1.deviation == s2.deviation)
+                        && (s1.deviationPercent == s2.deviationPercent));
+
+                return bRes;
+            }
+
+            public static bool operator != (RDGStruct s1, RDGStruct s2)
+            {
+                bool bRes = true;
+
+                bRes = !(s1.pbr == s2.pbr)
+                    || !(s1.recomendation == s2.recomendation)
+                    || !(s1.fc == s2.fc)
+                    || (!(s1.deviation == s2.deviation)
+                        || !(s1.deviationPercent == s2.deviationPercent));
+
+                return bRes;
+            }
+
+            public override bool Equals (object obj)
+            {
+                return (obj is RDGStruct) ? this == (RDGStruct)obj : false;
+            }
+
+            public override int GetHashCode ()
+            {
+                return base.GetHashCode ();
+            }
+        }
+
+        [DataMember]
+        public volatile RDGStruct [] m_prevRDGValues;
+        [DataMember]
+        public RDGStruct [] m_curRDGValues;
+
+        //Обрабатывать ли данные?
+        [DataMember]
+        public HMark m_markQueries; //CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE
+
+        [DataMember]
+        protected volatile bool using_date;
+
+        [DataMember]
+        public bool m_ignore_date;
+        /// <summary>
+        /// Массив меток дат/времени, имеющихся в БД
+        /// элементу, соответствующему часу, устанавливается значение идентификатора записи в таблице БД
+        /// 1-я размерность - тип значений (ПБР, АДМИН), 2-я - идентификаторы записей
+        /// </summary>
+        [DataMember]
+        protected int [,] m_arHaveDates;
+        //protected Dictionary<CONN_SETT_TYPE, List<HAVE_DATES>> m_dictHaveDates;
+        /// <summary>
+        /// Номер ПБР в БД
+        /// </summary>
+        [DataMember]
+        protected int m_iHavePBR_Number;
+        
+        public AdminRDG (TECComponentBase.TYPE type)
+            : base (type)
+        {
+            m_iHavePBR_Number = -1;
+
+            Initialize ();
+        }
+
+        protected override void Initialize () {
+            base.Initialize ();
+
+            using_date = false;
+            m_ignore_date = false;
+
+            m_arHaveDates = new int [(int)CONN_SETT_TYPE.PBR + 1, 24];
+
+            m_curRDGValues = new RDGStruct [24];
+            m_prevRDGValues = new RDGStruct [24];
+        }
+
+        public abstract bool WasChanged ();
+
+        public override void ClearValues ()
+        {
+            int cntHours = 24;
+
+            //if (cnt < 0) {
+            //Проверка признака "обычного" размера массива
+            if (m_curDate.Date.Equals (AdminRDG.SeasonDateTime.Date) == false) {
+                if (m_curRDGValues.Length > 24) {
+                    m_curRDGValues = null;
+                } else {
+                }
+            } else {
+                if (m_curRDGValues.Length < 25) {
+                    m_curRDGValues = null;
+                    cntHours = 25;
+                } else {
+                }
+            }
+            //} else {
+            //    m_curRDGValues = null;
+            //    cntHours = cnt;
+            //}
+
+            if (m_curRDGValues == null)
+                m_curRDGValues = new RDGStruct [cntHours];
+            else
+                ;
+        }
+
+        public abstract void GetRDGValues (FormChangeMode.KeyDevice key, DateTime date);
+
+        public void SetCurrentRDGValue (int iHour, RDGStruct valueSource)
+        {
+            setRDGValue (ref m_curRDGValues [iHour], valueSource);
+        }
+
+        protected void setRDGValue (ref RDGStruct valueDest, RDGStruct valueSource)
+        {
+            valueDest.pbr = valueSource.pbr;
+            valueDest.pmin = valueSource.pmin;
+            valueDest.pmax = valueSource.pmax;
+
+            valueDest.pbr_number = valueSource.pbr_number;
+            valueDest.dtRecUpdate = valueSource.dtRecUpdate;
+        }
+
+        protected abstract void getPPBRDatesRequest (DateTime date);
+
+        protected abstract int getPPBRDatesResponse (DataTable table, DateTime date);
+
+        protected abstract void getPPBRValuesRequest (TEC t, IDevice comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
+
+        protected abstract int getPPBRValuesResponse (DataTable table, DateTime date);
+
+        protected virtual void clearDates (CONN_SETT_TYPE type)
+        {
+            int cntHours = -1
+                , length = -1
+                    ;
+
+            cntHours = m_curDate.Date.Equals (AdminRDG.SeasonDateTime.Date) == false
+                ? 24
+                    : 25;
+            length =
+                m_arHaveDates.Length / m_arHaveDates.Rank
+                //m_dictHaveDates[type].Count
+                ;
+
+            if (!(length == cntHours)) {
+                if (length < cntHours)
+                    m_arHaveDates = new int [2, cntHours];
+                //while (m_dictHaveDates[type].Count < cntHours)
+                //    m_dictHaveDates[type].Add(new HAVE_DATES());
+                else if (length > cntHours)
+                    m_arHaveDates = new int [2, cntHours];
+                //while (m_dictHaveDates[type].Count > cntHours)
+                //    m_dictHaveDates[type].RemoveAt(0);
+                else
+                    // недостижимый код
+                    ;
+            } else
+                ;
+
+            for (int i = 0; i < cntHours; i++)
+                m_arHaveDates [(int)type, i] = 0;
+            //m_dictHaveDates[type].ForEach(date => date.Reset());
+        }
+
+        protected void clearPPBRDates ()
+        {
+            clearDates (CONN_SETT_TYPE.PBR);
+        }
+
+        [DataMember]
+        public const string PBR_PREFIX = @"ПБР";
+
+        /// <summary>
+        /// Возвратить наименование номера ПБР по номеру часа
+        /// </summary>
+        /// <param name="hour">Номер часа</param>
+        /// <returns>Наименование ПБР</returns>
+        protected string getNamePBRNumber (int hour = -1) {
+            return string.Format ("{0}{1}", PBR_PREFIX, getPBRNumber (hour));
+        }
+
+        /// <summary>
+        /// Возвратить номер ПБР по наименованию
+        /// </summary>
+        /// <param name="pbr">Наименование ПБР</param>
+        /// <param name="err">Признак ошибки при извлечении номера ПБР</param>
+        /// <param name="bLogging">Признак признак журналирования ошибки</param>
+        /// <returns>Номер ПБР</returns>
+        public static int GetPBRNumber (string pbr, out int err, bool bLogging = true) {
+            int iRes = -1;
+
+            err = (Equals (pbr, null) == false)
+                && (pbr.Length > PBR_PREFIX.Length) ? 0 : -1;
+
+            if (err == 0) {
+                err = int.TryParse (pbr.Substring (PBR_PREFIX.Length), out iRes) == true
+                    ? err = 0
+                        : err = -1;
+
+                if (err < 0)
+                    if (pbr.Equals (string.Format ("{0}{1}", "П", PBR_PREFIX)) == true) {
+                        err = 1;
+                        iRes = 0;
+                    } else
+                        ;
+                else
+                    ;
+            } else
+                if (bLogging == true)
+                Logging.Logg ().Error ($"HAdmin::GetPBRNumber (вход={pbr}) - нельзя извлечь №{PBR_PREFIX}...", Logging.INDEX_MESSAGE.NOT_SET);
+            else
+                ;
+
+            return iRes;
+        }
+
+        /// <summary>
+        /// Возвратить номер ПБР по текущему часу
+        /// </summary>
+        /// <param name="err">Признак результата выполнения метода</param>
+        /// <returns>Номер ПБР</returns>
+        public int GetPBRNumber (out int err)
+        {
+            return GetPBRNumber (-1, out err);
+        }
+
+        public int GetPBRNumber (int indx, out int err)
+        {
+            err = 0;
+
+            int iRes = -1
+                , iIndx = indx;
+
+            if (iIndx < 0)
+                iIndx = m_curRDGValues.Length - 1;
+            else
+                ;
+
+            if (m_curDate.Date.CompareTo (serverTime.Date) == 0)
+                if ((!(m_curRDGValues == null))
+                    && (!(m_curRDGValues [iIndx].pbr_number == null))
+                    && (m_curRDGValues [iIndx].pbr_number.Length > PBR_PREFIX.Length)) {
+                    iRes = GetPBRNumber (m_curRDGValues [iIndx].pbr_number, out err);
+                    if (err < 0) {
+                        iRes = getPBRNumber ();
+                    } else
+                        ;
+                } else {
+                    err = -2; //РДГ не загружен
+
+                    iRes = getPBRNumber ();
+                } else
+                if (m_curDate.Date.CompareTo (serverTime.Date) > 0)
+                if ((!(m_curRDGValues == null))
+                    && (!(m_curRDGValues [iIndx].pbr_number == null))
+                    && (m_curRDGValues [iIndx].pbr_number.Length > PBR_PREFIX.Length)) {
+                    iRes = GetPBRNumber (m_curRDGValues [iIndx].pbr_number, out err);
+                } else
+                    iRes = getPBRNumber ();
+            else
+                ;
+
+            return iRes;
+        }
+
+        protected int getPBRNumber (int hour = -1)
+        {
+            int iRes = -1
+                , iHour = hour;
+
+            if (iHour < 0) {
+                if (m_ignore_date == true)
+                    iHour = HDateTime.ToMoscowTimeZone ().Hour;
+                else
+                    iHour = serverTime.Hour;
+            } else
+                ;
+
+            //// для интервала обновления ПБР = 2 ч
+            //if ((iHour % 2) > 0)
+            //    iRes = iHour;
+            //else
+            iRes = iHour + 1;
+
+            return iRes;
+        }
+
+        public virtual void CopyCurToPrevRDGValues ()
+        {
+            if (!(m_prevRDGValues.Length == m_curRDGValues.Length)) {
+                m_prevRDGValues = null;
+                m_prevRDGValues = new RDGStruct [m_curRDGValues.Length];
+            } else {
+            }
+        }
+
+        public virtual void getCurRDGValues (AdminRDG source)
+        {
+            if (!(m_curRDGValues.Length == source.m_curRDGValues.Length)) {
+                m_curRDGValues = null;
+                m_curRDGValues = new RDGStruct [source.m_curRDGValues.Length];
+            } else {
+            }
+        }
+
+        public virtual void ResetRDGExcelValues ()
+        {
+            ResetSyncState ();
+        }
+
+        /// <summary>
+        /// Возвратить признак наличия значения в БД (PPBR, ADMIN) по индексу часа
+        /// </summary>
+        /// <param name="type">Тип значения (PPBR, ADMIN)</param>
+        /// <param name="indx">Индекс часа</param>
+        /// <returns>Признак г=наличия значения</returns>
+        protected bool IsHaveDates (CONN_SETT_TYPE type, int indx)
+        {
+            return
+                m_arHaveDates [(int)type, indx] > 0 ? true : false
+                //m_dictHaveDates[type].Exists(date => { return (date.date_time.Hour - 1) == indx; });
+                ;
+        }
+    }
+}

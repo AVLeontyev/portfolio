@@ -1,0 +1,236 @@
+﻿using StatisticCommon;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Text;
+
+namespace salarm
+{
+    //partial class Client
+    //{
+        internal class ConfigSectionClientItems : ConfigurationSection
+        {
+            public static string NameSection = "ClientItems";
+
+            private const string _logging = "logging";
+            private const string _elements = "settings";
+
+            [ConfigurationProperty (_logging)]
+            public ConfigurationLoggingElement Logging
+            {
+                get { return ((ConfigurationLoggingElement)(base [_logging])); }
+            }
+
+            [ConfigurationProperty (_elements)]
+            public ClientCollection Items
+            {
+                get { return ((ClientCollection)(base [_elements])); }
+            }
+        }
+
+        [ConfigurationCollection (typeof (ClientItemCollection))]
+        internal class ClientCollection : ConfigurationElementCollection
+        {
+            private const string _season = "season";
+
+            [ConfigurationProperty (_season)]
+            public ConfigurationSeasonElement Season
+            {
+                get { return ((ConfigurationSeasonElement)(base [_season])); }
+            }
+
+            protected override ConfigurationElement CreateNewElement ()
+            {
+                return new ClientItemCollection ();
+            }
+
+            protected override object GetElementKey (ConfigurationElement element)
+            {
+                return ((ClientItemCollection)(element)).NameEndPoint;
+            }
+
+            public ClientItemCollection this [int idx]
+            {
+                get { return (ClientItemCollection)BaseGet (idx); }
+            }
+        }
+
+        [ConfigurationCollection (typeof (ConfigurationAtomicElement))]
+        internal class ClientItemCollection : ConfigurationElementCollection
+        {
+            private const string _nameendpoint = "nameendpoint";
+
+            [ConfigurationProperty (_nameendpoint, IsKey =true, IsRequired =true)]
+            public NameEndPoint NameEndPoint
+            {
+                get { return (NameEndPoint)Enum.Parse (typeof(NameEndPoint), this [_nameendpoint].ToString().Trim()); }
+
+                set { base [_nameendpoint] = value; }
+            }
+
+            protected override ConfigurationElement CreateNewElement ()
+            {
+                return new ConfigurationAtomicElement ();
+            }
+
+            protected override object GetElementKey (ConfigurationElement element)
+            {
+                return ((ConfigurationAtomicElement)(element)).Key;
+            }
+
+            public ConfigurationAtomicElement this [int idx]
+            {
+                get { return (ConfigurationAtomicElement)BaseGet (idx); }
+            }
+
+            public string GetValue (string key)
+            {
+                return (from atom in this.Cast<ConfigurationAtomicElement> () where atom.Key == key select atom.Value).DefaultIfEmpty(string.Empty).ElementAt (0);
+            }
+
+            public int MainDataSource
+            {
+                get
+                {
+                    return int.Parse (GetValue ("Main DataSource"));
+                }
+            }
+
+            public TimeSpan OverDate
+            {
+                get
+                {
+                    return
+                        DateTime.Now.ParseTimeSpan (GetValue ("OverDate").Split (new string [] { StatisticCommon.Constants.DELIM }, StringSplitOptions.RemoveEmptyEntries), DateTimeExtensions.TIMESPAN_PARSE_FUNC.NATIVE, StatisticCommon.Constants.OverDate);
+                }
+            }
+
+            public TimeSpan FetchWaking
+            {
+                get
+                {
+                    return
+                        DateTime.Now.ParseTimeSpan (GetValue ("FetchWaking").Split (new string [] { StatisticCommon.Constants.DELIM }, StringSplitOptions.RemoveEmptyEntries), DateTimeExtensions.TIMESPAN_PARSE_FUNC.DIFFERENCE, StatisticCommon.Constants.FetchWaking);
+            }
+            }
+
+            public List<int> ListIdTECNotUse
+            {
+                get
+                {
+                    string value = string.Empty;
+
+                    value = GetValue ("ID_TECNotUse");
+
+                    if (string.IsNullOrEmpty(value) == false)
+                        return (from id in value.Split (',') select int.Parse (id)).ToList ();
+                    else
+                        return new List<int>();
+                }
+            }
+
+            public bool Turn
+            {
+                get
+                {
+                    return bool.Parse (GetValue ("turn"));
+                }
+            }
+
+            public string Print()
+            {
+                return $@"Key=<{NameEndPoint}>, MainDataSource=<{MainDataSource}>, FilterTEC=<{string.Join(", ",ListIdTECNotUse)}>";
+            }
+        }
+
+        internal class ConfigurationAtomicElement : ConfigurationElement
+        {
+            private const string _key = "key";
+            private const string _value = "value";
+
+            [ConfigurationProperty (_key, IsKey =true, IsRequired = true)]
+            public string Key
+            {
+                get { return (string)this [_key]; }
+
+                set { this [_key] = value; }    
+            }
+
+            [ConfigurationProperty (_value, IsRequired = true)]
+            public string Value
+            {
+                get { return (string)this [_value]; }
+
+                set { this [_value] = value; }
+            }
+        }
+
+        internal class ModesTransClientModeMashineElement : ConfigurationElement
+        {
+            private const string _mode = "mode";
+            private const string _argument = "argument";
+
+            [ConfigurationProperty (_argument, DefaultValue =-1, IsRequired = true)]
+            public int Argument
+            {
+                get { return (int)this [_argument]; }
+
+                set { this [_argument] = value; }
+            }
+        }
+
+        internal class ConfigurationLoggingElement : ConfigurationElement
+        {
+            private const string _prefix = "prefix";
+
+            [ConfigurationProperty (_prefix, IsRequired = true)]
+            public string Prefix
+            {
+                get { return (string)this [_prefix]; }
+
+                set { this[_prefix] = value; }
+            }
+        }
+
+        internal class ConfigurationSeasonElement : ConfigurationElement
+        {
+            private const string _stump = "stamp";
+            private const string _action = "action";
+
+            private const string stamp_format = "dd.MM.yyyy HH:mm";
+
+            [ConfigurationProperty (_stump, IsRequired = true)]
+            public DateTime Stamp
+            {
+                get
+                {
+                    if (this [_stump] is string) {
+                        return DateTime.ParseExact (
+                            this [_stump].ToString ()
+                            , stamp_format
+                            , CultureInfo.InvariantCulture);
+                    } else {
+                        DateTime time = (DateTime)this [_stump];
+                        return DateTime.ParseExact (
+                            time.ToString (stamp_format)
+                            , stamp_format
+                            , CultureInfo.InvariantCulture);
+                    }
+                }
+
+                set { this[_stump] = value.ToString(stamp_format); }
+            }
+
+            [ConfigurationProperty (_action, DefaultValue =-1, IsRequired = true)]
+            public int Action
+            {
+                get { return (int)this [_action]; }
+
+                set { this [_action] = value; }
+            }
+        }
+    //}
+}

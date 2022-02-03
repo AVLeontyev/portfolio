@@ -1,0 +1,643 @@
+=================================================
+23.08.2018 06:11:57.563
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:11:57.650
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:12:04.363
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+System.InvalidOperationException: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+   в System.ServiceModel.Description.ConfigLoader.LoadChannelBehaviors(ServiceEndpoint serviceEndpoint, String configurationName)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName, Configuration configuration)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName)
+   в System.ServiceModel.ChannelFactory.InitializeEndpoint(String configurationName, EndpointAddress address)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(Object callbackObject, String endpointConfigurationName, EndpointAddress remoteAddress)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(InstanceContext callbackInstance, String endpointConfigurationName)
+   в trans_tg.FormMainTransTG.createChannelService(InstanceContext context) в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 64
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 476
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 23
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:12:04.759
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:13:01.729
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:13:01.816
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:13:02.050
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+System.InvalidOperationException: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+   в System.ServiceModel.Description.ConfigLoader.LoadChannelBehaviors(ServiceEndpoint serviceEndpoint, String configurationName)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName, Configuration configuration)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName)
+   в System.ServiceModel.ChannelFactory.InitializeEndpoint(String configurationName, EndpointAddress address)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(Object callbackObject, String endpointConfigurationName, EndpointAddress remoteAddress)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(InstanceContext callbackInstance, String endpointConfigurationName)
+   в trans_tg.FormMainTransTG.createChannelService(InstanceContext context) в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 64
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 476
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 23
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:13:02.051
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:17:39.539
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:17:39.619
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:17:39.956
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+System.InvalidOperationException: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+   в System.ServiceModel.Description.ConfigLoader.LoadChannelBehaviors(ServiceEndpoint serviceEndpoint, String configurationName)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName, Configuration configuration)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName)
+   в System.ServiceModel.ChannelFactory.InitializeEndpoint(String configurationName, EndpointAddress address)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(Object callbackObject, String endpointConfigurationName, EndpointAddress remoteAddress)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(InstanceContext callbackInstance, String endpointConfigurationName)
+   в trans_tg.FormMainTransTG.createChannelService(InstanceContext context) в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 64
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 476
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 23
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:17:39.958
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:21:08.092
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:21:08.174
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:21:08.614
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.TransTG.IServiceTransTG" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+System.InvalidOperationException: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.TransTG.IServiceTransTG" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+   в System.ServiceModel.Description.ConfigLoader.LoadChannelBehaviors(ServiceEndpoint serviceEndpoint, String configurationName)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName, Configuration configuration)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName)
+   в System.ServiceModel.ChannelFactory.InitializeEndpoint(String configurationName, EndpointAddress address)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(Object callbackObject, String endpointConfigurationName, EndpointAddress remoteAddress)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(InstanceContext callbackInstance, String endpointConfigurationName)
+   в trans_tg.FormMainTransTG.createChannelService(InstanceContext context) в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 64
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 476
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 23
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:21:08.614
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:21:49.839
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:21:49.912
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:24:41.335
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:24:41.412
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:24:57.371
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.TransTG.IServiceTransTG" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+System.InvalidOperationException: Не удалось найти элемент конечной точки с именем "" и контрактом "StatisticTrans.Contract.TransTG.IServiceTransTG" в разделе конфигурации клиента ServiceModel. Это может быть вызвано тем, что для приложения не найден файл конфигурации или в элементе клиента не найден элемент конечной точки, соответствующий данному имени.
+   в System.ServiceModel.Description.ConfigLoader.LoadChannelBehaviors(ServiceEndpoint serviceEndpoint, String configurationName)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName, Configuration configuration)
+   в System.ServiceModel.ChannelFactory.ApplyConfiguration(String configurationName)
+   в System.ServiceModel.ChannelFactory.InitializeEndpoint(String configurationName, EndpointAddress address)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(Object callbackObject, String endpointConfigurationName, EndpointAddress remoteAddress)
+   в System.ServiceModel.DuplexChannelFactory`1..ctor(InstanceContext callbackInstance, String endpointConfigurationName)
+   в trans_tg.FormMainTransTG.createChannelService(InstanceContext context) в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 64
+   в StatisticTrans.FormMainTrans..ctor(ID_APP id_app, KeyValuePair`2[] config) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 476
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 23
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:24:57.371
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:28:00.214
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:28:00.278
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:29:20.587
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:29:20.668
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:29:35.326
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Ссылка на объект не указывает на экземпляр объекта.
+System.NullReferenceException: Ссылка на объект не указывает на экземпляр объекта.
+   в StatisticCommon.DbTSQLDataSource.get_This() в D:\My Project's\C.Net\Statistic\StatisticLibrary\DbTSQLConfigDatabase.cs:строка 124
+   в StatisticCommon.DbTSQLConfigDatabase.DbConfig() в D:\My Project's\C.Net\Statistic\StatisticLibrary\DbTSQLConfigDatabase.cs:строка 393
+   в trans_tg.FormMainTransTG.Start() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 130
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 59
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:29:35.342
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:30:17.719
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:30:17.781
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:30:30.682
+-------------------------------------------------
+!Исключение! обработка: ConnectionSettings::Validate() - ...
+Исключение: Указан недопустимый адрес IP.
+System.FormatException: Указан недопустимый адрес IP.
+   в System.Net.IPAddress.InternalParse(String ipString, Boolean tryParse)
+   в System.Net.IPAddress.Parse(String ipString)
+   в ASUTP.Database.ConnectionSettings.Validate() в D:\My Project's\C.Net\ASUTP.Library\ASUTP.Database\ConnectionSettings.cs:строка 317
+=================================================
+23.08.2018 06:30:34.158
+-------------------------------------------------
+!Исключение! обработка: ConnectionSettings::Validate() - ...
+Исключение: Указан недопустимый адрес IP.
+System.FormatException: Указан недопустимый адрес IP.
+   в System.Net.IPAddress.InternalParse(String ipString, Boolean tryParse)
+   в System.Net.IPAddress.Parse(String ipString)
+   в ASUTP.Database.ConnectionSettings.Validate() в D:\My Project's\C.Net\ASUTP.Library\ASUTP.Database\ConnectionSettings.cs:строка 317
+=================================================
+23.08.2018 06:30:40.295
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Ссылка на объект не указывает на экземпляр объекта.
+System.NullReferenceException: Ссылка на объект не указывает на экземпляр объекта.
+   в StatisticCommon.DbTSQLDataSource.get_This() в D:\My Project's\C.Net\Statistic\StatisticLibrary\DbTSQLConfigDatabase.cs:строка 124
+   в StatisticCommon.DbTSQLConfigDatabase.DbConfig() в D:\My Project's\C.Net\Statistic\StatisticLibrary\DbTSQLConfigDatabase.cs:строка 393
+   в trans_tg.FormMainTransTG.Start() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 130
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 59
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:30:40.295
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:32:04.618
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:32:04.691
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:33:26.649
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Доступ к ликвидированному объекту невозможен.
+Имя объекта: "FormMainTransTG".
+System.ObjectDisposedException: Доступ к ликвидированному объекту невозможен.
+Имя объекта: "FormMainTransTG".
+   в System.Windows.Forms.Control.CreateHandle()
+   в System.Windows.Forms.Form.CreateHandle()
+   в System.Windows.Forms.Control.get_Handle()
+   в System.Windows.Forms.Control.GetSafeHandle(IWin32Window window)
+   в System.Windows.Forms.Form.ShowDialog(IWin32Window owner)
+   в StatisticTrans.FormMainTrans.конфигурацияБДToolStripMenuItem_Click(Object sender, EventArgs e) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 1354
+   в System.Windows.Forms.ToolStripItem.RaiseEvent(Object key, EventArgs e)
+   в System.Windows.Forms.ToolStripMenuItem.OnClick(EventArgs e)
+   в System.Windows.Forms.ToolStripItem.HandleClick(EventArgs e)
+   в System.Windows.Forms.ToolStripItem.FireEventInteractive(EventArgs e, ToolStripItemEventType met)
+   в System.Windows.Forms.ToolStripItem.FireEvent(EventArgs e, ToolStripItemEventType met)
+   в System.Windows.Forms.ToolStripItem.PerformClick()
+   в StatisticTrans.FormMainTrans.EditFormConnectionSettings(String connSettFileName, Boolean bCheckAdminLength) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 983
+   в trans_tg.FormMainTransTG.Start() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 81
+   в StatisticTrans.FormMainTrans.конфигурацияБДToolStripMenuItem_Click(Object sender, EventArgs e) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 1366
+   в System.Windows.Forms.ToolStripItem.RaiseEvent(Object key, EventArgs e)
+   в System.Windows.Forms.ToolStripMenuItem.OnClick(EventArgs e)
+   в System.Windows.Forms.ToolStripItem.HandleClick(EventArgs e)
+   в System.Windows.Forms.ToolStripItem.FireEventInteractive(EventArgs e, ToolStripItemEventType met)
+   в System.Windows.Forms.ToolStripItem.FireEvent(EventArgs e, ToolStripItemEventType met)
+   в System.Windows.Forms.ToolStripItem.PerformClick()
+   в StatisticTrans.FormMainTrans.EditFormConnectionSettings(String connSettFileName, Boolean bCheckAdminLength) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 983
+   в trans_tg.FormMainTransTG.Start() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 122
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 59
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:33:26.650
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:33:30.097
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:33:30.176
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:36:00.639
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Не удалось привести прозрачный прокси к типу "StatisticTrans.Contract.ModesCentre.IServiceModesCentre".
+System.InvalidCastException: Не удалось привести прозрачный прокси к типу "StatisticTrans.Contract.ModesCentre.IServiceModesCentre".
+   в trans_tg.FormMainTransTG.Start() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 85
+   в StatisticTrans.FormMainTrans.конфигурацияБДToolStripMenuItem_Click(Object sender, EventArgs e) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 1366
+   в System.Windows.Forms.ToolStripItem.RaiseEvent(Object key, EventArgs e)
+   в System.Windows.Forms.ToolStripMenuItem.OnClick(EventArgs e)
+   в System.Windows.Forms.ToolStripItem.HandleClick(EventArgs e)
+   в System.Windows.Forms.ToolStripItem.FireEventInteractive(EventArgs e, ToolStripItemEventType met)
+   в System.Windows.Forms.ToolStripItem.FireEvent(EventArgs e, ToolStripItemEventType met)
+   в System.Windows.Forms.ToolStripItem.PerformClick()
+   в StatisticTrans.FormMainTrans.EditFormConnectionSettings(String connSettFileName, Boolean bCheckAdminLength) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 983
+   в trans_tg.FormMainTransTG.Start() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 81
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 59
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:36:00.639
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:36:04.753
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:36:04.823
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:36:05.054
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Не удалось привести прозрачный прокси к типу "StatisticTrans.Contract.ModesCentre.IServiceModesCentre".
+System.InvalidCastException: Не удалось привести прозрачный прокси к типу "StatisticTrans.Contract.ModesCentre.IServiceModesCentre".
+   в trans_tg.FormMainTransTG.Start() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 85
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 59
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:36:05.055
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:40:02.937
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:40:03.415
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:40:04.088
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 06:40:06.867
+-------------------------------------------------
+!Исключение! обработка: !Ошибка! запуска приложения.
+Исключение: Строка не распознана как действительное логическое значение.
+System.FormatException: Строка не распознана как действительное логическое значение.
+   в System.Boolean.Parse(String value)
+   в trans_tg.FormMainTransTG.Start() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 95
+   в trans_tg.FormMainTransTG..ctor() в D:\My Project's\C.Net\Statistic\trans_tg\FormMainTransTG.cs:строка 59
+   в trans_tg.Program.Main() в D:\My Project's\C.Net\Statistic\trans_tg\Program.cs:строка 22
+=================================================
+23.08.2018 06:40:06.867
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+23.08.2018 06:42:34.396
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:42:34.467
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:42:34.979
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 06:43:43.176
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:43:43.263
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:43:44.284
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+23.08.2018 06:44:37.343
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+23.08.2018 06:44:37.421
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+23.08.2018 06:44:37.670
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+24.08.2018 04:19:23.527
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+24.08.2018 04:19:23.597
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+24.08.2018 04:19:26.721
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+24.08.2018 10:50:45.338
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+24.08.2018 10:50:45.456
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+24.08.2018 10:50:46.208
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+24.08.2018 11:16:23.455
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+24.08.2018 11:16:24.237
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+24.08.2018 11:16:25.101
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 05:38:03.291
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 05:38:03.941
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 05:38:16.243
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 06:41:47.158
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 06:41:48.785
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 06:41:55.803
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 06:43:11.978
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 06:43:12.403
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 06:43:13.176
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 06:44:33.004
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+27.08.2018 08:57:40.069
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 08:57:40.576
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 08:57:44.426
+-------------------------------------------------
+!Исключение! обработка: DateTimeExtensions.ParseTimeSpan (Length=0, Values=<>, Func=DIFFERENCE) - ...
+Исключение: Индекс находился вне границ массива.
+System.IndexOutOfRangeException: Индекс находился вне границ массива.
+   в StatisticTrans.DateTimeExtensions.ParseTimeSpan(DateTime now, String[] values, TIMESPAN_PARSE_FUNC eFunc, String valueDefault) в D:\My Project's\C.Net\Statistic\StatisticTrans\FileAppSettings.cs:строка 300
+=================================================
+27.08.2018 08:58:42.419
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+27.08.2018 09:00:49.311
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:00:49.391
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:01:06.665
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:01:06.714
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:03:55.052
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:03:55.117
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:05:06.520
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:05:06.602
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:07:21.053
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:07:21.128
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:07:40.088
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+27.08.2018 09:09:16.996
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:09:17.091
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:13:07.285
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:13:07.412
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:13:32.907
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:13:32.999
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:13:39.060
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+27.08.2018 09:13:59.956
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:14:00.051
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:14:36.099
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+27.08.2018 09:15:07.381
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:15:07.465
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:15:12.390
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+27.08.2018 09:15:30.092
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:15:30.170
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:15:33.262
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+27.08.2018 09:15:52.161
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 09:15:52.239
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 09:15:55.975
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+27.08.2018 10:42:14.002
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+27.08.2018 10:42:14.086
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)
+=================================================
+27.08.2018 10:42:17.719
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+28.08.2018 11:54:32.129
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+28.08.2018 11:54:32.230
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_tg/bin/Debug/trans_tg.exe)

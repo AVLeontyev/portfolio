@@ -1,0 +1,635 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using BrightIdeasSoftware;
+using System.Collections;
+using StatisticCommon.OICDAC;
+using SAlarm.Service;
+using ASUTP;
+
+namespace StatisticGrasp
+{
+    partial class PanelGrasp
+    {
+        public partial class TreeViewGrasp : TreeListView
+        {
+            public struct PairColor
+            {
+                public Color Fore;
+
+                public Color Background;
+            }
+
+            private class Properties : List<Properties>
+            {
+                public enum SUBINDEX { UNKNOWN, NAME, VALUE_PREV_FREQ, VALUE_CURRENT_FREQ, VALUE_FREQ_DELTA, FREQ_STATUS, VALUE_PREV_APOW, VALUE_CURRENT_APOW, VALUE_APOW_DELTA, APOW_STATUS }
+
+                public enum LEVEL { Area, Station, Device, COUNT }
+
+                public struct TAG
+                {
+                    public TAG (IEnumerable<int> identifiers, IEnumerable<Tuple<DbInterface.OIKParameter, string>> signals)
+                    {
+                        Identifiers = new List<int> (identifiers);
+
+                        Signals = new List<Tuple<DbInterface.OIKParameter, string>>(signals);
+                    }
+
+                    public IEnumerable<int> Identifiers { get; }
+
+                    public IEnumerable<Tuple<DbInterface.OIKParameter, string>> Signals { get; }
+                }
+
+                private string _name;
+
+                private float _prev_freq;
+                private float _cur_freq;
+                private float _delta_freq;
+                private AdminAlarm.STATUS _freq_status;
+                private float _prev_apow;
+                private float _cur_apow;
+                private float _delta_apow;
+                private AdminAlarm.STATUS _apow_status;
+
+                public LEVEL Level { get { return (LEVEL)(_tag.Identifiers.Count () - 1); } }
+
+                private TAG _tag;
+
+                public int GetIdentifier (LEVEL level) { return !(level > Level) ? _tag.Identifiers.ElementAt ((int)level) : -1 ; }
+
+                public static PairColor GetStatusPairColor (AdminAlarm.STATUS indx) { return new PairColor () { Fore = Color.White, Background = StatusColors[(int)indx] }; }
+
+                public static string GetStatusText (AdminAlarm.STATUS indx) { return StatusText[(int)indx]; }
+
+                public string GetSignal(DbInterface.OIKParameter param) { return (from s in _tag.Signals where s.Item1 == param select s.Item2).FirstOrDefault(); }
+
+                private Dictionary<SUBINDEX, DateTime> _lastUpdate;
+
+                public static event Action<Properties> EventFrequencyStatusChanged;
+
+                public Properties (string name, IEnumerable<int> identifiers, IEnumerable<Tuple<DbInterface.OIKParameter, string>> signals)
+                {
+                    _tag = new TAG (identifiers, signals);
+
+                    this.Name = name;
+
+                    //switch (Level) {
+                    //    case LEVEL.Device:
+                    //        this._prev_freq =
+                    //        this.CurrentFrequency =
+                    //        this.DeltaFrequency =
+                    //            0F;
+                    //        this.FrequencyStatus = STATUS.NAN;
+                    //        break;
+                    //    default:
+                            this.PreviousFrequency =
+                            this.CurrentFrequency =
+                            this.DeltaFrequency =
+                            this.PreviousAPower =
+                            this.CurrentAPower =
+                            this.DeltaAPower =
+                                -1F;
+                            this.FrequencyStatus =
+                            this.APowerStatus =
+                                AdminAlarm.STATUS.NAN;
+                    //        break;
+                    //}
+
+                    _lastUpdate = new Dictionary<SUBINDEX, DateTime> () {
+                        { SUBINDEX.VALUE_CURRENT_FREQ, DateTime.MinValue }
+                        , { SUBINDEX.FREQ_STATUS, DateTime.MinValue }
+                        , { SUBINDEX.VALUE_CURRENT_APOW, DateTime.MinValue }
+                        , { SUBINDEX.APOW_STATUS, DateTime.MinValue }
+                    };
+                }
+
+                public Properties (string name, IEnumerable<int> identifiers, IEnumerable<Properties> Children)
+                    : this (name, identifiers, new List<Tuple<DbInterface.OIKParameter, string>>() { })
+                {
+                    this.AddRange (Children);
+                }
+
+                public static string HeaderText (SUBINDEX indx)
+                {
+                    return (new string [] { "н/д", "Наименование", "Част[-1c].", "Част.", "F.разн.", "F.статус", "Мощн[-1с].", "Мощн.", "P.разн.", "P.статус"}).ElementAt ((int)indx);
+                }
+
+                #region Наименования свойств (ВАЖНО совпадение-соответствие для связи со столбцами дерева-представления)
+                public static string ApsectName (SUBINDEX indx)
+                {
+                    return (new string [] { "н/д", "Name", "PreviousFrequency", "CurrentFrequency", "DeltaFrequency", "FrequencyStatus", "PreviousAPower", "CurrentAPower", "DeltaAPower", "APowerStatus" }).ElementAt ((int)indx);
+                }
+
+                public string Name { get { return _name; } set { _name = value; } }
+
+                public float PreviousFrequency { get { return _prev_freq; } set { _prev_freq = value; } }
+
+                public float CurrentFrequency { get { return _cur_freq; } set { _cur_freq = value; } }
+
+                public float DeltaFrequency { get { return _delta_freq; } set { _delta_freq = value; } }
+
+                public AdminAlarm.STATUS FrequencyStatus
+                {
+                    get
+                    {
+                        return _freq_status;
+                    }
+
+                    set
+                    {
+                        if (!(_freq_status == value)) {
+                            _freq_status = value;
+
+                            EventFrequencyStatusChanged?.Invoke (this);
+                        } else
+                            ;
+                    }
+                }
+
+                public float PreviousAPower { get { return _prev_apow; } set { _prev_apow = value; } }
+
+                public float CurrentAPower { get { return _cur_apow; } set { _cur_apow = value; } }
+
+                public float DeltaAPower { get { return _delta_apow; } set { _delta_apow = value; } }
+
+                public AdminAlarm.STATUS APowerStatus { get; set; }
+                #endregion
+
+                public static OLVColumn NewColumn (SUBINDEX indx)
+                {
+                    return new OLVColumn () { AspectName = Properties.ApsectName(indx)
+                        , Text = Properties.HeaderText(indx)
+                        , Tag = indx
+                        , FillsFreeSpace = true
+                    };
+                }
+
+                public void Update (bool bIsNorm, DbInterface.OIKParameter param = DbInterface.OIKParameter.FREQUENCY)
+                {
+                    SUBINDEX sIndex = param == DbInterface.OIKParameter.FREQUENCY ? SUBINDEX.FREQ_STATUS
+                        : param == DbInterface.OIKParameter.APOWER ? SUBINDEX.APOW_STATUS
+                            : SUBINDEX.UNKNOWN;
+
+                    try { // может произойти обращение к словарю по ключу, который в нем отсутствует
+                        _lastUpdate[sIndex] = DateTime.Now;
+
+                        switch (param) {
+                            case DbInterface.OIKParameter.FREQUENCY: // SUBINDEX.FREQ_STATUS
+                                FrequencyStatus = bIsNorm == true ? AdminAlarm.STATUS.NORMAL
+                                    : bIsNorm == false ? AdminAlarm.STATUS.ERROR
+                                        : AdminAlarm.STATUS.NAN;
+                                break;
+                            case DbInterface.OIKParameter.APOWER: // SUBINDEX.APOW_STATUS
+                                APowerStatus = bIsNorm == true ? AdminAlarm.STATUS.NORMAL
+                                    : bIsNorm == false ? AdminAlarm.STATUS.ERROR
+                                        : AdminAlarm.STATUS.NAN;
+                                break;
+                            default:
+                                break;
+                        }
+                    } catch (Exception e) {
+                        Logging.Logg ().Exception (e, $@"PanelGrasp.TreeViewGrasp.Properies::Update<STATUS> () - param={param}, SUBINDEX={sIndex}...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+                }
+
+                public void Update (float value, DbInterface.OIKParameter param = DbInterface.OIKParameter.FREQUENCY)
+                {
+                    SUBINDEX sIndex = param == DbInterface.OIKParameter.FREQUENCY ? SUBINDEX.VALUE_CURRENT_FREQ
+                        : param == DbInterface.OIKParameter.APOWER ? SUBINDEX.VALUE_CURRENT_APOW
+                            : SUBINDEX.UNKNOWN;
+
+                    try { // может произойти обращение к словарю по ключу, который в нем отсутствует
+                        _lastUpdate[sIndex] = DateTime.Now;
+
+                        switch (param) {
+                            case DbInterface.OIKParameter.FREQUENCY: // SUBINDEX.VALUE_CURRENT_FREQ
+                                //bFreqPreviousValidate = AdminAlarm.IsFreqValidate (PreviousFrequency);
+                                //bFreqCurrentValidate = AdminAlarm.IsFreqValidate (CurrentFrequency);
+
+                                PreviousFrequency = CurrentFrequency;
+                                CurrentFrequency = value;
+
+                                DeltaFrequency = AdminAlarm.GetDelta (CurrentFrequency, PreviousFrequency);
+
+                                // первоначальное значение (без событий сигнализации)
+                                if (FrequencyStatus == AdminAlarm.STATUS.NAN)
+                                    FrequencyStatus = AdminAlarm.STATUS.NORMAL;
+                                else
+                                    ;
+                                break;
+                            case DbInterface.OIKParameter.APOWER: // SUBINDEX.VALUE_CURRENT_APOW
+                                PreviousAPower = CurrentAPower;
+                                CurrentAPower = value;
+
+                                DeltaAPower = AdminAlarm.GetDelta (CurrentAPower, PreviousAPower);
+
+                                // первоначальное значение (без событий сигнализации)
+                                if (APowerStatus == AdminAlarm.STATUS.NAN)
+                                    APowerStatus = AdminAlarm.STATUS.NORMAL;
+                                else
+                                    ;
+                                break;
+                            default:
+                                break;
+                        }
+                    } catch (Exception e) {
+                        Logging.Logg ().Exception (e, $@"PanelGrasp.TreeViewGrasp.Properies::Update<VALUE> () - param={param}, SUBINDEX={sIndex}...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+                }
+            }
+
+            private static event Action EventCanShowDeviceChanged;
+
+            private static ModeShowDevice _canShowDevice;
+            public static ModeShowDevice CanShowDevice
+            {
+                get
+                {
+                    return _canShowDevice;
+                }
+
+                set
+                {
+                    if (!(_canShowDevice == value)) {
+                        _canShowDevice = value;
+
+                        EventCanShowDeviceChanged?.Invoke();
+                    } else
+                        ;
+                }
+            }
+
+            private static Tuple<Properties.SUBINDEX, StatisticCommon.OICDAC.DbInterface.OIKParameter> []_mapParameterIndexColumn = {
+                Tuple.Create(Properties.SUBINDEX.VALUE_CURRENT_FREQ, StatisticCommon.OICDAC.DbInterface.OIKParameter.FREQUENCY)
+            };
+
+            private static Tuple<Properties.SUBINDEX, Properties.SUBINDEX> [] _mapPreviousValueIndexColumn = {
+                Tuple.Create(Properties.SUBINDEX.VALUE_CURRENT_FREQ, Properties.SUBINDEX.VALUE_PREV_FREQ)
+            };
+
+            public TreeViewGrasp (Color foreColor, Color[]backroundColors, IEnumerable<StatisticCommon.Area> areas)
+                : base()
+            {
+                List<Properties> source;
+
+                #region Стиль ячеек со значениями
+                DataGridViewCellStyle style;
+
+                style = new DataGridViewCellStyle ();
+                style.Format = "N2";
+                style.Alignment = DataGridViewContentAlignment.MiddleRight;
+                style.NullValue = "0";
+                #endregion
+
+                InitializeComponent ();
+
+                #region Styles of columns
+                OLVColumn [] columns = new OLVColumn [] {
+                    Properties.NewColumn(Properties.SUBINDEX.NAME)
+                    , Properties.NewColumn(Properties.SUBINDEX.VALUE_PREV_FREQ)
+                    , Properties.NewColumn(Properties.SUBINDEX.VALUE_CURRENT_FREQ)
+                    , Properties.NewColumn(Properties.SUBINDEX.VALUE_FREQ_DELTA)
+                    , Properties.NewColumn(Properties.SUBINDEX.FREQ_STATUS)
+                    , Properties.NewColumn(Properties.SUBINDEX.VALUE_PREV_APOW)
+                    , Properties.NewColumn(Properties.SUBINDEX.VALUE_CURRENT_APOW)
+                    , Properties.NewColumn(Properties.SUBINDEX.VALUE_APOW_DELTA)
+                    , Properties.NewColumn(Properties.SUBINDEX.APOW_STATUS)
+                };
+
+                AllColumns.AddRange (columns);
+                columns.ToList ().ForEach (c => Columns.Add(c));
+                #endregion
+
+                EventCanShowDeviceChanged += onEventCanShowDeviceChanged;
+                Properties.EventFrequencyStatusChanged += onEventFrequencyStatusChanged;
+
+                #region add area items
+                try {
+                    CanExpandGetter = model => ((Properties)model).Count () > 0;
+                    ChildrenGetter = delegate (object model) { return from p in ((Properties)model) /*where !(p.FrequencyStatus == STATUS.NAN)*/ select p; };
+
+                    FormatCell += onFormatCell;
+
+                    // добавляем только филиалы (подразделения и устройства отдельным методом 'AddTEC')
+                    // , но можно и все уровни гуртом, при наличии в аргументах списка подразделений
+                    source = new List<Properties> ();
+                    areas.ToList ().ForEach (area => {
+                        source.Add (new Properties (area.name_shr, new List<int> () { area.m_id }  // верхн. уровень - филиалы
+                            , new Properties [] { } // - уровень подразделений: пустой список
+                            //, from st in stations where area.Item1 == st.Item1 select new Properties (new List<int> () { st.Item1, st.Item2 }, st.Item3 // уровень подразделений (ТЭЦ)
+                                //, from dev in devices where (area.Item1 == dev.Item1) && (st.Item2 == dev.Item2) select new Properties (new List<int> () { dev.Item1, dev.Item2, dev.Item3 }, dev.Item4, dev.Item5))
+                        ));
+                    });
+
+                    SetObjects (source);
+
+                    ExpandAll ();
+                } catch (Exception e) {
+                    ASUTP.Logging.Logg ().Exception (e, "TreeViewGrasp::ctor () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                }
+                #endregion
+            }
+
+            private void showDeviceWatched (bool bAllDeviceShowed = false)
+            {
+                IEnumerable<Properties> properties;
+
+                properties = selectMany (Objects.Cast<Properties>());
+                properties.ToList ().ForEach ((p) => {
+                    if (bAllDeviceShowed == true)
+                        ;
+                    else;
+                });
+            }
+
+            private IEnumerable<Properties> selectMany (IEnumerable<Properties> properties)
+            {
+                IEnumerable<Properties> propertiesRes;
+
+                propertiesRes = (from p in properties select p).SelectMany (x => x);
+                if (Equals (propertiesRes.FirstOrDefault (), null) == true)
+                    return properties;
+                else
+                    return selectMany(propertiesRes);
+            }
+
+            //public event Action<IEnumerable<StatisticCommon.FormChangeMode.KeyDevice>> EventOverflowRows;
+
+            public bool AddTec(StatisticCommon.TEC tec)
+            {
+                (from p in Objects.Cast<Properties> () where tec.Area.m_id == p.GetIdentifier (Properties.LEVEL.Area) select p).FirstOrDefault ()
+                    ?.Add (new Properties (tec.name_shr
+                        , new int[] { tec.Area.m_id, tec.m_id }
+                        , from c in tec.GetListLowPointDev(StatisticCommon.TECComponentBase.TYPE.ELECTRO)
+                            select new Properties(c.name_shr
+                                , new int[] { tec.Area.m_id, tec.m_id, c.m_id }
+                                , new List<Tuple<DbInterface.OIKParameter, string>> () {
+                                    Tuple.Create (DbInterface.OIKParameter.FREQUENCY, ((StatisticCommon.TG)c).OICDACNames[DbInterface.OIKParameter.FREQUENCY])
+                                    , Tuple.Create (DbInterface.OIKParameter.APOWER, ((StatisticCommon.TG)c).OICDACNames[DbInterface.OIKParameter.APOWER])
+                                })));
+
+                //TODO: возвратить 'false', если добавленные строки 'not displayed'
+                return true;
+            }
+
+            /// <summary>
+            /// !!! Копия в 'PanelAlarm::DataGridViewAlarmBase'
+            /// Обработчик события "Получение данных для отображения"
+            /// </summary>
+            /// <param name="listRes">Объект - таблица с данными для отображения</param>
+            public void OnEventListEventDate (IEnumerable <Tuple<StatisticCommon.FormChangeMode.KeyDevice, AdminAlarm.ViewAlarmBase>> listRes)
+            {
+                //Перенести выполнение в текущий поток (для доступа к элементу управления)
+                try {
+                    Invoke (new Action <IEnumerable <Tuple <StatisticCommon.FormChangeMode.KeyDevice, AdminAlarm.ViewAlarmBase>>> (onEventListEventDate), listRes);
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, @"TreeViewGrasp::OnEventListEventDate () - Invoke (obj.Type=" + listRes.GetType ().Name + @") ...", Logging.INDEX_MESSAGE.NOT_SET);
+                }
+            }
+
+            /// <summary>
+            /// Отобразить полученные данные
+            /// </summary>
+            /// <param name="listRes">Объект - таблица с данными для отображения</param>
+            private void onEventListEventDate (IEnumerable <Tuple<StatisticCommon.FormChangeMode.KeyDevice, AdminAlarm.ViewAlarmBase>> listRes)
+            {
+                listRes.Select (res => { return Tuple.Create (res.Item1, (AdminAlarm.ViewAlarmJournal)res.Item2); })
+                    .Where (res => !(res.Item2.m_oicdac == DbInterface.OIKParameter.UNKNOWN))
+                    .ToList().ForEach (res => OnUpdateStatus (res.Item1, res.Item2));
+            }
+
+            public void OnUpdateValue (IEnumerable <StatisticCommon.OICDAC.DbInterface.RequestResult> listRes)
+            {
+                listRes.ToList ().ForEach (reqRes => OnUpdateValue (reqRes.Key, reqRes.Value));
+            }
+
+            public void OnUpdateValue (StatisticCommon.FormChangeMode.KeyDevice key, StatisticCommon.OICDAC.DbInterface.OIRequestResult res)
+            {
+                //??? зачем коллекция?, - результат всегда один элемент
+                IEnumerable<Tuple<Properties, float>> updateProperties;
+                Action actUpdate;
+                StatisticCommon.OICDAC.DbInterface.OIKParameter param = (StatisticCommon.OICDAC.DbInterface.OIKParameter)res.Tag;
+                Properties.LEVEL levelDev = Properties.LEVEL.Device;
+
+                actUpdate = () => {
+                    BeginUpdate ();
+                    updateProperties = (from p in selectMany (Objects.Cast<Properties> ())
+                        //join r in new List<StatisticCommon.OICDAC.DbInterface.OIRequestResult> () { res } on p.GetSignal(param) equals $"{r.KeySignal.Letter}{r.KeySignal.Index}"
+                            where (p.Level == levelDev)
+                                && (p.GetIdentifier (levelDev) == key.Id) // вместо 'join'
+                                select Tuple.Create (p, float.Parse (res.Value.ToString ())));
+                    updateProperties?.ToList ().ForEach (u => u.Item1.Update (u.Item2, param));
+                    EndUpdate ();
+                };
+
+                if (Equals(res, null) == false) {
+                    if (InvokeRequired == true)
+                        BeginInvoke (actUpdate);
+                    else
+                        actUpdate ();
+                    ;
+                } else
+                    ASUTP.Logging.Logg ().Warning ($"TreeViewGrasp::OnUpdateValue () - аргумент=NullrReference...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            public void OnUpdateStatus (StatisticCommon.FormChangeMode.KeyDevice key, AdminAlarm.ViewAlarmJournal ev)
+            {
+                //??? зачем коллекция?, - результат всегда один элемент
+                IEnumerable<Tuple<Properties, AdminAlarm.ViewAlarmJournal>> updateProperties;
+                Action actUpdate;
+                Properties.LEVEL levelDev = Properties.LEVEL.Device;
+
+                actUpdate = () => {
+                    BeginUpdate ();
+                    updateProperties = (from p in selectMany (Objects.Cast<Properties> ())
+                        //join e in new List<AdminAlarm.ViewAlarmJournal> () { (AdminAlarm.ViewAlarmJournal)ev } on p.GetIdentifier (Properties.LEVEL.Device) equals e.m_id_component
+                            where (p.Level == levelDev)
+                                && (p.GetIdentifier (levelDev) == key.Id) // вместо 'join'
+                                select Tuple.Create (p, (AdminAlarm.ViewAlarmJournal)ev));
+                    updateProperties?.ToList ().ForEach (u => u.Item1.Update (! (Equals (u.Item2.m_dt_confirmed, null) == true), u.Item2.m_oicdac));
+                    EndUpdate ();
+                };
+
+                //update (actUpdate, ev, $"TreeViewGrasp::OnUpdateStatus () - аргумент=NullrReference...");
+
+                if (Equals(ev, null) == false)
+                    if (!(((AdminAlarm.ViewAlarmJournal)ev).m_oicdac == DbInterface.OIKParameter.UNKNOWN))
+                        if (InvokeRequired == true)
+                            BeginInvoke (actUpdate);
+                        else
+                            actUpdate ();
+                    else
+                        ASUTP.Logging.Logg ().Warning ($"TreeViewGrasp::OnUpdateStatus () - аргумент с неизвестным типом параметра...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                else
+                    ASUTP.Logging.Logg ().Warning ($"TreeViewGrasp::OnUpdateStatus () - аргумент=NullrReference...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            private void update (Action fAct, object arg, string mesError)
+            {
+                if (Equals(arg, null) == false) {
+                    if (InvokeRequired == true)
+                        BeginInvoke (fAct);
+                    else
+                        fAct ();
+                    ;
+                } else
+                    ASUTP.Logging.Logg ().Warning (mesError, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            private IEnumerable delegateListFilter (IEnumerable properties)
+            {
+                return properties;
+            }
+
+            private void onEventCanShowDeviceChanged ()
+            {
+                UseFiltering = CanShowDevice == ModeShowDevice.Compact;
+
+                if (UseFiltering == true) {
+                    ModelFilter =
+                        //new BrightIdeasSoftware.OneOfFilter((model) => { return STATUS.NORMAL; }, new STATUS[] { })
+                        new ModelFilter((model) => { return (!(((Properties)model).FrequencyStatus == AdminAlarm.STATUS.NAN))
+                            && (((Properties)model).CurrentAPower > StatisticCommon.Constants.MAX_DEAD_POWER); })
+                        ;
+                    //ListFilter =
+                    //    //new ListFilter (new BrightIdeasSoftware.ListFilter.ListFilterDelegate (delegateListFilter))
+                    //    new TailFilter (6);
+                    //    ;
+                } else
+                    ListFilter = null;
+            }
+
+            private void onEventFrequencyStatusChanged (Properties model)
+            {
+                IModelFilter prevModelFilter;
+
+                if (UseFiltering == true) {
+                    prevModelFilter = ModelFilter;
+                    ModelFilter = null;
+                    ModelFilter = prevModelFilter;
+                } else
+                    ;
+            }
+
+            private void onFormatCell(object obj, FormatCellEventArgs ev)
+            {
+                string text = string.Empty;
+                PairColor pairColor = new PairColor { Fore = ForeColor, Background = BackColor };
+                AdminAlarm.STATUS status;
+
+                try {
+                    switch ((Properties.SUBINDEX)ev.Column.Tag) {
+                        case Properties.SUBINDEX.VALUE_PREV_FREQ:
+                        case Properties.SUBINDEX.VALUE_CURRENT_FREQ:
+                            if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                                ev.SubItem.Text = (AdminAlarm.IsFreqValidate ((float)ev.CellValue) == true)
+                                    ? string.Format ("{0:" + FormatValueFrequency + "}", ev.CellValue)
+                                        : string.Empty;
+                            } else
+                                ev.SubItem.Text = string.Empty;
+                            break;
+                        case Properties.SUBINDEX.VALUE_FREQ_DELTA:
+                            if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                                if (Admin.IsValueValidate ((float)ev.CellValue) == true) {
+                                    text = string.Format ("{0:" + FormatValueFrequency + "}", ev.CellValue);
+
+                                    status = AdminAlarm.GetStatus (StatisticCommon.OICDAC.DbInterface.OIKParameter.FREQUENCY, (float)ev.CellValue);
+                                    if (!(status == AdminAlarm.STATUS.NORMAL))
+                                        pairColor = Properties.GetStatusPairColor (status);
+                                    else
+                                        ;
+                                } else
+                                    text = string.Empty;
+
+                                ev.SubItem.Text = text;
+                                ev.SubItem.Paint (pairColor);
+                            } else
+                                ev.SubItem.Text = string.Empty;
+                            break;
+                        case Properties.SUBINDEX.FREQ_STATUS:
+                        case Properties.SUBINDEX.APOW_STATUS:
+                            if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                                ev.SubItem.Text = Properties.GetStatusText ((AdminAlarm.STATUS)ev.CellValue);
+                                pairColor = Properties.GetStatusPairColor ((AdminAlarm.STATUS)ev.CellValue);
+                                ev.SubItem.Paint (pairColor);
+                            } else
+                                ev.SubItem.Text = string.Empty;
+                            break;
+                        case Properties.SUBINDEX.VALUE_PREV_APOW:
+                        case Properties.SUBINDEX.VALUE_CURRENT_APOW:
+                            if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                                ev.SubItem.Text = !((float)ev.CellValue == -1F)
+                                    ? string.Format ("{0:" + FormatValueAPower + "}", ev.CellValue)
+                                        : string.Empty;
+                            } else
+                                ev.SubItem.Text = string.Empty;
+                            break;
+                        case Properties.SUBINDEX.VALUE_APOW_DELTA:
+                            if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                                if (Admin.IsValueValidate ((float)ev.CellValue) == true) {
+                                    text = string.Format ("{0:" + FormatValueAPower + "}", ev.CellValue);
+
+                                    status = AdminAlarm.GetStatus (StatisticCommon.OICDAC.DbInterface.OIKParameter.APOWER, (float)ev.CellValue);
+                                    if (!(status == AdminAlarm.STATUS.NORMAL))
+                                        pairColor = Properties.GetStatusPairColor (status);
+                                    else
+                                        ;
+                                } else
+                                    text = string.Empty;
+
+                                ev.SubItem.Text = text;
+                                ev.SubItem.Paint (pairColor);
+                            } else
+                                ev.SubItem.Text = string.Empty;
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, $@"::onFormatCell () - Level={(ev.Model as Properties).Level}, ColumnIndex={ev.ColumnIndex}, CellValue={ev.CellValue}...", Logging.INDEX_MESSAGE.NOT_SET);
+                }
+            }
+
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+                }
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+                }
+            }
+        }
+    }
+
+    public static class OLVListSubItemExtensions
+    {
+        public static void Paint (this OLVListSubItem target, PanelGrasp.TreeViewGrasp.PairColor pairColor)
+        {
+            target.ForeColor = pairColor.Fore;
+            target.BackColor = pairColor.Background;
+        }
+    }
+}

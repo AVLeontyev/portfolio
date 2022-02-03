@@ -1,0 +1,58 @@
+﻿using System.Windows.Forms;
+
+namespace StatisticGrasp
+{
+    partial class PanelGrasp
+    {
+        partial class TreeViewGrasp
+        {
+            /// <summary> 
+            /// Обязательная переменная конструктора.
+            /// </summary>
+            private System.ComponentModel.IContainer components = null;
+
+            /// <summary> 
+            /// Освободить все используемые ресурсы.
+            /// </summary>
+            /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+            protected override void Dispose (bool disposing)
+            {
+                if (disposing && (components != null)) {
+                    EventCanShowDeviceChanged -= onEventCanShowDeviceChanged;
+
+                    components.Dispose ();
+                }
+                base.Dispose (disposing);
+            }
+
+            #region Код, автоматически созданный конструктором компонентов
+
+            /// <summary> 
+            /// Требуемый метод для поддержки конструктора — не изменяйте 
+            /// содержимое этого метода с помощью редактора кода.
+            /// </summary>
+            private void InitializeComponent ()
+            {
+                Dock = System.Windows.Forms.DockStyle.Fill;
+
+                LabelEdit = false;
+                //ShowGroups = false;
+                GridLines = true;
+                //View = System.Windows.Forms.View.Details;
+                UseCellFormatEvents = true; // обработка CellFormat
+                //UseFiltering = false; // использование ListFilter
+
+                this.SuspendLayout ();
+
+                this.ResumeLayout (false);
+            }
+
+            #endregion
+
+            protected override void OnCollapsing (BrightIdeasSoftware.TreeBranchCollapsingEventArgs e)
+            {
+                e.Canceled = true;
+            }
+        }
+    }
+}

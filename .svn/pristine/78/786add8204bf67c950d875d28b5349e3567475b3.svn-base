@@ -1,0 +1,231 @@
+﻿using ASUTP;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Reflection;
+using System.ServiceModel;
+using System.ServiceModel.Configuration;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
+using System.Text;
+using System.ServiceProcess;
+using StatisticCommon.Contract;
+
+namespace Assignment
+{
+    public class ServiceHost : System.ServiceModel.ServiceHost, StatisticCommon.Communication.IHost
+    {
+        /// <summary>
+        /// Список клиентов, обратившихся к хосту для создания объектов служб
+        /// </summary>
+        private IList<StatisticCommon.Communication.Client> _clients;
+
+        public ServiceHost (Type serviceType)
+            : base (serviceType)
+        {
+            _clients = new List<StatisticCommon.Communication.Client> ();
+        }
+
+        public string DebugMessage
+        {
+            get
+            {
+                return string.Join (";", string.Join (";", from sep in Description.Endpoints.Cast<ServiceEndpoint> () select sep.Address.Uri.AbsoluteUri));
+            }
+        }
+
+        public void Interrupt (int code)
+        {
+            Environment.Exit (code);
+        }
+
+        /// <summary>
+        /// Отобразить сообщение клиента "службы" о его действии
+        /// </summary>
+        /// <param name="sessionId">Идентификатор сессии связи с клиентом</param>
+        /// <param name="idAction">Идентификатор действия</param>
+        /// <param name="args">Аргументы действия</param>
+        public void Report (string sessionId, IdPseudoDelegate idAction, params object [] args)
+        {
+            string msg = string.Empty;
+
+            msg = $"Host::Report <{sessionId}, {idAction}>, args:  [{string.Join (",", args)}]...";
+
+            switch (idAction) {
+                case IdPseudoDelegate.Error:
+                case IdPseudoDelegate.ReportError:
+                    itssAUX.PrintErrorMessage (msg);
+                    break;
+                case IdPseudoDelegate.Started:
+                case IdPseudoDelegate.Stopped:
+                case IdPseudoDelegate.Ready:
+                case IdPseudoDelegate.ReportAction:
+                case IdPseudoDelegate.SaveCompleted:
+                    itssAUX.PrintActionMessage (msg, false);
+                    break;
+                default:
+                    itssAUX.PrintDebugMessage (msg, false);
+                    break;
+            }
+        }
+
+        public void Register (StatisticCommon.Communication.Client client)
+        {
+            _clients.Add (client);
+
+            itssAUX.PrintActionMessage ($"IHost::ServiceCreated from client: <{client._operationContext.SessionId}>...", true);
+        }
+
+        public void UnRegister (string sessionId)
+        {
+            itssAUX.PrintActionMessage ($"IHost::ServiceDisposed from client: <{sessionId}>...", true);
+
+            _clients.Remove ((from c in _clients where c._operationContext.SessionId == sessionId select c).FirstOrDefault());
+        }
+    }
+
+    public abstract partial class Host : Deployment
+    {
+        /// <summary>
+        /// Конструктор - основной (без аргументов)
+        /// </summary>
+        public Host (Func<Tuple<CommunicationState, ERROR, IEnumerable<Service>>> fLoadAssemblies, MODE mode, Type typeNameEndPoint)
+            : base(fLoadAssemblies, mode, typeNameEndPoint)
+        {
+        }
+
+        public override void Start (object obj = null)
+        {
+            string message = string.Empty;
+            ServiceHost serviceHost;
+            StatisticCommon.Contract.IService svcSingleInstanse = null;
+            ServiceEndpoint serviceEndPoint;
+            ChannelDispatcher dispatcher;
+            HookChannelInitializer initializer;
+
+            //itssAUX.PrintDebugMessage ($"Host::Start () - CommunicationState = {State}...");
+
+            if ((State == CommunicationState.Created)
+                //&& (Equals (__serviceSettingsSection, null) == false)
+                ) {
+                _services.ToList ().ForEach (service => {
+                    serviceHost = null;
+
+                    try {
+                        serviceHost = service.Host;
+                        serviceEndPoint = serviceHost.AddServiceEndpoint (service.CEPE.Contract, new WSDualHttpBinding (service.CEPE.BindingConfiguration), service.CEPE.Address);
+                        serviceEndPoint.Behaviors.Add (new EndpointBehavior());
+
+                        serviceHost.Open ();
+
+                        serviceHost.Faulted += Svc_Faulted;
+                        serviceHost.Closing += Svc_Closing;
+
+                        //!!! behavior - 'InstanceContextMode = InstanceContextMode.PerSession'
+                        //svcSingleInstanse = (StatisticTrans.Contract.IServiceTransModes)serviceHost.SingletonInstance;
+                        //svcSingleInstanse.Initialize ();
+                        //svcSingleInstanse.Start ();
+
+                        dispatcher = serviceHost.ChannelDispatchers [0] as ChannelDispatcher;
+                        dispatcher.Opened += channelDispatcher_Opened;
+                        dispatcher.Closed += channelDispatcher_Closed;
+                        dispatcher.Listener.Opened += channelDispatcherListener_Opened;
+                        dispatcher.Listener.Closed += channelDispatcherListener_Closed;
+
+                        initializer = dispatcher.ChannelInitializers [0] as HookChannelInitializer;
+
+                        ////???
+                        //serviceHost.Description.Behaviors.Add (new ServiceBehavior ());
+
+                        message = $"Service {GetContractName(serviceHost)} <{serviceHost.State}>: [{serviceHost.DebugMessage}]...";
+                        itssAUX.PrintActionMessage (message, true);
+                        Logging.Logg ().Action (message, Logging.INDEX_MESSAGE.NOT_SET);
+                    } catch (Exception e) {
+                        service.Error =
+                        Error =
+                            ERROR.Open;
+
+                        message = $"strans.Host(Service)::Start () {GetContractName(serviceHost)} opened error: {e.Message}{Environment.NewLine}{e.StackTrace}...";
+                        itssAUX.PrintErrorMessage (message);
+                        Logging.Logg ().Exception (e, $"strans.Host(Service)::Start () - {GetContractName(serviceHost)}...", Logging.INDEX_MESSAGE.NOT_SET);
+                    } finally {
+                        if ((Equals (serviceHost, null) == false)
+                            && (!(service.Error == ERROR.Ok))
+                            && (serviceHost.State == CommunicationState.Opened)) {
+                            serviceHost.Close ();
+                        } else
+                            ;
+                    }
+                });
+            } else
+                ;
+
+            base.Start ();
+        }
+
+        private void channelDispatcher_Opened (object sender, EventArgs e)
+        {
+            
+        }
+
+        private void channelDispatcher_Closed (object sender, EventArgs e)
+        {
+            
+        }
+
+        private void channelDispatcherListener_Opened (object sender, EventArgs e)
+        {
+
+        }
+
+        private void channelDispatcherListener_Closed (object sender, EventArgs e)
+        {
+
+        }
+
+        public override void Stop ()
+        {
+            try {
+                if ((Error == ERROR.Ok)
+                    && (Equals (_services, null) == false))
+                    _services.ToList ().ForEach (service => {
+                        try {
+                            //TODO: Single instanse to stopped...
+                            service.Host.Close ();
+                        } catch (Exception e) {
+                            Error = ERROR.Close;
+
+                            itssAUX.PrintErrorMessage ($"Service contract: {service.CEPE.Contract} closed error: {e.Message}...");
+                            Logging.Logg ().Exception (e, "Main - service closed...", Logging.INDEX_MESSAGE.NOT_SET);
+                        }
+                    });
+                else
+                    ;
+            } catch {
+            } finally {
+                base.Stop ();
+            }
+        }
+
+        private void Svc_Closing (object sender, EventArgs e)
+        {
+            debug (sender as ServiceHost, "closing");
+        }
+
+        private void Svc_Faulted (object sender, EventArgs e)
+        {
+            debug (sender as ServiceHost, "faulted");
+        }
+
+        private void debug (ServiceHost host, string sense_message)
+        {
+            string mesToLog = string.Empty;
+
+            mesToLog = $"Service {GetContractName(host)}: {sense_message}...";
+
+            itssAUX.PrintDebugMessage (mesToLog, false);
+            Logging.Logg ().Debug (mesToLog, Logging.INDEX_MESSAGE.NOT_SET);
+        }
+    }
+}

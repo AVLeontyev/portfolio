@@ -1,0 +1,491 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using BrightIdeasSoftware;
+using System.Collections;
+using StatisticCommon.OICDAC;
+
+namespace StatisticGrasp
+{
+    partial class PanelGrasp
+    {
+        public partial class TreeViewGrasp : TreeListView
+        {
+            private struct PairColor
+            {
+                public Color Fore;
+
+                public Color Background;
+            }
+
+            private class Properties : List<Properties>
+            {
+                public enum SUBINDEX { NAME, VALUE_PREV_FREQ, VALUE_CURRENT_FREQ, VALUE_FREQ_DELTA, FREQ_STATUS, VALUE_PREV_APOW, VALUE_CURRENT_APOW, VALUE_APOW_DELTA, APOW_STATUS }
+
+                public enum LEVEL { Area, Station, Device, COUNT }
+
+                public struct TAG
+                {
+                    public TAG (IEnumerable<int> identifiers, IEnumerable<Tuple<DbInterface.OIKParameter, string>> signals)
+                    {
+                        Identifiers = new List<int> (identifiers);
+
+                        Signals = new List<Tuple<DbInterface.OIKParameter, string>>(signals);
+                    }
+
+                    public IEnumerable<int> Identifiers { get; }
+
+                    public IEnumerable<Tuple<DbInterface.OIKParameter, string>> Signals { get; }
+                }
+
+                private string _name;
+
+                private float _prev_freq;
+                private float _cur_freq;
+                private float _delta_freq;
+                private STATUS _freq_status;
+                private float _prev_apow;
+                private float _cur_apow;
+                private float _delta_apow;
+                private STATUS _apow_status;
+
+                public LEVEL Level { get { return (LEVEL)(_tag.Identifiers.Count () - 1); } }
+
+                private TAG _tag;
+
+                public int GetIdentifier (LEVEL level) { return !(level > Level) ? _tag.Identifiers.ElementAt ((int)level) : -1 ; }
+
+                public static PairColor GetStatusPairColor (STATUS indx) { return new PairColor () { Fore = Color.White, Background = StatusColors[(int)indx] }; }
+
+                public static string GetStatusText (STATUS indx) { return StatusText[(int)indx]; }
+
+                public string GetSignal(DbInterface.OIKParameter param) { return (from s in _tag.Signals where s.Item1 == param select s.Item2).FirstOrDefault(); }
+
+                private DateTime _lastUpdate;
+
+                public static event Action<Properties> EventFrequencyStatusChanged;
+
+                public Properties (IEnumerable<int> identifiers, string name, IEnumerable<Tuple<DbInterface.OIKParameter, string>> signals)
+                {
+                    _tag = new TAG (identifiers, signals);
+
+                    this.Name = name;
+
+                    //switch (Level) {
+                    //    case LEVEL.Device:
+                    //        this._prev_freq =
+                    //        this.CurrentFrequency =
+                    //        this.DeltaFrequency =
+                    //            0F;
+                    //        this.FrequencyStatus = STATUS.NAN;
+                    //        break;
+                    //    default:
+                            this.PreviousFrequency =
+                            this.CurrentFrequency =
+                            this.DeltaFrequency =
+                            this.PreviousAPower =
+                            this.CurrentAPower =
+                            this.DeltaAPower =
+                                -1F;
+                            this.FrequencyStatus =
+                            this.APowerStatus =
+                                STATUS.NAN;
+                    //        break;
+                    //}
+
+                    _lastUpdate = DateTime.MinValue;
+                }
+
+                public Properties (IEnumerable<int> identifiers, string name, IEnumerable<Properties> Children)
+                    : this (identifiers, name, new List<Tuple<DbInterface.OIKParameter, string>>() { })
+                {
+                    this.AddRange (Children);
+                }
+
+                public static string HeaderText (SUBINDEX indx)
+                {
+                    return (new string [] { "Наименование", "Част[-1c].", "Част.", "F.разн.", "F.статус", "Мощн[-1с].", "Мощн.", "P.разн.", "P.статус"}).ElementAt ((int)indx);
+                }
+
+                #region Наименования свойств (ВАЖНО совпадение-соответствие для связи со столбцами дерева-представления)
+                public static string ApsectName (SUBINDEX indx)
+                {
+                    return (new string [] { "Name", "PreviousFrequency", "CurrentFrequency", "DeltaFrequency", "FrequencyStatus", "PreviousAPower", "CurrentAPower", "DeltaAPower", "APowerStatus" }).ElementAt ((int)indx);
+                }
+
+                public string Name { get { return _name; } set { _name = value; } }
+
+                public float PreviousFrequency { get { return _prev_freq; } set { _prev_freq = value; } }
+
+                public float CurrentFrequency { get { return _cur_freq; } set { _cur_freq = value; } }
+
+                public float DeltaFrequency { get { return _delta_freq; } set { _delta_freq = value; } }
+
+                public STATUS FrequencyStatus
+                {
+                    get
+                    {
+                        return _freq_status;
+                    }
+
+                    set
+                    {
+                        if (!(_freq_status == value)) {
+                            _freq_status = value;
+
+                            EventFrequencyStatusChanged?.Invoke (this);
+                        } else
+                            ;
+                    }
+                }
+
+                public float PreviousAPower { get { return _prev_apow; } set { _prev_apow = value; } }
+
+                public float CurrentAPower { get { return _cur_apow; } set { _cur_apow = value; } }
+
+                public float DeltaAPower { get { return _delta_apow; } set { _delta_apow = value; } }
+
+                public STATUS APowerStatus { get; set; }
+                #endregion
+
+                public static OLVColumn GetColumn (SUBINDEX indx)
+                {
+                    return new OLVColumn () { AspectName = Properties.ApsectName(indx)
+                        , Text = Properties.HeaderText(indx)
+                        , Tag = indx
+                        , FillsFreeSpace = true
+                    };
+                }
+
+                public void Update (float value, DbInterface.OIKParameter param = DbInterface.OIKParameter.FREQUENCY)
+                {
+                    _lastUpdate = DateTime.Now;
+                    float diff = -1F;
+                    bool bFreqCurrentValidate = false
+                        , bFreqPreviousValidate = false;
+                    Func<float, bool> isValueValidate = (v) => { return (v > 0); };
+
+                    switch (param) {
+                        case DbInterface.OIKParameter.FREQUENCY:
+                            Func<float, bool> isFreqValidate = (v) => {
+                                return isValueValidate(v) == true
+                                    && (Math.Abs (FrequencyOptimum - v) < FreqDeviation[(int)STATUS.NORMAL]);
+                            };
+
+                            bFreqPreviousValidate = isFreqValidate (PreviousFrequency);
+                            bFreqCurrentValidate = isFreqValidate (CurrentFrequency);
+
+                            PreviousFrequency = CurrentFrequency;
+                            CurrentFrequency = value;
+
+                            diff = Math.Abs (FrequencyOptimum - CurrentFrequency);
+
+                            DeltaFrequency =
+                                //bFreqCurrentValidate == true ? FrequencyOptimum - CurrentFrequency : -1F
+                                (bFreqCurrentValidate == true)
+                                    && (bFreqPreviousValidate == true) ? CurrentFrequency - PreviousFrequency : -1F
+                                ;
+
+                            FrequencyStatus = ((bFreqPreviousValidate == true)
+                                    && (bFreqCurrentValidate == true))
+                                ? diff > (FreqDeviation[(int)STATUS.NORMAL] - FreqDeviation[(int)STATUS.ERROR]) ? STATUS.ERROR
+                                    : diff > (FreqDeviation[(int)STATUS.NORMAL] - FreqDeviation[(int)STATUS.WARNING]) ? STATUS.WARNING
+                                        : STATUS.NORMAL
+                                            : STATUS.NAN;
+                            break;
+                        case DbInterface.OIKParameter.APOWER:
+                            PreviousAPower = CurrentAPower;
+                            CurrentAPower = value;
+                            DeltaAPower = ((isValueValidate(CurrentAPower) == true) && (isValueValidate(PreviousAPower) == true))
+                                ? CurrentAPower - PreviousAPower
+                                    : -1F;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            private static event Action EventCanShowDeviceChanged;
+
+            private static ModeShowDevice _canShowDevice;
+            public static ModeShowDevice CanShowDevice
+            {
+                get
+                {
+                    return _canShowDevice;
+                }
+
+                set
+                {
+                    if (!(_canShowDevice == value)) {
+                        _canShowDevice = value;
+
+                        EventCanShowDeviceChanged?.Invoke();
+                    } else
+                        ;
+                }
+            }
+
+            private static Tuple<Properties.SUBINDEX, StatisticCommon.OICDAC.DbInterface.OIKParameter> []_mapParameterIndexColumn = {
+                Tuple.Create(Properties.SUBINDEX.VALUE_CURRENT_FREQ, StatisticCommon.OICDAC.DbInterface.OIKParameter.FREQUENCY)
+            };
+
+            private static Tuple<Properties.SUBINDEX, Properties.SUBINDEX> [] _mapPreviousValueIndexColumn = {
+                Tuple.Create(Properties.SUBINDEX.VALUE_CURRENT_FREQ, Properties.SUBINDEX.VALUE_PREV_FREQ)
+            };
+
+            public TreeViewGrasp (Color foreColor, Color[]backroundColors, IEnumerable<StatisticCommon.Area> areas)
+                : base()
+            {
+                List<Properties> source;
+
+                #region Стиль ячеек со значениями
+                DataGridViewCellStyle style;
+
+                style = new DataGridViewCellStyle ();
+                style.Format = "N2";
+                style.Alignment = DataGridViewContentAlignment.MiddleRight;
+                style.NullValue = "0";
+                #endregion
+
+                InitializeComponent ();
+
+                #region Styles of columns
+                OLVColumn [] columns = new OLVColumn [] {
+                    Properties.GetColumn(Properties.SUBINDEX.NAME)
+                    , Properties.GetColumn(Properties.SUBINDEX.VALUE_PREV_FREQ)
+                    , Properties.GetColumn(Properties.SUBINDEX.VALUE_CURRENT_FREQ)
+                    , Properties.GetColumn(Properties.SUBINDEX.VALUE_FREQ_DELTA)
+                    , Properties.GetColumn(Properties.SUBINDEX.FREQ_STATUS)
+                    , Properties.GetColumn(Properties.SUBINDEX.VALUE_PREV_APOW)
+                    , Properties.GetColumn(Properties.SUBINDEX.VALUE_CURRENT_APOW)
+                    , Properties.GetColumn(Properties.SUBINDEX.VALUE_APOW_DELTA)
+                    , Properties.GetColumn(Properties.SUBINDEX.APOW_STATUS)
+                };
+
+                AllColumns.AddRange (columns);
+                columns.ToList ().ForEach (c => Columns.Add(c));
+                #endregion
+
+                EventCanShowDeviceChanged += onEventCanShowDeviceChanged;
+                Properties.EventFrequencyStatusChanged += onEventFrequencyStatusChanged;
+
+                #region add area items
+                try {
+                    CanExpandGetter = model => ((Properties)model).Count () > 0;
+                    ChildrenGetter = delegate (object model) { return from p in ((Properties)model) /*where !(p.FrequencyStatus == STATUS.NAN)*/ select p; };
+
+                    FormatCell += onFormatCell;
+
+                    // добавляем только филиалы (подразделения и устройства отдельным методом 'AddTEC')
+                    // , но можно и все уровни гуртом, при наличии в аргументах списка подразделений
+                    source = new List<Properties> ();
+                    areas.ToList ().ForEach (area => {
+                        source.Add (new Properties (new List<int> () { area.m_id }, area.name_shr // верхн. уровень - филиалы
+                            , new Properties [] { } // - уровень подразделений: пустой список
+                            //, from st in stations where area.Item1 == st.Item1 select new Properties (new List<int> () { st.Item1, st.Item2 }, st.Item3 // уровень подразделений (ТЭЦ)
+                                //, from dev in devices where (area.Item1 == dev.Item1) && (st.Item2 == dev.Item2) select new Properties (new List<int> () { dev.Item1, dev.Item2, dev.Item3 }, dev.Item4, dev.Item5))
+                        ));
+                    });
+
+                    SetObjects (source);
+
+                    ExpandAll ();
+                } catch (Exception e) {
+                    ASUTP.Logging.Logg ().Exception (e, "TreeViewGrasp::ctor () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                }
+                #endregion
+            }
+
+            private void showDeviceWatched (bool bAllDeviceShowed = false)
+            {
+                IEnumerable<Properties> properties;
+
+                properties = selectMany (Objects.Cast<Properties>());
+                properties.ToList ().ForEach ((p) => {
+                    if (bAllDeviceShowed == true)
+                        ;
+                    else;
+                });
+            }
+
+            private IEnumerable<Properties> selectMany (IEnumerable<Properties> properties)
+            {
+                IEnumerable<Properties> propertiesRes;
+
+                propertiesRes = (from p in properties select p).SelectMany (x => x);
+                if (Equals (propertiesRes.FirstOrDefault (), null) == true)
+                    return properties;
+                else
+                    return selectMany(propertiesRes);
+            }
+
+            //public event Action<IEnumerable<StatisticCommon.FormChangeMode.KeyDevice>> EventOverflowRows;
+
+            public bool AddTec(StatisticCommon.TEC tec)
+            {
+                (from p in Objects.Cast<Properties> () where tec.Area.m_id == p.GetIdentifier (Properties.LEVEL.Area) select p).FirstOrDefault ()
+                    ?.Add (new Properties (new int[] { tec.Area.m_id, tec.m_id }
+                        , tec.name_shr
+                        , from c in tec.GetListLowPointDev(StatisticCommon.TECComponentBase.TYPE.ELECTRO)
+                            select new Properties(new int[] { tec.Area.m_id, tec.m_id, c.m_id }
+                                , c.name_shr
+                                , new List<Tuple<DbInterface.OIKParameter, string>> () {
+                                    Tuple.Create (DbInterface.OIKParameter.FREQUENCY, ((StatisticCommon.TG)c).OIKNames[DbInterface.OIKParameter.FREQUENCY])
+                                    , Tuple.Create (DbInterface.OIKParameter.APOWER, ((StatisticCommon.TG)c).OIKNames[DbInterface.OIKParameter.APOWER])
+                                })));
+
+                //TODO: возвратить 'false', если добавленные строки 'not displayed'
+                return true;
+            }
+
+            public void OnUpdateValue (StatisticCommon.FormChangeMode.KeyDevice key, StatisticCommon.OICDAC.DbInterface.OIRequestResult res)
+            {
+                IEnumerable<Tuple<Properties, float>> updateProperties;
+                Action actUpdate;
+                StatisticCommon.OICDAC.DbInterface.OIKParameter param = (StatisticCommon.OICDAC.DbInterface.OIKParameter)res.Tag;
+
+                actUpdate = () => {
+                    BeginUpdate ();
+                    updateProperties = (from p in selectMany (Objects.Cast<Properties> ())
+                        join r in new List<StatisticCommon.OICDAC.DbInterface.OIRequestResult> () { res } on p.GetSignal(param) equals $"{r.KeySignal.Letter}{r.KeySignal.Index}"
+                            where p.Level == Properties.LEVEL.Device
+                                select Tuple.Create (p, float.Parse (r.Value.ToString ())));
+                    updateProperties?.ToList ().ForEach (u => u.Item1.Update (u.Item2, param));
+                    EndUpdate ();
+                };
+
+                if (Equals(res, null) == false) {
+                    if (InvokeRequired == true)
+                        BeginInvoke (actUpdate);
+                    else
+                        actUpdate ();
+                    ;
+                } else
+                    ASUTP.Logging.Logg ().Warning ($"TreeViewGrasp::OnUpdateValue () - не найдена строка для ключа=[{key.ToString()}:{param}]...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);;
+            }
+
+            private IEnumerable delegateListFilter (IEnumerable properties)
+            {
+                return properties;
+            }
+
+            private void onEventCanShowDeviceChanged ()
+            {
+                UseFiltering = CanShowDevice == ModeShowDevice.Compact;
+
+                if (UseFiltering == true) {
+                    ModelFilter =
+                        //new BrightIdeasSoftware.OneOfFilter((model) => { return STATUS.NORMAL; }, new STATUS[] { })
+                        new ModelFilter((model) => { return (!(((Properties)model).FrequencyStatus == STATUS.NAN))
+                            && (((Properties)model).CurrentAPower > MAX_DEAD_POWER); })
+                        ;
+                    //ListFilter =
+                    //    //new ListFilter (new BrightIdeasSoftware.ListFilter.ListFilterDelegate (delegateListFilter))
+                    //    new TailFilter (6);
+                    //    ;
+                } else
+                    ListFilter = null;
+            }
+
+            private void onEventFrequencyStatusChanged (Properties model)
+            {
+                IModelFilter prevModelFilter;
+
+                if (UseFiltering == true) {
+                    prevModelFilter = ModelFilter;
+                    ModelFilter = null;
+                    ModelFilter = prevModelFilter;
+                } else
+                    ;
+            }
+
+            private void onFormatCell(object obj, FormatCellEventArgs ev)
+            {
+                PairColor pairColor;
+
+                switch ((Properties.SUBINDEX)ev.Column.Tag) {
+                    case Properties.SUBINDEX.VALUE_PREV_FREQ:
+                    case Properties.SUBINDEX.VALUE_CURRENT_FREQ:
+                        if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                            ev.SubItem.Text = (((float)ev.CellValue > (FrequencyOptimum - FreqDeviation[(int)STATUS.NORMAL])) && !((float)ev.CellValue == -1F))
+                                ? string.Format ("{0:" + FormatValueFrequency + "}", ev.CellValue)
+                                    : string.Empty;
+                        } else
+                            ev.SubItem.Text = string.Empty;
+                        break;
+                    case Properties.SUBINDEX.VALUE_FREQ_DELTA:
+                        if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                            ev.SubItem.Text = !((float)ev.CellValue == -1F)
+                                ? string.Format ("{0:" + FormatValueFrequency + "}", ev.CellValue)
+                                    : string.Empty;
+                        } else
+                            ev.SubItem.Text = string.Empty;
+                        break;
+                    case Properties.SUBINDEX.FREQ_STATUS:
+                    case Properties.SUBINDEX.APOW_STATUS:
+                        if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                            ev.SubItem.Text = Properties.GetStatusText((STATUS)ev.CellValue);
+                            pairColor = Properties.GetStatusPairColor ((STATUS)ev.CellValue);
+                            ev.SubItem.ForeColor = pairColor.Fore;
+                            ev.SubItem.BackColor = pairColor.Background;
+                        } else
+                            ev.SubItem.Text = string.Empty;
+                        break;
+                    case Properties.SUBINDEX.VALUE_PREV_APOW:
+                    case Properties.SUBINDEX.VALUE_CURRENT_APOW:
+                        if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                            ev.SubItem.Text = !((float)ev.CellValue == -1F)
+                                ? string.Format ("{0:" + FormatValueAPower + "}", ev.CellValue)
+                                    : string.Empty;
+                        } else
+                            ev.SubItem.Text = string.Empty;
+                        break;
+                    case Properties.SUBINDEX.VALUE_APOW_DELTA:
+                        if ((ev.Model as Properties).Level == Properties.LEVEL.Device) {
+                            ev.SubItem.Text = !((float)ev.CellValue == -1F)
+                                ? string.Format ("{0:" + FormatValueAPower + "}", ev.CellValue)
+                                    : string.Empty;
+                        } else
+                            ev.SubItem.Text = string.Empty;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+                }
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+                }
+            }
+        }
+    }
+}

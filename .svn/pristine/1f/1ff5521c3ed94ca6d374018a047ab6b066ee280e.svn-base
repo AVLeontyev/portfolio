@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<configuration>
+  <appSettings>
+    <add key="SetPBRQuery LogPBRNumber" value="False" />
+    <add key="SetPBRQuery LogQuery" value="False" />
+    <add key="Main DataSource" value="671" />
+    <add key="Season DateTime" value="21.10.2014 03:00" />
+    <add key="Season Action" value="-1" />
+    <add key="iapp" value="TRANS_MODES_TERMINALE" />
+    <add key="debug" value="False" />
+    <add key="ОкноНазначение" value="Конвертер (Модес-Терминал)" />
+    <add key="ID_TECNotUse" value="1,2,3,4,5,11" />
+    <add key="ОпросСохранениеППБР" value="True,True" />
+    <add key="ОпросСохранениеАдминЗнач" value="False,False" />
+    <add key="ИгнорДатаВремя-ModesTerminale" value="False" />
+    <add key="ИгнорДатаВремя-techsite" value="False" />
+    <add key="OverDate" value="HH:mm:ss;03:04:05" />
+  </appSettings>
+<startup><supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.0"/></startup></configuration>

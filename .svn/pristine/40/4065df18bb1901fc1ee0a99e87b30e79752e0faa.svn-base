@@ -1,0 +1,168 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using StatisticCommon;
+using static StatisticGrasp.PanelGrasp;
+
+namespace StatisticGrasp
+{
+    public partial class FormMain : StatisticCommon.FormMainStatisticClient<FormMain, PanelGrasp>
+    {
+        public FormMain ()
+            : base(HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_GRASP, "StatisticGrasp")
+        {
+        }
+
+        private bool IsAppSettings
+        {
+            get
+            {
+                return (Equals (ConfigurationManager.AppSettings, null) == false)
+                    && (ConfigurationManager.AppSettings.Count > 0);
+            }
+        }
+
+        private void initialize ()
+        {
+            try {
+                if (IsAppSettings == true) {
+                #region Настройки из файла конфигурации
+                    PanelGrasp.StatusText = ConfigurationManager.AppSettings["StatusText"].Split (',');
+                    PanelGrasp.StatusColors = (from s in ConfigurationManager.AppSettings["StatusColor"].Split (',') select Color.FromName (s)).ToArray ();
+
+                    PanelGrasp.FormatValueFrequency = ConfigurationManager.AppSettings["FormatFrequency"];
+                    Constants.FrequencyOptimum = float.Parse (ConfigurationManager.AppSettings["FrequencyOptimum"], System.Globalization.CultureInfo.InvariantCulture);
+                    Constants.FreqDeviation = (from s in ConfigurationManager.AppSettings["DeviationFrequency"].Split (',') select float.Parse (s, System.Globalization.CultureInfo.InvariantCulture)).ToArray ();
+                    //Constants.APowDeviation = (from s in ConfigurationManager.AppSettings["DeviationAPower"].Split (',') select float.Parse (s, System.Globalization.CultureInfo.InvariantCulture)).ToArray ();
+
+                    PanelGrasp.FormatValueAPower = ConfigurationManager.AppSettings["FormatAPower"];
+
+                    Constants.MAX_DEAD_POWER = float.Parse (ConfigurationManager.AppSettings["MaxDeadPower"], System.Globalization.CultureInfo.InvariantCulture);
+                #endregion
+                } else {
+                #region Настройки из БД конфигурации
+                    PanelGrasp.StatusText = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.GRASP_STATUSTEXT].Split (',');
+                    PanelGrasp.StatusColors = (from s in formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.GRASP_STATUSCOLOR].Split (',') select Color.FromName (s)).ToArray ();
+
+                    PanelGrasp.FormatValueFrequency = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.GRASP_FORMATFREQUENCY];
+                    PanelGrasp.FormatValueAPower = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.GRASP_FORMATAPOWER];
+                    //TODO: значения будут прочитаны в 'Service.UpdateParametersSetup'
+                    ////PanelGrasp.FrequencyOptimum = float.Parse (ConfigurationManager.AppSettings["FrequencyOptimum"], System.Globalization.CultureInfo.InvariantCulture);
+                    //Constants.FreqDeviation = (from s in formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.GRASP_DEVIATIONFREQUENCY].Split (',') select float.Parse (s, System.Globalization.CultureInfo.InvariantCulture)).ToArray ();
+
+                    //Constants.MAX_DEAD_POWER = float.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_DEAD_POWER], System.Globalization.CultureInfo.InvariantCulture);
+
+                    SAlarm.Service.Service.UpdateParametersSetup (formParameters);
+                #endregion
+                }
+            } catch (Exception e) {
+                Ready = false;
+
+                ASUTP.Logging.Logg ().Exception (e, "FormMain::ctor () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                throw new Exception ("Ошибка при создании главной формы. Обратитесь в техническую поддержку.");
+            }
+        }
+
+        protected override void FormMainStatisticClient_Load (object obj, EventArgs ev)
+        {
+            ToolStripMenuItem settingsToolStripMenuItem;
+            string configMode = string.Empty;
+            ModeShowDevice mode;
+            Action<ToolStripMenuItem, ModeShowDevice?, string> actAdd = null;
+
+            EventAppConfigValue += () => {
+                return IsAppSettings == true
+                        ? int.Parse (ConfigurationManager.AppSettings["IdSourceCK2007"])
+                            : int.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.CK_2007]);
+            };
+
+            base.FormMainStatisticClient_Load (obj, ev);
+
+            initialize ();
+
+            if (Ready == true) {
+                actAdd = (menuItemOwner, tag, text) => {
+                    ToolStripMenuItem newMenuItem;
+
+                    if (string.IsNullOrEmpty (text) == true)
+                        menuItemOwner.DropDownItems.Add (new ToolStripSeparator ());
+                    else {
+                        menuItemOwner.DropDownItems.Add (new ToolStripMenuItem (text, null, settingsModeShowDeviceToolStripMenuItem_onClick));
+                        newMenuItem = menuItemOwner.DropDownItems[menuItemOwner.DropDownItems.Count - 1] as ToolStripMenuItem;
+                        newMenuItem.Tag = tag;
+                        //newMenuItem.Enabled = false;
+                        newMenuItem.Checked = false;
+                        newMenuItem.CheckOnClick = true;
+                    }
+                };
+
+                mode = ModeShowDevice.Unknown;
+                configMode = IsAppSettings == true
+                    ? ConfigurationManager.AppSettings["ModeShowDevice"]
+                        : formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.GARSP_MODESHOWDEVICE];
+
+                if (Enum.TryParse<ModeShowDevice> (configMode, out mode) == true) {
+                    settingsToolStripMenuItem = FindMainMenuItemOfText ("Настройка");
+                    // этот пункт - настройка БД
+                    settingsToolStripMenuItem.DropDownItems[0].Enabled = HStatisticUsers.RoleIsAdmin;
+                    actAdd (settingsToolStripMenuItem, null, string.Empty);
+                    actAdd (settingsToolStripMenuItem, ModeShowDevice.Full, "Полный режим");
+                    actAdd (settingsToolStripMenuItem, ModeShowDevice.Compact, "Компактный режим");
+
+                    (from mi in settingsToolStripMenuItem.DropDownItems.Cast<ToolStripItem> () where ((Equals (mi.Tag, null) == false) && ((ModeShowDevice)mi.Tag == mode)) select mi)?.FirstOrDefault ().PerformClick ();
+                } else
+                    throw new Exception ($"::FormMainStatisticClient_Load () - не распознан режим <{configMode}> работы представления...");
+            } else
+                ;
+        }
+
+        protected override PanelGrasp createPanelStatistic (IEnumerable<StatisticCommon.TEC> listTEC, object appConfigValue)
+        {
+            return new PanelGrasp (s_iMainSourceData
+                , listTEC.ToList()
+                , SystemColors.ControlText
+                , SystemColors.Control
+                );
+        }
+
+        private void settingsModeShowDeviceToolStripMenuItem_onClick (object obj, EventArgs ev)
+        {
+            ToolStripMenuItem menuItem;
+            bool bChecked = false
+                , bChanged = false;
+            IEnumerable<ToolStripItem> menuModeShowDeviceItems;
+            ModeShowDevice tag;
+            ModeShowDevice mode;
+
+            menuItem = obj as ToolStripMenuItem;
+            bChecked = menuItem.Checked;
+            menuModeShowDeviceItems = from mi in (menuItem.OwnerItem as ToolStripMenuItem).DropDownItems.Cast<ToolStripItem>() where typeof(ModeShowDevice).IsAssignableFrom(mi.Tag?.GetType()) == true select mi;
+
+            
+            tag = (ModeShowDevice)menuItem.Tag;
+            mode = ((bChecked == true) && (tag == ModeShowDevice.Full))
+                    || ((bChecked == false) && (tag == ModeShowDevice.Compact))
+                ? ModeShowDevice.Full
+                    : ModeShowDevice.Compact;
+            bChanged = !(TreeViewGrasp.CanShowDevice == mode);
+
+            if (bChanged == true) {
+                TreeViewGrasp.CanShowDevice = mode;
+
+                menuModeShowDeviceItems.Cast<ToolStripMenuItem>().ToList ().ForEach ((mi) => {
+                    if (mi.Equals(menuItem) == false)
+                        mi.Checked = !bChecked;
+                    else
+                        ;
+                });
+            } else
+                ;
+        }
+    }
+}

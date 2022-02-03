@@ -1,0 +1,783 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CommonAux</name>
+    </assembly>
+    <members>
+        <member name="T:CommonAux.PanelCommonAux">
+            <summary>
+            Класс рабочей панели для взаимодействия с пользователем: задача "Собственные нужды АИИСКУЭ"
+            </summary>
+        </member>
+        <member name="F:CommonAux.PanelCommonAux.DataGridViewValues.groupRowTag">
+            <summary>
+            Идентификатор итоговой строки
+            </summary>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.DataGridViewValues.#ctor(System.Drawing.Color)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="backColor">Цвет фона для ячеек по умолчанию</param>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.DataGridViewValues.addColumns">
+            <summary>
+            Добавить столбцы по количеству часов + столбец для итогового для сигнала значения
+            </summary>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.DataGridViewValues.AddRowData(System.Collections.Generic.List{CommonAux.SIGNAL})">
+            <summary>
+            Добавить строки для сигналов
+            </summary>
+            <param name="listSgnls">Список сигналов</param>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.DataGridViewValues.ClearRows">
+            <summary>
+            Удалить все строки(сигналы)
+            </summary>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.DataGridViewValues.ClearValues">
+            <summary>
+            Очистить значения во всех ячейках
+            </summary>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.DataGridViewValues.Update(CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP)">
+            <summary>
+            Отобразить значения
+            </summary>
+            <param name="values">Значения для отображения</param>
+        </member>
+        <member name="F:CommonAux.PanelCommonAux.m_connSettAIISKUECentre">
+            <summary>
+            Объект с параметрами соединения с источником данных
+            </summary>
+        </member>
+        <member name="P:CommonAux.PanelCommonAux.ListTEC">
+            <summary>
+            Список ТЭЦ с параметрами из файла конфигурации
+            </summary>
+        </member>
+        <member name="F:CommonAux.PanelCommonAux.m_GetDataFromDB">
+            <summary>
+            Объект для инициализации входных параметров
+            </summary>
+        </member>
+        <member name="T:CommonAux.PanelCommonAux.INDEX_READY">
+            <summary>
+            Перечисление причин, влияющих на готовность к экспорту значений
+            </summary>
+        </member>
+        <member name="F:CommonAux.PanelCommonAux.m_markReady">
+            <summary>
+            Объект содержащий признаки готовности к экспорту значений
+            </summary>
+        </member>
+        <member name="T:CommonAux.PanelCommonAux.INDEX_MSEXCEL_PARS">
+            <summary>
+            Перечисление - возможные правила для включения признака доступности кнопки "Экспорт"
+            </summary>
+        </member>
+        <member name="F:CommonAux.PanelCommonAux.INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT">
+            <summary>
+            Полный путь к (исходному) шаблону
+            </summary>
+        </member>
+        <member name="F:CommonAux.PanelCommonAux.m_arMSEXEL_PARS">
+            <summary>
+            Массив с параметрами шаблона книги MS Excel
+            </summary>
+        </member>
+        <member name="T:CommonAux.PanelCommonAux.STATE">
+            <summary>
+            Перечисление возможных состояний приложения
+            </summary>
+        </member>
+        <member name="P:CommonAux.PanelCommonAux.State">
+            <summary>
+            Состояние приложения
+            </summary>
+        </member>
+        <member name="P:CommonAux.PanelCommonAux.FullPathTemplate">
+            <summary>
+            Строка - полный путь для шаблона MS Excel
+            </summary>
+        </member>
+        <member name="E:CommonAux.PanelCommonAux.EventNewPathToTemplate">
+            <summary>
+            Событие при назначении нового пути для шаблона MS Excel
+            </summary>
+        </member>
+        <member name="F:CommonAux.PanelCommonAux.components">
+            <summary>
+            Требуется переменная конструктора
+            </summary>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.#ctor(System.String,System.Drawing.Color,System.Drawing.Color)">
+            <summary>
+            Конструктор панели
+            </summary>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.Start">
+            <summary>
+            Фукнция вызова старта программы
+            </summary>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.Stop">
+            <summary>
+            Остановить все соединения, выполнить
+            </summary>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.Activate(System.Boolean)">
+            <summary>
+            Функция активация вкладки
+            </summary>
+            <param name="activated">параметр</param>
+            <returns>результат</returns>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.onNewPathToTemplate(System.String)">
+            <summary>
+            Обработчик события установки нового значения для пути к шаблону
+            </summary>
+            <param name="path">Строка - полный путь к шаблону</param>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.enableBtnExcel(System.Boolean)">
+            <summary>
+            Включить/отключить доступность интерфейса экспорта в книгу MS Excel
+            </summary>
+            <param name="bEnabled">Признак включения/отключения</param>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.initializeLayoutStyle(System.Int32,System.Int32)">
+            <summary>
+            Определить размеры ячеек макета панели
+            </summary>
+            <param name="cols">Количество столбцов в макете</param>
+            <param name="rows">Количество строк в макете</param>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.InitializeComponents">
+            <summary>
+            Инициализация компонентов панели
+            </summary>
+        </member>
+        <member name="T:CommonAux.PanelCommonAux.ResultValidateDatetime">
+            <summary>
+            Перечисление - возможные результаты при проверке значений дат, устанвовленных в "каледарях"
+            </summary>
+        </member>
+        <member name="F:CommonAux.PanelCommonAux.ResultValidateDatetime.ErrorWithMonth">
+            <summary>
+            Ошибка, по крайнем мере, в части даты "месяц"
+            </summary>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.validateDates">
+            <summary>
+            Проверка допустимости выбранного диапазона дат
+            </summary>
+            <returns>Результат проверки</returns>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.btnOpen_Click(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик нажатия на кнопку на панели быстрого доступа "Открыть"
+            </summary>
+            <param name="sender">Объект-инициатор события</param>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.btnStripButtonExcel_Click(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик событий: нажатие на кнопку на панели быстрого доступа "экспортВMSExcel"
+            </summary>
+            <param name="sender">Объект - инициатор события</param>
+            <param name="e">Аргумент события</param>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.validateTemplate(System.String)">
+            <summary>
+            Проверить шаблон на корректность использования
+            </summary>
+            <param name="path">Строка - полный путь для шаблона</param>
+            <returns>Признак проверки (0 - успех)</returns>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.validateTemplate(CommonAux.MSExcelIO)">
+            <summary>
+            Проверить шаблон на возможность использования по назначению
+            </summary>
+            <param name="excel">Шаблон для экспорта данных</param>
+            <returns>Признак проверки (0 - успех)</returns>
+        </member>
+        <member name="M:CommonAux.PanelCommonAux.UpdateGraphicsCurrent(System.Int32)">
+            <summary>
+            Применение изменений в графическом интерфейсе с пользователем
+            </summary>
+            <param name="type">Тип изменений для графического интерфейса с пользователем
+             , значение из перечислений 'Statistic.FormGraphicsSettings'</param>
+        </member>
+        <member name="T:CommonAux.FormMain">
+            <summary>
+            Класс главнной формы приложения "Собственные нужды - АИИСКУЭ"
+            </summary>
+        </member>
+        <member name="F:CommonAux.FormMain._panelMain">
+            <summary>
+            Панель - единственная дочерняя по отношению к главной форме
+             , и единственная родительская по отношению к рабочей панели
+            </summary>
+        </member>
+        <member name="F:CommonAux.FormMain.formParameters">
+            <summary>
+            Объект с параметрами приложения (из БД_конфигурации)
+            </summary>
+        </member>
+        <member name="F:CommonAux.FormMain._state">
+            <summary>
+            Состояние формы (признак выполнения очередной операции: 0 - без ошибок)
+            </summary>
+        </member>
+        <member name="M:CommonAux.FormMain.FormMain_Load(System.Object,System.EventArgs)">
+            <summary>
+            Запуск старта панели
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:CommonAux.FormMain.FormMain_Activate(System.Object,System.EventArgs)">
+            <summary>
+            Активация формы
+            </summary>
+            <param name="obj">Объект, инициировавший событие(форма)</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:CommonAux.FormMain.FormMain_Deactivate(System.Object,System.EventArgs)">
+            <summary>
+            Деактивация формы
+            </summary>
+            <param name="obj">Объект, инициировавший событие(форма)</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:CommonAux.FormMain.InitializePanel(System.String@)">
+            <summary>
+            Инициализация панели
+            </summary>
+            <param name="msgError">Сообщение об ошибке (при наличии)</param>
+        </member>
+        <member name="M:CommonAux.FormMain.validateUser(System.String@)">
+            <summary>
+            Инициализация параметров соединения с БД_конфигурации
+            </summary>
+            <param name="msgError">Сообщение об ошибке (при наличии)</param>
+            <returns>Признак выполнения функции</returns>
+        </member>
+        <member name="M:CommonAux.FormMain.fMenuItemExit_Click(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события выбора п. главного меню "Файл-Выход"
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:CommonAux.FormMain.fMenuItemDBConfig_Click(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="M:CommonAux.FormMain.fMenuItemAbout_Click(System.Object,System.EventArgs)">
+            <summary>
+            Обработчик события выбора п. главного меню "Помощь-О программе"
+            </summary>
+            <param name="obj">Объект, инициировавший событие</param>
+            <param name="ev">Аргумент события</param>
+        </member>
+        <member name="F:CommonAux.FormMain.components">
+            <summary>
+            Обязательная переменная конструктора.
+            </summary>
+        </member>
+        <member name="M:CommonAux.FormMain.Dispose(System.Boolean)">
+            <summary>
+            Освободить все используемые ресурсы.
+            </summary>
+            <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        </member>
+        <member name="M:CommonAux.FormMain.InitializeComponent">
+            <summary>
+            Требуемый метод для поддержки конструктора — не изменяйте 
+            содержимое этого метода с помощью редактора кода.
+            </summary>
+        </member>
+        <member name="T:CommonAux.GetDataFromDB">
+            <summary>
+            Класс для взаимодействия с базой данных
+            </summary>
+        </member>
+        <member name="F:CommonAux.GetDataFromDB.DB_NAME_TABLE">
+            <summary>
+            Строка, содержащая наименование таблицы в БД, хранящей перечень каналов
+            </summary>
+        </member>
+        <member name="F:CommonAux.GetDataFromDB.ID_AIISKUE_CONSETT">
+            <summary>
+            Объект, содержащий id записи в таблице, содержащей настройки подключения
+            </summary>
+        </member>
+        <member name="F:CommonAux.GetDataFromDB.m_strFullPathTemplate">
+            <summary>
+            Объект, содержащий путь к шаблону excel
+            </summary>
+        </member>
+        <member name="T:CommonAux.GetDataFromDB.DB_TABLE_DATA">
+            <summary>
+            Поля таблицы сигналов
+            </summary>
+        </member>
+        <member name="T:CommonAux.GetDataFromDB.INDEX_MSEXCEL_COLUMN">
+            <summary>
+            Номера столбцовы в шаблоне excel
+            </summary>
+        </member>
+        <member name="F:CommonAux.GetDataFromDB.m_listTEC">
+            <summary>
+            Список всех каналов для каждой ТЭЦ
+            </summary>
+        </member>
+        <member name="P:CommonAux.GetDataFromDB.FullPathTemplate">
+            <summary>
+            Каталог для размещения шаблонов
+            </summary>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.getQueryListChannels">
+            <summary>
+            Возвратить строку запроса для получения списка каналов
+            </summary>
+            <returns>Строка запроса</returns>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.getListChannels(System.Int32,System.Int32@)">
+            <summary>
+            Возвратить таблицу [ID_TSN_AISKUE] из БД конфигурации
+            </summary>
+            <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
+            <param name="err">Идентификатор ошибки при выполнении запроса</param>
+            <returns>Таблица - с данными</returns>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.GetConnSettAIISKUECentre(System.Int32,System.Int32@)">
+            <summary>
+            Возвратить объект с параметрами соединения
+            </summary>
+            <param name="iListenerId">Идентификатор подписчика к объекту с установленным соединением с БД</param>
+            <param name="err">Идентификатор ошибки при выполнении запроса</param>
+            <returns>Объект с параметрами соединения</returns>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.InitListTEC">
+            <summary>
+            Инициализировать список ТЭЦ
+            </summary>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.InitChannels(System.Int32)">
+            <summary>
+            Загрузка всех каналов из базы данных
+            </summary>
+            <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.InitSensors">
+            <summary>
+            Инициализация строк с идентификаторами сигналов для всех ТЭЦ
+             для использования в запросе при выборке значений
+            </summary>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.Request(CommonAux.TEC_LOCAL,System.Int32,System.DateTime,System.DateTime)">
+            <summary>
+            Получить все (ТГ, ТСН) значения для станции
+            </summary>
+            <param name="tec">Станция, для которой необходимо получить значения</param>
+            <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
+            <param name="dtStart">Дата - начало</param>
+            <param name="dtEnd">Дата - окончание</param>
+            <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.Request(CommonAux.TEC_LOCAL,System.Int32,System.DateTime,System.DateTime,CommonAux.TEC_LOCAL.INDEX_DATA)">
+            <summary>
+            Получить все (ТГ, ТСН) значения для станции
+            </summary>
+            <param name="tec">Станция, для которой необходимо получить значения</param>
+            <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
+            <param name="dtStart">Дата - начало</param>
+            <param name="dtEnd">Дата - окончание</param>
+            <param name="indx">Индекс группы сигналов</param>
+            <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.Request(CommonAux.TEC_LOCAL,System.Data.Common.DbConnection@,System.DateTime,System.DateTime,CommonAux.TEC_LOCAL.INDEX_DATA)">
+            <summary>
+            Получить все (ТГ, ТСН) значения для станции
+            </summary>
+            <param name="tec">Станция, для которой необходимо получить значения</param>
+            <param name="dbConn">Ссылка на объект соединения с БД-источником данных</param>
+            <param name="dtStart">Дата - начало</param>
+            <param name="dtEnd">Дата - окончание</param>
+            <param name="indx">Индекс группы сигналов</param>
+            <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
+        </member>
+        <member name="M:CommonAux.GetDataFromDB.getQuery(CommonAux.TEC_LOCAL,CommonAux.TEC_LOCAL.INDEX_DATA,System.DateTime,System.DateTime)">
+            <summary>
+            Возвратитиь запрос для выборки данных ТГ
+            </summary>
+            <param name="tec">Станция, для которой необходимо получить значения</param>
+            <param name="indx">Индекс текущей группы сигналов</param>
+            <param name="dtStart">Дата - начало</param>
+            <param name="dtEnd">Дата - окончание</param>
+            <returns>Строка запроса</returns>
+        </member>
+        <member name="T:CommonAux.SIGNAL">
+            <summary>
+            Класс для описания параметров сигнала
+            </summary>
+        </member>
+        <member name="T:CommonAux.SIGNAL.KEY">
+            <summary>
+            Ключ сигнала (идентификатор устройства + № канала опроса)
+            </summary>
+        </member>
+        <member name="F:CommonAux.SIGNAL.m_strDesc">
+            <summary>
+            Описание сигнала
+            </summary>
+        </member>
+        <member name="F:CommonAux.SIGNAL.m_bUse">
+            <summary>
+            Признак использования сигнала при расчете
+            </summary>
+        </member>
+        <member name="M:CommonAux.SIGNAL.#ctor(System.String,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Конструктор - дополнительный (с параметрами)
+            </summary>
+            <param name="desc">Описание сигнала (наименование)</param>
+            <param name="idUSPD">Идентификатор УСПД</param>
+            <param name="id">Номер канала опроса</param>
+        </member>
+        <member name="T:CommonAux.MSExcelIO">
+            <summary>
+            Класс для сохраннеия значений в MS Excel (задача экспорта)
+            </summary>
+        </member>
+        <member name="T:CommonAux.MSExcelIO.INDEX_MSEXCEL_COLUMN">
+            <summary>
+            Перечисление - возможные значения для сохраняемых в книгу MS Excel значений
+             (выработанная эл./эн., эл./эн. затраченная на собственные нужды)
+             - индексы в массиве настраиваемых параметров: номера столбцов, в которые размещаются данные
+            </summary>
+        </member>
+        <member name="M:CommonAux.MSExcelIO.#ctor(System.String)">
+            <summary>
+            Конструктор - основной (с аргументом)
+            </summary>
+            <param name="path">Полный путь к книге MS Excel</param>
+        </member>
+        <member name="M:CommonAux.MSExcelIO.WriteValues(System.String,System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.Double})">
+            <summary>
+            Записать значения в ячейки книги MS Excel
+            </summary>
+            <param name="nameSheet">Наименование станицы в книге</param>
+            <param name="col">Столбец на листе книги</param>
+            <param name="sheeftRow">Смещение номера строки с 1-ым значением на листе книги (по сути номер строки)</param>
+            <param name="arValues">Массив значений для отображения</param>
+        </member>
+        <member name="M:CommonAux.MSExcelIO.WriteValues(System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.Double})">
+            <summary>
+            Записать значения в ячейки книги MS Excel
+            </summary>
+            <param name="col">Столбец на листе книги</param>
+            <param name="sheeftRow">Смещение номера строки с 1-ым значением на листе книги (по сути номер строки)</param>
+            <param name="arValues">Массив значений для отображения</param>
+        </member>
+        <member name="M:CommonAux.MSExcelIO.WriteDate(System.Int32,System.Int32,System.DateTime)">
+            <summary>
+            Записать значение даты на лист книги MS Excel
+            </summary>
+            <param name="col">толбец на листе книги</param>
+            <param name="sheeftRow">Смещение номера строки с 1-ым значением на листе книги (по сути номер строки)</param>
+            <param name="date">Значение записывваемой даты</param>
+        </member>
+        <member name="M:CommonAux.Program.Main">
+            <summary>
+            Главная точка входа для приложения.
+            </summary>
+        </member>
+        <member name="T:CommonAux.TEC_LOCAL">
+            <summary>
+            Класс для описания ТЭЦ с параметрами сигналов
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.m_listValuesDate">
+            <summary>
+            Список всех значений за весь диапазон дат
+            </summary>
+        </member>
+        <member name="T:CommonAux.TEC_LOCAL.VALUES_DATE">
+            <summary>
+            Класс для хранения значений за сутки (все группы сигналов)
+            </summary>
+        </member>
+        <member name="T:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_SIGNAL">
+            <summary>
+            Структура для хранения значений за сутки
+            </summary>
+        </member>
+        <member name="T:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP">
+            <summary>
+            Класс для хранения значений группы сигналов
+            </summary>
+        </member>
+        <member name="T:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.MODE">
+            <summary>
+            Перечисление для методов расчета потерь эл./эн. в сети ТЭЦ (стандартный/специальный)
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.m_summaHours">
+            <summary>
+            Cумма для группы сигналов по часам
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.m_summaSgnls">
+            <summary>
+            Cумма для сигналов за сутки (по-сигнально)
+             индекс сигнала соответствует индексу ключа сигнала в коллекции ключей объекта
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.m_Summa">
+            <summary>
+            Сумма значений всех сигналов группы за сутки
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.#ctor(CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.MODE)">
+            <summary>
+            Конструктор - основной (без параметров)
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.initialize">
+            <summary>
+            Инициализация полей объекта
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.SetValue(CommonAux.SIGNAL.KEY,System.Int32,System.Double)">
+            <summary>
+            Установить значение для сигнала по ключу, индексу часа
+            </summary>
+            <param name="key">Ключ сигнала</param>
+            <param name="iHour">Индекс часа</param>
+            <param name="value">Устанавливаемое значение</param>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.CompleteSetValues">
+            <summary>
+            Специальный метод расчета потерь эл./эн. в сети ТЭЦ
+             только для группы в режиме 'MODE.EPOTERI'
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.VALUES_GROUP.ClearValues">
+            <summary>
+            Очистиь значения объекта, привести в начальное (при создании) состояние
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.VALUES_DATE.m_dataDate">
+            <summary>
+            Метка времени текущего объекта
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.VALUES_DATE.m_dictData">
+            <summary>
+            Словарь значений для групп сигналов (ключ - индекс группы сигналов, значение - группа сигналов)
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.#ctor(System.DateTime)">
+            <summary>
+            Конструктор специальный для реализации алгоритма расчета ТСН по ВАРИАНТУ №2
+            </summary>
+            <param name="dt">Дата для набора значений нового экземпляра</param>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.#ctor(System.DateTime,CommonAux.TEC_LOCAL.INDEX_DATA,System.Collections.Generic.List{CommonAux.SIGNAL},System.Collections.Generic.List{CommonAux.TEC_LOCAL.RecordResult})">
+            <summary>
+            Конструктор - дополнительный (с парметрами)
+            </summary>
+            <param name="dt">Дата - метка времени для набора значений</param>
+            <param name="indx">Индекс группы сигналов</param>
+            <param name="listRecRes">Список значений в наборе</param>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.initSignals(CommonAux.TEC_LOCAL.INDEX_DATA,System.Collections.Generic.List{CommonAux.SIGNAL})">
+            <summary>
+            Инициализировать список доступных сигналов в группе
+             не вызывается при отсутствии сигналов
+            </summary>
+            <param name="indx">Индекс-идентификатор группы сигналов</param>
+            <param name="listSgnls">Список доступных сигналов</param>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.SetValues(CommonAux.TEC_LOCAL.INDEX_DATA,System.Collections.Generic.List{CommonAux.SIGNAL},System.Collections.Generic.List{CommonAux.TEC_LOCAL.RecordResult})">
+            <summary>
+            Установить значения для группы сигналов по индексу группы
+            </summary>
+            <param name="indx">Индекс группы сигналов</param>
+            <param name="listSgnls">Список сигналов</param>
+            <param name="listRecRes">Список значений</param>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.SetValues(CommonAux.TEC_LOCAL.INDEX_DATA,System.Collections.Generic.List{CommonAux.TEC_LOCAL.RecordResult})">
+            <summary>
+            Установить значения для группы сигналов по индексу группы
+            </summary>
+            <param name="indx">Индекс группы сигналов</param>
+            <param name="listRecRes">Список значений</param>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.SetValue(CommonAux.TEC_LOCAL.INDEX_DATA,CommonAux.SIGNAL.KEY,System.Int32,System.Double)">
+            <summary>
+            Установить значение для сигнала группы, по ключу, за указанный час
+            </summary>
+            <param name="indx">Индекс группы сигналов</param>
+            <param name="keySgnl">Ключ сигнала</param>
+            <param name="iHour">Индекс часа в сутках</param>
+            <param name="value">Устанавливаемое значение</param>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.GetValues(System.Int32@)">
+            <summary>
+            Возвратить значения (одни сутки + все часы) в соответствии с ~ ВАРИАНТом расчета
+            </summary>
+            <returns>Объект со значениями (одни сутки)</returns>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.Equals(System.Object)">
+            <summary>
+            Обязательный для переопределения метод сравнения
+            </summary>
+            <param name="obj">Объект для срвнения</param>
+            <returns>Результат сравнения</returns>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.VALUES_DATE.GetHashCode">
+            <summary>
+            Обязательный для переопределения метод сравнения
+            </summary>
+            <returns>Результат сравнения</returns>
+        </member>
+        <member name="T:CommonAux.TEC_LOCAL.INDEX_DATA">
+            <summary>
+            Перечисление типов данных для результата
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL._requiredSignals">
+            <summary>
+            Признаки обязательного наличия хотя бы одного сигнала в группе (INDEX_DATA)
+             , для всех станций, кроме НТЭЦ-5, список сигналов для 'INDEX_DATA.GRVIII' НЕ обязательно
+            </summary>
+        </member>
+        <member name="T:CommonAux.TEC_LOCAL.TableResult">
+            <summary>
+            Таблица - список записей результирующего набора
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.TableResult.#ctor(System.Data.DataTable)">
+            <summary>
+            Конструктор - основной (с параметрами)
+            </summary>
+            <param name="table">Таблица - результат запроса</param>
+        </member>
+        <member name="T:CommonAux.TEC_LOCAL.RecordResult">
+            <summary>
+            Объект для представления одной записи результирующего набора
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.RecordResult.m_key">
+            <summary>
+            Ключ записи
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.RecordResult.m_dtRec">
+            <summary>
+            Дата/время - метка времени значения
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.RecordResult.m_value">
+            <summary>
+            Значение сигнала
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.RecordResult.m_count">
+            <summary>
+            Количество строк, участвовавшие для получения значения при агрегации
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.m_arTableResult">
+            <summary>
+            Массив таблиц с результатами запросов
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.m_Id">
+            <summary>
+            Целочисленный идентификатор ТЭЦ
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.m_strNameShr">
+            <summary>
+            Строка - краткое наименование ТЭЦ
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.m_arListSgnls">
+            <summary>
+            Массив списков сигналов по-группно (ТГ, ТСН, GRII и т.д.)
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.m_Sensors">
+            <summary>
+            Строка с идентификаторами сигналов ТГ, ТСН
+             для использования в запросе при выборке значений
+            </summary>
+        </member>
+        <member name="F:CommonAux.TEC_LOCAL.m_arMSExcelNumColumns">
+            <summary>
+            Массив с номерами столбцов в шаблоне (книге MS Excel) для сохранения значений этой ТЭЦ
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.#ctor">
+            <summary>
+            Конструктор - дополнительный (без параметров)
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.#ctor(StatisticCommon.TEC)">
+            <summary>
+            Когструктор - основной (с аргументом)
+            </summary>
+            <param name="tec">Исходный(базовый) объект ТЭЦ</param>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.InitSensors">
+            <summary>
+            Инициализация строки с идентификаторами сигналов
+             для использования в запросе при выборке значений
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.getSensors(CommonAux.TEC_LOCAL.INDEX_DATA,System.Collections.Generic.List{CommonAux.SIGNAL})">
+            <summary>
+            Возвратить строку с идентификаторами сигналов для указанного списка
+            </summary>
+            <param name="listSgnls">Список сигналов для которых требуется возвратить строку</param>
+            <returns>Строка с идентификаторами сигналов</returns>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.parseTableResult(System.DateTime,System.DateTime,CommonAux.TEC_LOCAL.INDEX_DATA,System.Int32@)">
+            <summary>
+            Привести полученные значения к часовому формату (из полу-часового)
+            </summary>
+        </member>
+        <member name="M:CommonAux.TEC_LOCAL.ClearValues(System.DateTime,CommonAux.TEC_LOCAL.INDEX_DATA)">
+            <summary>
+            Очистить значения
+            </summary>
+            <param name="dtReq">Дата за которую требуется очистить значения</param>
+            <param name="indx">Индекс группы сигналов</param>
+        </member>
+        <member name="T:CommonAux.Properties.Resources">
+            <summary>
+              Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
+            </summary>
+        </member>
+        <member name="P:CommonAux.Properties.Resources.ResourceManager">
+            <summary>
+              Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
+            </summary>
+        </member>
+        <member name="P:CommonAux.Properties.Resources.Culture">
+            <summary>
+              Перезаписывает свойство CurrentUICulture текущего потока для всех
+              обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
+            </summary>
+        </member>
+    </members>
+</doc>

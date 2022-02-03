@@ -1,0 +1,270 @@
+﻿using StatisticTrans.Contract;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.ServiceModel;
+using System.Text;
+
+namespace strans
+{
+    /// <summary>
+    /// Контейнер клиентов служб
+    ///  , обеспечивает взаимосвязь между непосредственно клентами служб и конфигурацией приложения развертывания
+    /// </summary>
+    internal partial class Client : Deployment
+    {
+        /// <summary>
+        /// Список объектов - клиентов служб
+        /// </summary>
+        private List<IWorker> _workers;
+
+        /// <summary>
+        /// Конструктор - основной
+        /// </summary>
+        /// <param name="mode">Режим развертывания для передачи в базовый класс</param>
+        public Client (Creator.MODE mode)
+            : base(mode)
+        {
+            ConfigSectionModesTrans clientSettings = null;
+            IWorker worker;
+            bool clientTurn = false;
+
+            string messageReadFileConnSettResult = string.Empty
+                , messageLog = string.Empty;
+
+            try {
+                clientSettings =
+                    (ConfigSectionModesTrans)ConfigurationManager.GetSection ($"{ConfigSectionModesTrans.NameSection}");
+
+                _workers = new List<IWorker> ();
+
+                clientSettings.ModesTransSettings.Cast<ModesTransClientCollection> ().ToList ().ForEach (settings => {
+                    clientTurn = false;
+                    worker = null;
+                    if (bool.TryParse (settings.GetValue ("turn"), out clientTurn) == true)
+                        if (clientTurn == true) {
+                            worker = createWorker(GetService (settings.NameEndPoint), settings);
+                            if (Equals (worker, null) == false)
+                                _workers.Add (worker);
+                            else
+                                ;
+                        } else {
+                            messageLog = $@"client NameEndPoint=<{settings.NameEndPoint}> is turn={clientTurn}...";
+                            ASUTP.Logging.Logg ().Warning (messageLog, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                            itssAUX.PrintWarningMessage (messageLog);
+                        }
+                    else {
+                        messageLog = $@"client NameEndPoint=<{settings.NameEndPoint}> is turn not recognized...";
+                        ASUTP.Logging.Logg ().Warning (messageLog, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                        itssAUX.PrintWarningMessage (messageLog);
+                    }
+                });
+            } catch (Exception e) {
+                ASUTP.Logging.Logg ().Exception (e, "strans.Client::ctor () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+                Error = ERROR.Client;
+            }
+        }
+
+        /// <summary>
+        /// Создать рабочий экземпляр для реализации логики вызовов методов службы
+        /// </summary>
+        /// <param name="service">Тип развернутой службы</param>
+        /// <param name="settings">Конфигурация для инициализации экземпляра</param>
+        /// <returns>Объект-экземпляр</returns>
+        private IWorker createWorker (Service service, ModesTransClientCollection settings)
+        {
+            Dictionary<Creator.NameEndPoint, Type> workerTypes = new Dictionary<Creator.NameEndPoint, Type> {
+                { Creator.NameEndPoint.EndPointServiceTransModesTerminale, typeof(WorkerModesTerminale) }
+                , { Creator.NameEndPoint.EndPointServiceTransModesCentre, typeof(WorkerModesCentre) }
+                , { Creator.NameEndPoint.EndPointServiceTransTG, typeof(WorkerTransTG) }
+                , { Creator.NameEndPoint.EndPointServiceTransGTP, typeof(WorkerTransGTP) }
+            };
+
+            IWorker workerRes = null;
+
+            int iReadFileConnSettResult = -1;
+            ASUTP.Database.FIleConnSett fileConnSett;
+            List<ASUTP.Database.ConnectionSettings> listConnSett;
+            StatisticTrans.MODE_MASHINE modeMashine = StatisticTrans.MODE_MASHINE.UNKNOWN;
+            string [] fetchWaking;
+            TimeSpan tsFetchWaking;
+            List<int> listIdTECNotUse;
+            string messageReadFileConnSettResult = string.Empty
+                , messageLog = string.Empty;
+
+            fileConnSett = new ASUTP.Database.FIleConnSett (settings.GetValue ("conn-sett"), ASUTP.Database.FIleConnSett.MODE.FILE);
+            fileConnSett.ReadSettingsFile (-1, out listConnSett, out iReadFileConnSettResult, out messageReadFileConnSettResult);
+            modeMashine = settings.ModeMashine;
+            listIdTECNotUse = settings.ListIdTECNotUse;
+
+            if (iReadFileConnSettResult == 0) {
+                workerRes = (IWorker)Activator.CreateInstance (workerTypes [settings.NameEndPoint], settings.NameEndPoint, GetTypeContract (settings.NameEndPoint), service.Type);
+                workerRes.Interrupt += worker_OnInterrupt;
+
+                //TODO: Initialize
+                switch (settings.NameEndPoint) {
+                    case Creator.NameEndPoint.EndPointServiceTransModesTerminale:
+                        workerRes.Initialize (new InitializeArgument { m_ConnSett = listConnSett [0]
+                            , m_iMainSourceData = settings.MainDataSource
+                            , m_ModeMashine = modeMashine
+                            , m_tsFetchWaking = TimeSpan.Zero
+                            , m_ModeTECComponent = StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.GTP
+                            , m_listID_TECNotUse = listIdTECNotUse
+                        });
+                        break;
+                    case Creator.NameEndPoint.EndPointServiceTransModesCentre:
+                        //TODO: получить доп./параметры из командной строки, из секции конфигурации
+                        fetchWaking = settings.GetValue ("FetchWaking").Split (';');
+                        tsFetchWaking =
+                            StatisticTrans.FileAppSettings.ParseTimeSpan (settings.GetValue ("FetchWaking").Split (new string [] { StatisticTrans.FileAppSettings.DELIM }, StringSplitOptions.RemoveEmptyEntries), DateTime.Now, StatisticTrans.FileAppSettings.TIMESPAN_PARSE_FUNC.DIFFERENCE, StatisticTrans.Contract.Default.FetchWaking);
+
+                        workerRes.Initialize (new InitializeModesCentreArgument { m_ConnSett = listConnSett [0]
+                            , m_iMainSourceData = int.Parse (settings.GetValue ("Main DataSource"))
+                            , m_HostSource = settings.GetValue ("MCServiceHost")
+                            , m_ModeMashine = modeMashine
+                            , m_tsFetchWaking = tsFetchWaking
+                            , m_jEventListener = settings.GetValue ("JEventListener")
+                            , m_ModeTECComponent = StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.GTP
+                            , m_listID_TECNotUse = listIdTECNotUse
+                        });
+                        break;
+                    case Creator.NameEndPoint.EndPointServiceTransTG:
+                        workerRes.Initialize (new InitializeArgument { m_ConnSett = listConnSett [0]
+                            , m_iMainSourceData = settings.MainDataSource
+                            , m_ModeMashine = modeMashine
+                            , m_tsFetchWaking = TimeSpan.Zero
+                            , m_ModeTECComponent = StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.GTP
+                            , m_listID_TECNotUse = listIdTECNotUse
+                        });
+                        break;
+                    case Creator.NameEndPoint.EndPointServiceTransGTP:
+                        workerRes.Initialize(new InitializeArgument{m_ConnSett = listConnSett[0]
+                            ,m_iMainSourceData = settings.MainDataSource
+                            ,m_ModeMashine = modeMashine
+                            ,m_tsFetchWaking = TimeSpan.Zero
+                            ,m_ModeTECComponent = StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.GTP
+                            ,m_listID_TECNotUse = listIdTECNotUse
+                        });
+                        break;
+                    default:
+                        workerRes = null;
+                        break;
+                }
+            } else {
+                messageLog = $@"client NameEndPoint=<{settings.NameEndPoint}> file [{settings.GetValue ("conn - sett")}] not recognized...";
+                ASUTP.Logging.Logg ().Warning (messageLog, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                itssAUX.PrintWarningMessage (messageLog);
+            }
+
+            return workerRes;
+        }
+
+        //public event Action Ended;
+
+        public override void Start ()
+        {
+            _workers?.ForEach (worker => worker?.Start());
+
+            base.Start ();
+        }
+
+        public override void Stop ()
+        {
+            _workers?.ForEach (worker => worker?.Stop ());
+
+            base.Stop ();
+        }
+
+        private void worker_OnInterrupt (Creator.NameEndPoint nameEndPoint)
+        {
+            IWorker worker = null;
+
+            ConfigSectionModesTrans clientSettings = null;
+
+            try {
+                clientSettings =
+                        (ConfigSectionModesTrans)ConfigurationManager.GetSection ($"{ConfigSectionModesTrans.NameSection}");
+
+                worker = (from w in _workers select w).ElementAt (0);
+                _workers.Remove (worker);
+
+                do {
+                    worker = null;
+
+                    try {
+                        worker = createWorker (GetService (nameEndPoint), (from s in clientSettings.ModesTransSettings.Cast<ModesTransClientCollection> () select s).ElementAt (0));
+                    } catch (Exception e) {
+                        ASUTP.Logging.Logg ().Exception (e, "strans.Client::worker_OnInterrupt () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+                        itssAUX.PrintErrorMessage (e.Message);
+                    }
+                } while (Equals (worker, null) == true);
+
+                _workers.Add (worker);
+
+                worker?.Start ();
+            } catch (Exception e) {
+                ASUTP.Logging.Logg ().Exception (e, "strans.Client::worker_OnInterrupt () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+                itssAUX.PrintErrorMessage (e.Message);
+            }
+        }
+    }
+
+    internal class ServiceChannelFactory<T>
+    {
+        // Вариант №2 (T - требуемый тип контракта)
+
+        #region Вариант №3 (T - базовый класс контрактов IServiceTransModes)
+        //Type _typeChannelFactory
+        //    , _typeContract
+        //    , _typeService;
+        #endregion
+
+        public ServiceChannelFactory (
+            //// вариант №3
+            //Type typeChannelFactory, Type typeContract, Type typeService
+            )
+        {
+            #region Вариант №3
+            //if (typeContract.IsAssignableFrom (typeService) == true) {
+            //    _typeChannelFactory = typeChannelFactory;
+            //    _typeContract = typeContract;
+            //    _typeService = typeService;
+            //} else
+            //    throw new InvalidCastException ($"<{_typeContract.FullName}> can't cast to target type <{_typeService.FullName}>");
+            #endregion
+        }
+
+        public T Create (Action<StatisticTrans.Contract.ServiceCallbackResultEventArgs> fCallback, string nameEndPoint)
+        {
+            T tRes;
+
+            InstanceContext instContext;
+
+            instContext = new InstanceContext (new StatisticTrans.Contract.ServiceCallback (fCallback));
+
+            #region Вариант №3
+            //object channelFactory;
+            //MethodInfo createChannel;
+
+            //channelFactory = Activator.CreateInstance (_typeChannelFactory.MakeGenericType (new Type [] { _typeContract }), new object [] {instContext , nameEndPoint });
+            //createChannel = _typeChannelFactory.GetMethod ("CreateChannel", new Type [] { });
+            #endregion
+
+            tRes =
+                //(T2)Activator.CreateInstance(typeof(T1), new InstanceContext (new ServiceCallback (fCallback)), nameEndPoint)
+                // вариант №2
+                new System.ServiceModel.DuplexChannelFactory<T> (instContext, nameEndPoint).CreateChannel()
+                //// вариант №3, исключение, т.к. '_typeChannelFactory' содержит обязательный тип при инициализации
+                //(T)createChannel.Invoke (channelFactory, null)
+                ;
+
+            return tRes;
+        }
+    }
+}

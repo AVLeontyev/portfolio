@@ -1,0 +1,576 @@
+﻿using ASUTP;
+using StatisticCommon;
+using StatisticTrans;
+using StatisticTrans.Contract;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.ServiceModel;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace strans
+{
+    partial class Client
+    {
+        private interface IWorker
+        {
+            void Start ();
+
+            void Stop ();
+
+            bool Initialize (IInitializeArgument arg);
+
+            MODE_MASHINE ModeMashine { get; set; }
+
+            event Action<Creator.NameEndPoint> Interrupt;
+        }
+
+        private interface IInitializeArgument
+        {
+            ASUTP.Database.ConnectionSettings m_ConnSett { get; set; }
+
+            int m_iMainSourceData { get; set; }
+
+            MODE_MASHINE m_ModeMashine { get; set; }
+
+            TimeSpan m_tsFetchWaking { get; set; }
+
+            FormChangeMode.MODE_TECCOMPONENT m_ModeTECComponent { get; set; }
+
+            List<int> m_listID_TECNotUse { get; set; }
+        }
+
+        private class InitializeArgument : IInitializeArgument
+        {
+            public ASUTP.Database.ConnectionSettings m_ConnSett { get; set; }
+
+            public int m_iMainSourceData { get; set; }
+
+            public MODE_MASHINE m_ModeMashine { get; set; }
+
+            public TimeSpan m_tsFetchWaking { get; set; }
+
+            public FormChangeMode.MODE_TECCOMPONENT m_ModeTECComponent { get; set; }
+
+            public List<int> m_listID_TECNotUse { get; set; }
+        }
+
+        private class InitializeModesTerminaleArgument : InitializeArgument
+        {
+        }
+
+        private class InitializeModesCentreArgument : InitializeArgument
+        {
+            public string m_HostSource { get; set; }
+
+            public string m_jEventListener { get; set; }
+        }
+
+        /// <summary>
+        /// Класс для реализации работы клиента по вызовам методов объекта развернутого сервиса
+        /// </summary>
+        private abstract class Worker : IWorker
+        {
+            public struct NeedMessageDebugLogging
+            {
+                public IdPseudoDelegate Id;
+
+                public bool IsConsole;
+
+                public bool IsLogging;
+            }
+
+            private static readonly IList<NeedMessageDebugLogging> _listNeedMessageDebugLoggingDefault = new List<NeedMessageDebugLogging> () {
+                new NeedMessageDebugLogging() { Id = IdPseudoDelegate.Error, IsConsole = true, IsLogging = true }
+                , new NeedMessageDebugLogging() { Id = IdPseudoDelegate.Started, IsConsole = true, IsLogging = true }
+                , new NeedMessageDebugLogging() { Id = IdPseudoDelegate.Stopped, IsConsole = true, IsLogging = true }
+                , new NeedMessageDebugLogging() { Id = IdPseudoDelegate.Ready, IsConsole = true, IsLogging = true }
+                , new NeedMessageDebugLogging() { Id = IdPseudoDelegate.SaveCompleted, IsConsole = true, IsLogging = true }
+            };
+
+            private IList<NeedMessageDebugLogging> _listNeedMessageDebugLogging;
+
+            public Creator.NameEndPoint NameEndPoint { get; private set; }
+
+            protected StatisticTrans.Contract.IServiceTransModes _client;
+
+            private bool __interrupt;
+            private bool _interrupt
+            {
+                get
+                {
+                    return __interrupt;
+                }
+
+                set
+                {
+                    __interrupt = value;
+
+                    if (value == true) {
+                        timerClientActivate (false);
+                        timerClient = null;
+
+                        itssAUX.PrintErrorMessage ("аварийное завершение соединения...");
+
+                        Interrupt?.Invoke (NameEndPoint);
+                    } else
+                        ;
+                }
+            }
+
+            private DateTime _datetimePicker;
+
+            private System.Threading.Timer timerClient;
+
+            protected MODE_MASHINE _modeMashine;
+
+            public event Action<Creator.NameEndPoint> Interrupt;
+
+            public MODE_MASHINE ModeMashine { get { return _modeMashine; } set { _modeMashine = value; } }
+
+            public Worker (Creator.NameEndPoint nameEndPoint, Type contractType, Type serviceType, IEnumerable<NeedMessageDebugLogging> listNeedMessageDebugLogging = default(List<NeedMessageDebugLogging>))
+            {
+                NameEndPoint = nameEndPoint;
+
+                _datetimePicker = DateTime.Now.Date;
+                _client = createClient(nameEndPoint.ToString());
+                _modeMashine = MODE_MASHINE.UNKNOWN;
+
+                _listNeedMessageDebugLogging = (listNeedMessageDebugLogging == default (List<NeedMessageDebugLogging>))
+                    ? _listNeedMessageDebugLoggingDefault
+                        : listNeedMessageDebugLogging.Concat(_listNeedMessageDebugLoggingDefault).ToList();
+            }
+
+            public virtual bool Initialize (IInitializeArgument arg)
+            {
+                _modeMashine = arg.m_ModeMashine;
+
+                return true;
+            }
+
+            protected abstract IServiceTransModes createClient (string nameEndPoint);
+
+            public virtual void Start ()
+            {
+                bool bImmediately = false; // признак немедленного 
+
+                Task.Factory.StartNew (() => _client.Start ()).Wait();
+
+                bImmediately = (!(ModeMashine == MODE_MASHINE.INTERACTIVE)
+                    || (ModeMashine == MODE_MASHINE.UNKNOWN));
+                switch (ModeMashine) {
+                    case MODE_MASHINE.SERVICE_ON_EVENT:
+                        _client.Activate (StatisticTrans.CONN_SETT_TYPE.SOURCE, true);
+                        break;
+                    default:
+                        break;
+                }
+
+                initializeTimerClient ();
+                // немедленно начать выполнение
+                if (bImmediately == true)
+                    timerClientActivate (true);
+                else
+                    ;
+            }
+
+            public virtual void Stop ()
+            {
+                timerClientActivate (false);
+
+                try {
+                    switch (ModeMashine) {
+                        case MODE_MASHINE.SERVICE_ON_EVENT:
+                            _client.Activate (StatisticTrans.CONN_SETT_TYPE.SOURCE, false);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    // нельзя в одном методе выполнить 'OneWay=true' и 'OneWay=false'
+                    Task.Factory.StartNew (() => {
+                        _client.Stop ();
+                    })
+                    .Wait ()
+                        ;
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, "Client.Worker::Stop () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    _client = null;
+                }
+            }
+
+            /// <summary>
+            /// Инициализация таймера для выполнения регулярных/периодических опросов
+            ///  , аналог 'FormMainTrans::InitializeTimerService'
+            /// </summary>
+            private void initializeTimerClient ()
+            {
+                if (Equals(timerClient, null) == true) {
+                    timerClient =
+                        //new System.Windows.Forms.Timer ()
+                        new System.Threading.Timer(this.timerClient_Tick)
+                        ;
+                    timerClient.Change (System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    //TODO: как определить 1-ый запуск
+                    //timerService.Interval = ProgramBase.TIMER_START_INTERVAL; //Первый запуск
+                    //timerService.Tick += new System.EventHandler (this.timerService_Tick);
+                } else
+                    ;
+            }
+
+            private void timerClientActivate (bool bActivated)
+            {
+                timerClient.Change (bActivated == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            }
+
+            private void timerClientActivate ()
+            {
+                timerClient.Change (StatisticTrans.Contract.Default.TIMER_SERVICE_MIN_INTERVAL, System.Threading.Timeout.Infinite);
+            }
+
+            protected virtual void timerClient_Tick (object obj)
+            {
+                int due = System.Threading.Timeout.Infinite;
+
+                try {
+                    //TODO: как определить 1-ый запуск
+
+                    trans_auto_start ();
+
+                    // очередная итерация
+                    timerClient.Change (due, System.Threading.Timeout.Infinite);
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    _interrupt = true;
+                }
+            }
+
+            private void trans_auto_start ()
+            {
+                _client.PrepareActionRDGValues (StatisticTrans.CONN_SETT_TYPE.SOURCE);
+
+                trans_auto_next ();
+            }
+
+            private void trans_auto_next ()
+            {
+                FormChangeMode.KeyDevice key = _client.GetFirstTECComponentKey (StatisticTrans.CONN_SETT_TYPE.SOURCE);
+
+                if (key.Equals (FormChangeMode.KeyDevice.Empty) == false)
+                   _client.GetRDGValues (StatisticTrans.CONN_SETT_TYPE.SOURCE, key, _datetimePicker);
+                else
+                    trans_auto_stop();
+            }
+
+            protected virtual void trans_auto_stop ()
+            {
+                //TODO: только для возможности вызывать '_client.FetchEvent'
+                switch (ModeMashine) {
+                    case MODE_MASHINE.INTERACTIVE:
+                        break;
+                    case MODE_MASHINE.SERVICE_ON_EVENT:
+                        break;
+                    case MODE_MASHINE.SERVICE_PERIOD:
+                        timerClientActivate ();
+                        break;
+                    case MODE_MASHINE.SERVICE_TO_DATE:
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            protected virtual void _callback_EventRaise (ServiceCallbackResultEventArgs arg1)
+            {
+                DateTime date;
+                bool bResult = false;
+                HAdmin.RDGStruct [] values;
+
+                Action<ServiceCallbackResultEventArgs> eventRaise = delegate (ServiceCallbackResultEventArgs arg2) {
+                    switch (arg2.Id) {
+                        case IdPseudoDelegate.Started:
+                            delegateStartCompleted ();
+                            break;
+                        case IdPseudoDelegate.Stopped:
+                            delegateStopCompleted ();
+                            break;
+                        //case IdPseudoDelegate.Closed:
+                        //    delegateCloseCompleted ();
+                        //    break;
+                        case IdPseudoDelegate.WaitStart:
+                            delegateStartWait ();
+                            break;
+                        case IdPseudoDelegate.WaitStop:
+                            delegateStopWait ();
+                            break;
+                        case IdPseudoDelegate.WaitStatus:
+                            break;
+                        case IdPseudoDelegate.ReportError:
+                            ErrorReport ((string)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.ReportWarning:
+                            WarningReport ((string)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.ReportAction:
+                            ActionReport ((string)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.ReportClear:
+                            ReportClear ((bool)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.SetForceDate:
+                            setDatetimePicker ((DateTime)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.Ready:
+                            setDataGridViewAdmin (arg2.Stamp, (bool)arg2.Data, arg2.Values);
+                            break;
+                        case IdPseudoDelegate.Error:
+                            errorDataGridViewAdmin ((int)arg2.Data);
+                            break;
+                        case IdPseudoDelegate.SaveCompleted:
+                            saveDataGridViewAdminComplete ((int)arg2.Data);
+                            break;
+                        default:
+                            ErrorReport ("неизвестный ответ от службы");
+                            break;
+                    }
+
+                    debug (arg1.Id, $"::_callback_EventRaise () - NameEndPoint:{NameEndPoint}, Id:<{arg1.Id}>...");
+                };
+
+                Task.Factory.StartNew (() => eventRaise(arg1));
+            }
+
+            private NeedMessageDebugLogging getNeedMessageDebugLogging (IdPseudoDelegate id)
+            {
+                return (from need in _listNeedMessageDebugLogging where need.Id == id select need).ElementAtOrDefault(0);
+            }
+
+            private void debug (IdPseudoDelegate id, string mes)
+            {
+                NeedMessageDebugLogging need = getNeedMessageDebugLogging(id);
+
+                if (need.IsConsole == true) itssAUX.PrintDebugMessage (mes); else;
+                if (need.IsLogging == true) Logging.Logg ().Debug (mes, Logging.INDEX_MESSAGE.NOT_SET); else;
+            }
+
+            private void error (IdPseudoDelegate id, string mes)
+            {
+                NeedMessageDebugLogging need = getNeedMessageDebugLogging (id);
+
+                if (need.IsConsole == true) itssAUX.PrintErrorMessage (mes); else;
+                if (need.IsLogging == true) Logging.Logg ().Error (mes, Logging.INDEX_MESSAGE.NOT_SET); else;
+            }
+
+            private void warning (IdPseudoDelegate id, string mes)
+            {
+                NeedMessageDebugLogging need = getNeedMessageDebugLogging (id);
+
+                if (need.IsConsole == true) itssAUX.PrintWarningMessage (mes); else;
+                if (need.IsLogging == true) Logging.Logg ().Warning (mes, Logging.INDEX_MESSAGE.NOT_SET); else;
+            }
+
+            #region Указания о готовности к работе/завершению работы
+            private void delegateStartCompleted ()
+            {
+            }
+
+            private void delegateStopCompleted ()
+            {
+                Action delegateClose = async () => {
+                    await Task.Factory.StartNew (() => {
+                        _client.Close ();
+                    })
+                    .ContinueWith((taskCompleted) => {
+                        _client = null;
+                    });     
+                };
+
+                delegateClose ();
+            }
+
+            //private void delegateCloseCompleted ()
+            //{
+            //    _client = null;
+            //}
+            #endregion
+
+            #region Указания о длительно выполняющейся операции
+            private void delegateStartWait ()
+            {
+            }
+
+            private void delegateStopWait ()
+            {
+            }
+            #endregion
+
+            #region Сообщения об ошибках/предупреждениях/действиях
+            private void ErrorReport (string report)
+            {
+                debug (IdPseudoDelegate.ReportError, $"::ErrorReport () - NameEndPoint:{NameEndPoint}, Report: [{report}]...");
+            }
+
+            private void WarningReport (string report)
+            {
+                warning (IdPseudoDelegate.ReportWarning, $"::WarningReport () - NameEndPoint:{NameEndPoint}, Report: [{report}]...");
+            }
+
+            private void ActionReport (string report)
+            {
+                debug (IdPseudoDelegate.ReportAction, $"::ActionReport () - NameEndPoint:{NameEndPoint}, Report: [{report}]...");
+            }
+
+            private void ReportClear (bool bClear)
+            {
+                debug (IdPseudoDelegate.ReportClear, $"::ReportClear () - NameEndPoint:{NameEndPoint}, Report: [{bClear}]...");
+            }
+            #endregion
+
+            #region Возвращение результата длительно выполняющихся операций
+            private void setDataGridViewAdmin (DateTime date, bool bResult, IEnumerable<HAdmin.RDGStruct> values)
+            {
+                FormChangeMode.KeyDevice key;
+
+                debug (IdPseudoDelegate.Ready, $"::setDataGridViewAdmin () - NameEndPoint:{NameEndPoint}, Date: [{date.Date}], Values(count: [{(Equals (values, null) == false ? values.Count().ToString() : "не известно")}])...");
+
+                try {
+                    if (bResult == true) {
+                        key = _client.GetCurrentKey (StatisticTrans.CONN_SETT_TYPE.SOURCE);
+                        _client.CopyRDGValues (StatisticTrans.CONN_SETT_TYPE.SOURCE, StatisticTrans.CONN_SETT_TYPE.DEST);
+                        _client.SaveRDGValues (StatisticTrans.CONN_SETT_TYPE.DEST, new PARAMToSaveRDGValues (key, date, false));
+                    } else
+                        ;
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    _interrupt = true;
+                }
+            }
+
+            private void errorDataGridViewAdmin (int iState)
+            {
+                error (IdPseudoDelegate.Error, $"::errorDataGridViewAdmin () - NameEndPoint:{NameEndPoint}, State: [{iState}]...");
+
+                clientTECComponentComplete (iState, false);
+            }
+
+            /// <summary>
+            /// При [авто]режиме переход к следующему элементу списка компонентов
+            /// </summary>
+            private void saveDataGridViewAdminComplete (int iState)
+            {
+                debug (IdPseudoDelegate.SaveCompleted, $"::saveDataGridViewAdminComplete () - NameEndPoint:{NameEndPoint}, State: [{iState}]...");
+
+                clientTECComponentComplete (iState, true);
+            }
+
+            private void clientTECComponentComplete (int iState, bool bResult)
+            {
+                try {
+                    _client.TECComponentComplete (StatisticTrans.CONN_SETT_TYPE.SOURCE, iState, bResult);
+                    trans_auto_next ();
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+
+                    itssAUX.PrintErrorMessage (e.Message);
+
+                    _interrupt = true;
+                }
+            }
+
+            private void setDatetimePicker (DateTime date)
+            {
+                _datetimePicker = date;
+            }
+            #endregion
+        }
+
+        private class WorkerModesTerminale : Worker
+        {
+            public WorkerModesTerminale (Creator.NameEndPoint nameEndPoint, Type contractType, Type serviceType)
+                : base (nameEndPoint, contractType, serviceType)
+            {
+            }
+
+            protected override IServiceTransModes createClient (string nameEndPoint)
+            {
+                return new ServiceChannelFactory
+                        <StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale> // вариант №2
+                        // вариант №3 <IServiceTransModes>
+                    (
+                        // вариант №2 - нет аргументов
+                        // вариант №3 typeof(System.ServiceModel.DuplexChannelFactory<>), contractType, serviceType
+                    ).Create (_callback_EventRaise, nameEndPoint);
+            }
+
+            public override bool Initialize (IInitializeArgument arg)
+            {
+                return Equals (_client, null) == false
+                    && base.Initialize (arg) == true
+                    && ((StatisticTrans.Contract.ModesTerminale.IServiceModesTerminale)_client).Initialize (arg.m_ConnSett
+                        , arg.m_iMainSourceData
+                        , arg.m_ModeMashine
+                        , arg.m_tsFetchWaking
+                        , arg.m_ModeTECComponent
+                        , arg.m_listID_TECNotUse);
+            }
+        }
+
+        private class WorkerModesCentre : Worker
+        {
+            public WorkerModesCentre (Creator.NameEndPoint nameEndPoint, Type contractType, Type serviceType)
+                : base (nameEndPoint, contractType, serviceType)
+            {
+            }
+
+            protected override IServiceTransModes createClient (string nameEndPoint)
+            {
+                return new ServiceChannelFactory
+                        <StatisticTrans.Contract.ModesCentre.IServiceModesCentre> // вариант №2
+                        // вариант №3 <IServiceTransModes>
+                    (
+                        // вариант №2 - нет аргументов
+                        // вариант №3 typeof(System.ServiceModel.DuplexChannelFactory<>), contractType, serviceType
+                    ).Create (_callback_EventRaise, nameEndPoint);
+            }
+
+            public override bool Initialize (IInitializeArgument arg)
+            {
+                return Equals (_client, null) == false
+                    && base.Initialize (arg) == true
+                    && ((StatisticTrans.Contract.ModesCentre.IServiceModesCentre)_client).Initialize (arg.m_ConnSett
+                        , arg.m_iMainSourceData
+                        , (arg as InitializeModesCentreArgument).m_HostSource
+                        , arg.m_ModeMashine
+                        , arg.m_tsFetchWaking
+                        , (arg as InitializeModesCentreArgument).m_jEventListener
+                        , arg.m_ModeTECComponent
+                        , arg.m_listID_TECNotUse);
+            }
+
+            protected override void timerClient_Tick (object obj)
+            {
+                base.timerClient_Tick (obj);
+            }
+
+            protected override void trans_auto_stop ()
+            {
+                if (((StatisticTrans.Contract.ModesCentre.IServiceModesCentre)_client).IsServiceOnEvent == true)
+                    ((StatisticTrans.Contract.ModesCentre.IServiceModesCentre)_client).FetchEvent (true);
+                else
+                    ;
+
+                base.trans_auto_stop ();
+            }
+        }
+    }
+}

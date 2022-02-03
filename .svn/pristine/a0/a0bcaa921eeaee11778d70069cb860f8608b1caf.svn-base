@@ -1,0 +1,42 @@
+192.168.30.230
+192.168.32.230
+192.168.33.230
+192.168.34.230
+192.168.35.230
+
+1433
+Piramida2000
+client
+12345678
+
+10.220.2.60
+1433
+SborBiysk
+sibeco
+sibeco
+
+10.100.104.22
+3306
+techsite
+techsite
+12345
+
+Áèéñê...
+ÁÄ ÀÈÈÑ ÊÓÝ – ïîðò: 1433
+IP: 10.220.2.60
+ÁÄ: SborBiysk
+User: sibeco
+Login: sibeco
+
+ÁÄ ÏÁÐ – ïîðò: 3306
+IP: 10.220.2.64
+ÁÄ: techsite
+User: sibecopbr
+Login: sibeco
+
+
+SELECT DATE_TIME
+FROM PPBRvsPBRnew
+WHERE DATE_TIME >'2013-02-10 00:00:00'
+AND DATE_TIME <='2013-02-11 00:00:00'
+ORDERBY DATE_TIME ASC

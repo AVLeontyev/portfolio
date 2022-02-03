@@ -1,0 +1,1435 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ASUTP.Helper</name>
+    </assembly>
+    <members>
+        <member name="T:ASUTP.Helper.FileINI.MODE_SECTION_APPLICATION">
+            <summary>
+            Перечисление - режим обработки принадлежности секций
+             при UNNAMED наименование исполняемого файла игнорируется
+             при INSTANCE (режим по умолчанию) используется собственное наименование приложения
+             при CUSTOM д.б. указано наименование исполняемого файла в качестве принадлежности секции
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.FileINI._modeSectionApp">
+            <summary>
+            Режим обработки принадлежности секции для текущего экземпляра объекта
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.FileINI.m_strSecAppCustom">
+            <summary>
+            Принадлежность секции в режиме 'CUSTOM'
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.FileINI.TYPE">
+            <summary>
+            Перечисление - известный формат файлов конфигурации
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.FileINI._type">
+            <summary>
+            Формат обрабатываемого файоа конфигурации текущим экземпляром
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.FileINI.INDEX_DELIMETER">
+            <summary>
+            Перечисление для индексирования символов-разделителей
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.FileINI.s_chSecDelimeters">
+            <summary>
+            Символы-разделители
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.FileINI.m_NameFileINI">
+            <summary>
+            Наименовние файла конфигурации
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.FileINI.m_values">
+            <summary>
+            Словарь со всеми значениями из файла конфигурации
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.FileINI.SEC_SHR_MAIN">
+            <summary>
+            Наименование (краткое) главной секции файла конфигурации
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.FileINI.SEC_APP">
+            <summary>
+            Часть секции - признак принадлежности текущему приложению
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.FileINI.SEC_MAIN">
+            <summary>
+            Наименование главной секции файла конфигурации
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.FileINI.isMainSec">
+            <summary>
+            Проверить наличие главной секции
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.isSec(System.String)">
+            <summary>
+            Проверить наличие секции
+            </summary>
+            <param name="sec_shr">Нименвание секции (краткое)</param>
+            <returns>Признак наличия секции</returns>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.isSecApp(System.String)">
+            <summary>
+            Проверка принадлежности секции текущему приложению
+            </summary>
+            <param name="sec">Наименование секции</param>
+            <returns>Признак принадлежности</returns>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.isMainSecKey(System.String)">
+            <summary>
+            Проверка наличия ключа в главной секции
+            </summary>
+            <param name="key">Ключ для проверки</param>
+            <returns>Признак наличия ключа</returns>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.isSecKey(System.String,System.String)">
+            <summary>
+            Проверка наличия ключа в секции
+            </summary>
+            <param name="sec_shr">Часть "смысловая" наименования секции</param>
+            <param name="key">Ключ для проверки</param>
+            <returns>Признак наличия ключа</returns>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.#ctor(System.String,System.Boolean,ASUTP.Helper.FileINI.MODE_SECTION_APPLICATION)">
+            <summary>
+            Конструктор - основной
+            </summary>
+            <param name="nameFile">Имя файла конфигурации</param>
+            <param name="bReadAuto">Признак автоматического считывания всех параметров при создании</param>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.GetMainValueOfKey(System.String)">
+            <summary>
+            Получить значение из главной секции по ключу
+            </summary>
+            <param name="key">Ключ в главной секции</param>
+            <returns>Значение параметра по ключу</returns>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.SetMainValueOfKey(System.String,System.String)">
+            <summary>
+            Установить значение по ключу в главной секции
+            </summary>
+            <param name="key">Ключ для сохранения значения</param>
+            <param name="val">Значение для сохранения</param>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.SetSecValueOfKey(System.String,System.String,System.String)">
+            <summary>
+            Установить значение по ключу в указанной секции
+            </summary>
+            <param name="sec_shr">Краткое наименование секции</param>
+            <param name="key">Ключ для сохранения значения</param>
+            <param name="val">Значение для сохранения</param>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.GetSecValueOfKey(System.String,System.String)">
+            <summary>
+            Получить значение из указанной секции по ключу
+            </summary>
+            <param name="sec_shr">Секция в кторой размещен парметр с ключом</param>
+            <param name="key">Ключ для получения значения</param>
+            <returns>Значение параметра по ключу</returns>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.getSecValues(System.String)">
+            <summary>
+            Возвратить словарь всех значений для секции
+            </summary>
+            <param name="sec_shr">Наименование секции</param>
+            <returns>Словарь значений в секции</returns>
+        </member>
+        <member name="M:ASUTP.Helper.FileINI.#ctor(System.String,System.Boolean,System.String[],System.String[],ASUTP.Helper.FileINI.MODE_SECTION_APPLICATION)">
+            <summary>
+            Конструктор - дополн. (при создании добавляет в словарь указаныые параметры ключ-значение)
+            </summary>
+            <param name="nameFile">Наименование файла</param>
+            <param name="bReadAuto">Признак автоматического считывания всех параметров при создании</param>
+            <param name="par">Массив ключей параметров</param>
+            <param name="val">Массив значений параметров</param>
+        </member>
+        <member name="T:ASUTP.Helper.HCmd_Arg">
+            <summary>
+            Класс обработки камандной строки
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HCmd_Arg.m_dictCmdArgs">
+            <summary>
+            Значения командной строки
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.#ctor(System.String[])">
+            <summary>
+            Основной конструктор класса
+            </summary>
+            <param name="args">Параметры командной строки</param>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.handlerArgs(System.String[])">
+            <summary>
+            Обработка CommandLine - формирование словаря со значениями
+            </summary>
+            <param name="cmdLine">Параметры командной строки</param>
+        </member>
+        <member name="T:ASUTP.Helper.HCmd_Arg.ProgramInfo">
+            <summary>
+            Класс для создания спец имени для мьютекса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.ProgramInfo.NewGuid">
+            <summary>
+            Создание GUID для приложения
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ASUTP.Helper.HCmd_Arg.ProgramInfo.NameMtx">
+            <summary>
+            Строковя уникальная строка для наименования мьютекса
+             (из пути запускаемого приложения)
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HCmd_Arg.ProgramInfo.AssemblyTitle">
+            <summary>
+            Получение имени запускаемого файла
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.HCmd_Arg.SingleInstance">
+            <summary>
+            Класс по работе с запущенным приложением
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HCmd_Arg.SingleInstance.IsOnlyInstance">
+            <summary>
+            Проверка на повторный запуск
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.SingleInstance.sendMsg(System.IntPtr,System.Int32,System.IntPtr)">
+            <summary>
+            Отправка сообщения приложению
+            для его активации
+            </summary>
+            <param name="hWnd">Дескриптор окна</param>
+            <param name="iMsg">Идентификатор передаваемого сообщения</param>
+            <param name="wParam">Дополнительный аргумент для передачи</param>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.SingleInstance.ReleaseMtx">
+            <summary>
+            Освобождение объекта синхронизации
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.SingleInstance.StopDupApp">
+            <summary>
+            Остановка работы дублирующего приложения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.SingleInstance.InterruptReApp">
+            <summary>
+            Прерывание запуска основного(текущего) приложения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.SingleInstance.getHandleDupWnd(System.Diagnostics.Process)">
+            <summary>
+            Дескриптор окна дублирующего процесса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.SingleInstance.getHandleDupWnd">
+            <summary>
+            Дескриптор окна дублирующего процесса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.SingleInstance.getWindowThreadProcessId(System.Int32)">
+            <summary>
+            Возвратить дескриптор окна по идентификатору процесса
+            </summary>
+            <param name="id">Идентификатор процесса</param>
+            <returns>Дескриптор (главного) окна приложения</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.SingleInstance.SwitchToDupInstance">
+            <summary>
+            Активация окна
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.SingleInstance.getWindowThreadProcessId(System.Int32,System.IntPtr,System.Boolean@)">
+            <summary>
+            Возвратить дескриптор окна, если процесс является его владельцем, иначе null
+            </summary>
+            <param name="id">Идентификатор приложения</param>
+            <param name="hWnd">Дескриптор окна для проверки</param>
+             <param name="bIsOwner">Признак совпадения идентификаторов главных потоков (???процессов) переданного в 1-ом аргументе и владельца окна, переданного во 2-ом аргументе</param>
+            <returns>Дескриптор окна</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HCmd_Arg.execCmdLine(System.Boolean,System.Boolean)">
+            <summary>
+            Обработка команды старт/стоп
+            </summary>
+            <param name="bIsExecute">Признак продолжения выполнения текущего экземпляра</param>
+            <param name="bIsOnlyInstance">Признак уникальности текущего экземпляра</param>
+        </member>
+        <member name="T:ASUTP.Helper.HHandler">
+            <summary>
+            Класс - базовый для обработки состояний/событий
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandler.m_lockState">
+            <summary>
+            Объект для синхронизации изменения списка событий
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandler.taskThreadState">
+            <summary>
+            Объект потока обработки событий очереди
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandler.semaState">
+            <summary>
+            Объект синхронизации, разрешающий начало обработки очереди событий
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON">
+            <summary>
+            Индексы для массива объектов синхронизации
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandler.m_waitHandleState">
+            <summary>
+            Массив объектов синхронизации
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandler.threadStateIsWorking">
+            <summary>
+            Признак состояния потока
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandler._indexCurState">
+            <summary>
+            Текущий индекс массива обрабатываемых состояний
+             используется только в "потоковой" функции
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HHandler.IndexCurState">
+            <summary>
+            Текущий индекс массива обрабатываемых состояний
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandler.newState">
+            <summary>
+            Признак прерывания текущего цикла обработки состояний
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.HHandler.FLAG">
+            <summary>
+            Перечисление - возможные признаки для состояния
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandler.states">
+            <summary>
+            Список событий (состояний) для обработки (или очередь)
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HHandler.Actived">
+            <summary>
+            Свойство - Признак активности потока
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.#ctor">
+            <summary>
+            Конструктор - основной
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.Initialize">
+            <summary>
+            Инициализация
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HHandler.IsFirstActivated">
+            <summary>
+            признак 1-ой активации
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HHandler.IsStarted">
+            <summary>
+            Признак выполнения потоковой функции (был вызван метод 'Старт')
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.Activate(System.Boolean)">
+            <summary>
+            Изменение состояния потока
+            </summary>
+            <param name="active">Значение нового сотояния</param>
+            <returns>Признак изменения состояния</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.InitializeSyncState(System.Int32)">
+            <summary>
+            Инициализация объектов синхронизации
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.AddSyncState(System.Collections.Generic.IEnumerable{ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON},System.Collections.Generic.IEnumerable{System.Type},System.Collections.Generic.IEnumerable{System.Boolean})">
+            <summary>
+            Инициализация объектов синхронизации (без учета обязательного 'SUCCESS')
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.AddSyncState(ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON,System.Type,System.Boolean)">
+            <summary>
+            Инициализация объектов синхронизации
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.SetSyncState(ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON)">
+            <summary>
+            Установить (разрешающее) состояние объекта синхронизации
+            </summary>
+            <param name="indx">Индекс объекта синхронизации</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.Start">
+            <summary>
+            Старт потоковой функции обработки событий
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.Stop">
+            <summary>
+            Останов потоковой функции обработки событий
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.Run(System.String,System.Boolean)">
+            <summary>
+            Начать обработку списка событий
+            </summary>
+            <param name="throwMes">Сообщение при ошибке</param>
+            <param name="bForced">Признак принудительного освобождени ресурса (для останова)</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.isLastState(System.Int32)">
+            <summary>
+            Проверить является ли указанное состояние последним в очереди
+            </summary>
+            <param name="state">Состояние для проверки</param>
+            <returns>Признак выполнения условия</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.AddState(System.Int32)">
+            <summary>
+            Добавить состояние в список
+            </summary>
+            <param name="state">Добавляемое состояние</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.ClearStates">
+            <summary>
+            Очистить список состояний (событий)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.StateCheckResponse(System.Int32,System.Boolean@,System.Object@)">
+            <summary>
+            Получить результат обработки события
+            </summary>
+            <param name="state">Событие для получения результата</param>
+            <param name="error">Признак ошибки при получении результата</param>
+            <param name="outobj">Результат запроса</param>
+            <returns>Признак получения результата</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.StateRequest(System.Int32)">
+            <summary>
+            Запросить результат для события
+            </summary>
+            <param name="state">Событие запроса</param>
+            <returns>Признак отправления результата</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.StateResponse(System.Int32,System.Object)">
+            <summary>
+            Обработка УСЕШНО полученного результата
+            </summary>
+            <param name="state">Состояние для результата</param>
+            <param name="obj">Значение результата</param>
+            <returns>Признак обработки результата</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.StateErrors(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Обработка КРИТИЧЕСКОЙ ошибки при получении результата
+            </summary>
+            <param name="state">Состояние запроса</param>
+            <param name="req">Признак получения ответа при запросе</param>
+            <param name="res">Признак...</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.StateWarnings(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Обработка НЕ КРИТИЧной ошибки при получении результата
+            </summary>
+            <param name="state">Состояние запроса</param>
+            <param name="req">Признак получения ответа при запросе</param>
+            <param name="res">Признак...</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.ThreadStates(System.Object)">
+            <summary>
+            Потоковая функция
+            </summary>
+            <param name="data">Параметр при старте потоковой функции</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.completeHandleStates(ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON)">
+            <summary>
+            Установить признак окончания обработки всех событий
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.WaitOne(ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON,System.Int32,System.Boolean)">
+            <summary>
+            Ожидать сигнала объекта синхронизации с индексом
+            </summary>
+            <param name="indxEv">Индекс объекиа синхронизации</param>
+            <param name="msec_wait">Период ожидания (System.Threading.Timeout.Infinite - бесконечно)</param>
+            <param name="bExitContext">Признак выхода из домена синхронизации перед ожиданием</param>
+            <returns>Результат ожидания</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.WaitOne(ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON,System.TimeSpan,System.Boolean)">
+            <summary>
+            Ожидать разрешающего состояния объекта синхронизации
+            </summary>
+            <param name="indxEv">Индекс объекта синхронизации</param>
+            <param name="ts_wait">Период(интервал) ожидания</param>
+            <param name="bExitContext">Признак выхода из домена синхронизации перед ожиданием</param>
+            <returns>Признак результата ожидания</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.WaitAny(System.Int32,System.Boolean)">
+            <summary>
+            Ожидать разрешающего состояния любого из объектов синхронизации
+            </summary>
+            <param name="msec_wait">Период(интервал) ожидания</param>
+            <param name="bExitContext">Признак выхода из домена синхронизации перед ожиданием</param>
+            <returns>Индекс объекта синхронизации</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.WaitAny(System.TimeSpan,System.Boolean)">
+            <summary>
+            Ожидать разрешающего состояния любого из объектов синхронизации
+            </summary>
+            <param name="ts_wait">Период(интервал) ожидания</param>
+            <param name="bExitContext">Признак выхода из домена синхронизации перед ожиданием</param>
+            <returns>Индекс объекта синхронизации</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.ResetSyncState">
+            <summary>
+            Установить (запрещающее) состояние для всех объектов синхронизации
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandler.ResetSyncState(ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON)">
+            <summary>
+            Установить (запрещающее) состояние объекта синхронизации
+            </summary>
+            <param name="indx">Индекс объекта синхронизации</param>
+        </member>
+        <member name="T:ASUTP.Helper.HHandlerDb">
+            <summary>
+            Класс отправления, обработки результатов запросов к источникам данных
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerDb.delegateStartWait">
+            <summary>
+            Делегат функции оповещения о выполняемой операции (выполнение, завершение, обновление состояния)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerDb.delegateStopWait">
+            <summary>
+            Делегат функции оповещения о выполняемой операции (выполнение, завершение, обновление состояния)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerDb.delegateEventUpdate">
+            <summary>
+            Делегат функции оповещения о выполняемой операции (выполнение, завершение, обновление состояния)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerDb.errorReport">
+            <summary>
+            Делегаты размещения сообщений в строке состояния (ошибкаб предупреждение, действие, очистить строку состояния)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerDb.warningReport">
+            <summary>
+            Делегаты размещения сообщений в строке состояния (ошибкаб предупреждение, действие, очистить строку состояния)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerDb.actionReport">
+            <summary>
+            Делегаты размещения сообщений в строке состояния (ошибкаб предупреждение, действие, очистить строку состояния)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerDb.clearReportStates">
+            <summary>
+            Делегат очистки строки состояния
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerDb.m_IdListenerCurrent">
+            <summary>
+            Идентификатор (текущий) соединения с источником информации при выполнении запроса
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerDb.m_dictIdListeners">
+            <summary>
+            Словарь идентификаторов соединения с источником информации
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.#ctor">
+            <summary>
+            Конструктор - основной
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.register(System.Int32,System.Int32,ASUTP.Database.AtomConnectionSettings)">
+            <summary>
+            Регистрация источника информации с наименованием по ключю, типу, параметрами соединения
+            </summary>
+            <param name="id">Ключ группы источников информации</param>
+            <param name="indx">Тип источника информации</param>
+            <param name="connSett">Параметры соединения с источником информации</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.StartDbInterfaces">
+            <summary>
+            Старт обработки запросов
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.stopDbInterfaces">
+            <summary>
+            Остановить обрабртку запросов
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.StopDbInterfaces">
+            <summary>
+            Остановить обрабртку запросов
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.SetDelegateWait(ASUTP.Core.DelegateFunc,ASUTP.Core.DelegateFunc,ASUTP.Core.DelegateFunc)">
+            <summary>
+            Установить делегаты оповещения о выполняемой операции
+            </summary>
+            <param name="dStart">Делегат (начало выполнение)</param>
+            <param name="dStop">Делегат (окончание выполнения)</param>
+            <param name="dStatus"></param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.SetDelegateReport(ASUTP.Core.DelegateStringFunc,ASUTP.Core.DelegateStringFunc,ASUTP.Core.DelegateStringFunc,ASUTP.Core.DelegateBoolFunc)">
+            <summary>
+            Установить делегаты оповещения о результатах выполнения опрерации
+            </summary>
+            <param name="ferr">Делегат (ошибка)</param>
+            <param name="fwar">Делегат (предупреждение)</param>
+            <param name="fact">Делегат (действие)</param>
+            <param name="fclr">Делегат (очичтить строку состояния)</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.Request(System.Int32,System.String,System.Boolean,System.Object[])">
+            <summary>
+            Отправить запрос к источнику данных
+            </summary>
+            <param name="idListener">Идентификатор подписчика обработки запросов</param>
+            <param name="request">Содержание запроса</param>
+            <param name="bIsStoredProcedure">Признак выполнения обычного запроса или хранимой процедуры</param>
+            <param name="parameters">Параметры для запроса</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.Request(System.Int32,System.String)">
+            <summary>
+            Отправить запрос к источнику данных
+            </summary>
+            <param name="idListener">Идентификатор подписчика обработки запросов</param>
+            <param name="request">Содержание запроса</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.response(System.Int32,System.Boolean@,System.Object@)">
+            <summary>
+            Принять результат выполнения запроса
+            </summary>
+            <param name="idListener">Идентификатор подписчика обработки запросов</param>
+            <param name="error">Признак ошибки при выполнении запроса</param>
+            <param name="outobj">Таблица - результат запроса</param>
+            <returns>Результат обработки результатат запроса</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.response(System.Boolean@,System.Object@)">
+            <summary>
+            Принять результат выполнения запроса
+            </summary>
+            <param name="error">Признак ошибки при выполнении запроса</param>
+            <param name="outobj">Таблица - результат запроса</param>
+            <returns>Результат обработки результатат запроса</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.GetCurrentTimeQuery(ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE)">
+            <summary>
+            Возвратить содержание запроса для получения текущих даты/времени сервера
+            </summary>
+            <param name="typeDB">Тип БД</param>
+            <returns>Содержание запроса для получения текущих даты/времени сервера</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.GetCurrentTimeRequest(ASUTP.Database.DbInterface.DB_TSQL_INTERFACE_TYPE,System.Int32)">
+            <summary>
+            Отправляет запрос на получение текущего времени сервера ~ типа СУБД
+            </summary>
+            <param name="typeDB">Тип СУБД</param>
+            <param name="idListener">Активный идентификатор соединения с БД</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.ErrorReport(System.String)">
+            <summary>
+            Передать строку сообщения с ошибкой для отображения
+            </summary>
+            <param name="msg">Строка-содержание ошибки</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.WarningReport(System.String)">
+            <summary>
+            Передать строку сообщения с предупреждением для отображения
+            </summary>
+            <param name="msg">Строка-содержание предупреждения</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.ActionReport(System.String)">
+            <summary>
+            Передать строку сообщения с описанием действия для отображения
+            </summary>
+            <param name="msg">Строка-содержание действия</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerDb.ReportClear(System.Boolean)">
+            <summary>
+            Очистить все переданные ранее сообщения для отображения
+            </summary>
+            <param name="bClear">Признак немедленной очистки строки состояния</param>
+        </member>
+        <member name="T:ASUTP.Helper.HHandlerQueue.CashQueue">
+            <summary>
+            Пакет событий...
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerQueue.CashQueue.m_dataHostRecieved">
+            <summary>
+            Объект, добавививший в очередь событие(состочние), используется для обратной связи
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HHandlerQueue.CashQueue.Pars">
+            <summary>
+            Параметры, переданные в качестве аргументов к событию(состоянию)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.CashQueue.#ctor(ASUTP.Helper.HHandler,ASUTP.PlugIn.IDataHost,System.Object[],System.Diagnostics.ProcessPriorityClass)">
+            <summary>
+            Конструктор - основной с параметрами
+            </summary>
+            <param name="owner">Объект - владелец элемента очереди</param>
+            <param name="obj">Объект, добавивший событие в очередь</param>
+            <param name="objPars">Массив аргументов события</param>
+            <param name="priority">Приоритет нового объета</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.CashQueue.#ctor(ASUTP.PlugIn.IDataHost,System.Object[],System.Diagnostics.ProcessPriorityClass)">
+            <summary>
+            Конструктор - дполнительный (с параметрами)
+            </summary>
+            <param name="obj">Объект, добавивший событие в очередь</param>
+            <param name="objPars">Массив аргументов события</param>
+            <param name="priority">Приоритет нового объета</param>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerQueue.m_lockQueue">
+            <summary>
+            Объект для синхронизации изменения списка событий
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerQueue.taskThreadQueue">
+            <summary>
+            Объект потока обработки событий очереди
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerQueue.threadQueueIsWorking">
+            <summary>
+            Признак состояния потока
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HHandlerQueue.semaQueue">
+            <summary>
+            Объект синхронизации, разрешающий начало обработки очереди событий
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.#ctor">
+            <summary>
+            Конструктор - основной (без аргументов)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.Initialize">
+            <summary>
+            Инициализация
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.Activate(System.Boolean)">
+            <summary>
+            Активировать очередь обработки событий
+            </summary>
+            <param name="active">Признак действия (де)активация</param>
+            <returns>Ротзнак результата - измнение состояния</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.Start">
+            <summary>
+            Запустить (сдедать возможным прием/обработку) очередь событий
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.Stop">
+            <summary>
+            Остановить (сделать невозможным прием/обработку) событий
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HHandlerQueue.Count">
+            <summary>
+            Количество событий:состояний в очереди
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.Push(ASUTP.PlugIn.IDataHost,System.Object[],System.Diagnostics.ProcessPriorityClass,System.Collections.Generic.IEqualityComparer{ASUTP.Helper.HHandlerQueue.ItemCash})">
+            <summary>
+            Добавить объект в очередь обработки событий
+            </summary>
+            <param name="obj">Объект обратной связи</param>
+            <param name="pars">Параметры для обработки в очереди</param>
+            <param name="priority">Приоритет нового объета</param>
+            <param name="comparer">Объект для сравнения объектов очереди: исключить вставку дубликатов</param>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.addStates(ASUTP.Helper.HHandlerQueue.CashQueue)">
+            <summary>
+            Добавить все состояния объекта очереди событий
+            </summary>
+            <param name="itemQueue">Объект очереди событий</param>
+            <returns>Результат выполнения функции</returns>
+        </member>
+        <member name="P:ASUTP.Helper.HHandlerQueue.Peek">
+            <summary>
+            Возвратить объект очереди событий не удаляя его
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HHandlerQueue.ThreadQueue(System.Object)">
+            <summary>
+            Потоковая функция очереди обработки объектов с событиями
+            </summary>
+            <param name="par">Как правило объект синхронизации</param>
+        </member>
+        <member name="T:ASUTP.Helper.IFormMainBase">
+            <summary>
+            Интерфейс для базовой формы главного окна приложения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.IFormMainBase.Close(System.Boolean)">
+            <summary>
+            Закрыть окно
+            </summary>
+            <param name="bForce">Признак принудительного</param>
+        </member>
+        <member name="T:ASUTP.Helper.IFormWait">
+            <summary>
+            Интерфейс для формы, индицирующей выполнение длительной операции
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.IFormWait.StartWaitForm(System.Drawing.Point,System.Drawing.Size)">
+            <summary>
+            Вызвать на отображение окно
+            </summary>
+            <param name="ptParent">Позиция отображения родительского окна</param>
+            <param name="szParent">Размер родительского окна</param>
+        </member>
+        <member name="M:ASUTP.Helper.IFormWait.StopWaitForm(System.Boolean)">
+            <summary>
+            Снять с отображения окно
+            </summary>
+            <param name="bExit"></param>
+        </member>
+        <member name="P:ASUTP.Helper.IHHandler.Actived">
+            <summary>
+            Признак значения аргумента метода 'Activate ()' при крайнем  вызове
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.IHHandler.IndexCurState">
+            <summary>
+            Текущий индекс обрабатываемого состояния
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.IHHandler.IsFirstActivated">
+            <summary>
+            Признак вызова метода 'Activate (false)' хотя бы один раз
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.IHHandler.IsStarted">
+            <summary>
+            Признак выполнения метода 'Start' для объекта
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.IHHandler.Activate(System.Boolean)">
+            <summary>
+            Начать обработку состояний при их наличии
+             , немедленно начать обработку при их появлении
+            </summary>
+            <param name="active">Признак готовности объекта к обработке набора состояний</param>
+            <returns>Признак изменения готовности е обработке набора состояний</returns>
+        </member>
+        <member name="M:ASUTP.Helper.IHHandler.AddState(System.Int32)">
+            <summary>
+            Добавить состояние для обработки
+            </summary>
+            <param name="state"></param>
+        </member>
+        <member name="M:ASUTP.Helper.IHHandler.ClearStates">
+            <summary>
+            Удалитьвсе состояния, добавленные на текущий момент
+             , т.о. освободить список для добавления очередного набора стостояний
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.IHHandler.Run(System.String,System.Boolean)">
+            <summary>
+            Начать обработку списка событий
+            </summary>
+            <param name="throwMes">Сообщение при ошибке</param>
+            <param name="bForced">Признак принудительного освобождени ресурса (для останова)</param>
+        </member>
+        <member name="M:ASUTP.Helper.IHHandler.Start">
+            <summary>
+            Поготовить объект к обработке состояний
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.IHHandler.Stop">
+            <summary>
+            Поготовить объект к завершению обработки состояний
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.Passwords.getOwnerPass(System.Int32)">
+            <summary>
+            Наименование пользователя
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.Passwords.m_idListener">
+            <summary>
+            Идентификатор соединения с источником информации при выполнении запроса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.Passwords.SetIdListener(System.Int32)">
+            <summary>
+            Идентификатор соединения с источником информации при выполнении запроса
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.Passwords.GetPassword(System.Int32@)">
+            <summary>
+            Функция получения пароля для пользователя  
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.Passwords.SetPassword(System.String,System.UInt32,System.UInt32)">
+            <summary>
+            Функция проверки установки пароля для пользователя
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.Passwords.ComparePassword(System.String,System.UInt32,System.UInt32)">
+            <summary>
+            Функция проверки пароля пользователя
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.Passwords.GetPassRequest">
+            <summary>
+            Функция получения строки запроса на проверку пароля
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.Passwords.GetPassResponse(System.Data.DataTable)">
+            <summary>
+            Функция проверки пароля для пользователя
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.Passwords.SetPassRequest(System.String,System.Boolean)">
+            <summary>
+            Функция получения запроса для установки пароля
+            <returns>Запрос</returns>
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.HUsers.HProfiles">
+            <summary>
+            Класс для возвращения/установки значений параметров профиля пользователя
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.HProfiles.s_nameTableProfilesData">
+            <summary>
+            Наименование таблиц в БД
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.HProfiles.s_nameTableProfilesUnit">
+            <summary>
+            Наименование таблиц в БД
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.HProfiles.m_tblValues">
+            <summary>
+            Таблица БД со значениями параметров профиля текущего пользователя
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.HProfiles.m_tblTypes">
+            <summary>
+            Таблица БД с описанием всех возможных параметров профиля
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HUsers.HProfiles.GetTableUnits">
+            <summary>
+            Таблица БД с описанием всех возможных параметров профиля
+            ??? (Get в наименовании следует исключить)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.HProfiles.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Функция подключения пользователя
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.HProfiles.getDataTableUserValues(System.Data.Common.DbConnection@,System.Int32,System.Int32,System.Int32@)">
+            <summary>
+            Возвратить таблицу БД со значениями параметров пользователя, принадлежащего роли(группе)
+            </summary>
+            <param name="dbConn">Ссылка на объект соединения с БД конфигурации</param>
+            <param name="id_role">Идентифактор роли(группы) пользователя</param>
+            <param name="id_user">Идентификатор пользователя</param>
+            <param name="err">Признак ошибки при выполнении метода</param>
+            <returns>Таблица БД со значениями параметров профиля</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.HProfiles.Update(System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Обновить(прочитать) значения параметров профиля, список параметров
+            </summary>
+            <param name="iListenerId">Идентификатор подписчика объекта обращения к данным</param>
+            <param name="id_role">Идентификатор группы(роли) пользователей</param>
+            <param name="id_user">Идентификатор пользователя</param>
+            <param name="bThrow">Признак инициирования исключения при ошибке</param>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.HProfiles.Read(System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Обновить(прочитать) значения параметров профиля, список параметров
+            </summary>
+            <param name="iListenerId">Идентификатор подписчика объекта обращения к данным</param>
+            <param name="id_role">Идентификатор группы(роли) пользователей</param>
+            <param name="id_user">Идентификатор пользователя</param>
+            <param name="bThrow">Признак инициирования исключения при ошибке</param>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.HProfiles.GetAllowed(System.Int32)">
+            <summary>
+            Возвратить значение параметра профиля(например, права доступа к элементу интерфейса) текущего пользователя
+            </summary>
+            <param name="id">ID типа(unit)</param>
+            <returns>Признак права доступа к элменту с указанным идентификатором</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.HProfiles.GetAllowed(System.Data.DataTable,System.Int32)">
+            <summary>
+            Возвратить значение параметра профиля(например, права доступа к элементу интерфейса)
+            </summary>
+            <param name="tableValues">Таблица БД со значениями параметров профиля одного из пользователей</param>
+            <param name="id">ID типа(unit)</param>
+            <returns>Признак права доступа к элменту с указанным идентификатором</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.HProfiles.GetAllowed(System.Data.Common.DbConnection@,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Возвратить значение параметра профиля(например, права доступа к элементу интерфейса) указанного в аргументе пользователя
+            </summary>
+            <param name="dbConn">Ссылка на объект соединения с БД конфигурации</param>
+            <param name="role">Идентификатор роли(группы), к которой принадлежит пользователь</param>
+            <param name="user">Идентификатор пользователя</param>
+            <param name="id">ID типа(unit)</param>
+            <returns>Признак права доступа к элменту с указанным идентификатором</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.HProfiles.SetAllowed(System.Int32,System.Int32,System.String)">
+            <summary>
+            Установить значение для параметра профиля
+            , если параметр не определен - добавить в таблицу БД
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.Dispose">
+            <summary>
+            Метод для освобождения ресурсов - реализация интерфейса 'IDisposable'
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.createProfiles(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Создать объект для доступа к значениям профиля пользователя
+            </summary>
+            <param name="iListenerId">Идентификатор подписки к источнику БД(конфигурации)</param>
+            <param name="id_role">Идентификатор роли(группы), к которой принадлежит пользователь</param>
+            <param name="id_user">Идентификатор пользователя</param>
+            <returns>Объект для доступа к значениям профиля пользователя</returns>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.m_profiles">
+            <summary>
+            Объект для доступа к значениям параметров профиля пользователя
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.HUsers.ARGUMENTS">
+            <summary>
+            Аргумент командной строки
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.ARGUMENTS.m_key">
+            <summary>
+            Ключ, по которому происходит распознование аргумента
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.ARGUMENTS.m_help">
+            <summary>
+            Строка помощи по использованию аршумента
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.ARGUMENTS.m_indxRegistration">
+            <summary>
+            Состояние (значения)аргумента
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.ARGUMENTS.m_type">
+            <summary>
+            Тип (значения)аргумента
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.HUsers.INDEX_REGISTRATION">
+            <summary>
+            Перечисление - возможные (индексы) некоторых данных о пользователе
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.s_REGISTRATION_INI">
+            <summary>
+            Массив значений с данными о пользователе (предустановленные в ??? файле/БД конфигурации)
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.HUsers.STATE_REGISTRATION">
+            <summary>
+            Перечисление - возможные состояния значений аргументов
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.STATE_REGISTRATION.UNKNOWN">
+            <summary>
+            Неизвестный источник
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.STATE_REGISTRATION.CMD">
+            <summary>
+            Получены из командной строки
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.STATE_REGISTRATION.ENV">
+            <summary>
+            Получены из "окружения" (Environment)
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.m_Arguments">
+            <summary>
+            Массив с известными аргументами
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.f_arRegistration">
+            <summary>
+            Массив методов регистрации(получения данных о пользователе) в различных средах
+             , в соответствии с 'STATE_REGISTRATION'
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.#ctor(System.Int32,ASUTP.Helper.HUsers.MODE_REGISTRATION)">
+            <summary>
+            Конструктор - основной (с аргументами)
+            </summary>
+            <param name="iListenerId">Идентификатор подписки к источнику данных (БД конфигурации)</param>
+            <param name="mode">Режим регистрации</param>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.Update(System.Int32)">
+            <summary>
+            Прочитать значения параметров профиля полбзователя из БД и разместить их в статические переменные для последующего доступа
+            </summary>
+            <param name="iListenerId">Идентификатор подписки к источнику данных</param>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.Read(System.Int32)">
+            <summary>
+            Прочитать значения параметров профиля полбзователя из БД и разместить их в статические переменные для последующего доступа
+            </summary>
+            <param name="iListenerId">Идентификатор подписки к источнику данных</param>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.ClearValues">
+            <summary>
+            Очистиь значения регистрации
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.registrationCmdLine(System.Object)">
+            <summary>
+            Метод получения данных регистрации из командной строки (по указанным значениям известных аргументов)
+            </summary>
+            <param name="par">Аргументы командной строки</param>
+        </member>
+        <member name="T:ASUTP.Helper.HUsers.MODE_REGISTRATION">
+            <summary>
+            Режим проверки аутентификации
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.MODE_REGISTRATION.USER_DOMAINNAME">
+            <summary>
+            Только по наименование учетной записи в домене
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.MODE_REGISTRATION.MACHINE_DOMAINNAME">
+            <summary>
+            Только по наименованию рабочей станции
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.MODE_REGISTRATION.MIXED">
+            <summary>
+            Смешанный: и по наименование учетной записи в домене, и по наименованию рабочей станции
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.s_modeRegistration">
+            <summary>
+            Предусановленный режим аутентификации
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.DELIMETER_DOMAINNAME">
+            <summary>
+            Разделитель наименования рабочей станции и наименования учетной записи в домене при смешанном режиме аутентификации
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HUsers.whereQueryUsers">
+            <summary>
+            Получить ограничения для запроса перечня пользовтелей
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.getUserDomainNameEnvironment(System.String,System.String)">
+            <summary>
+            Получить доменное наименование пользователя для аутентификации, учитывая установленный режим аутентификации
+            </summary>
+            <param name="dbDomainName">Наименование доменной учетной записи пользователя</param>
+            <param name="dbMashineName">Наименование доменной учетной записи рабочей станции</param>
+            <returns>Полное наименование  с учетом режим аутентификации</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.equalsDomainName(System.String,System.String)">
+            <summary>
+            Сравнить данные, указанные в аргументе и полученные в процессе регистрации
+            </summary>
+            <param name="dbDomainName">Наименование доменной учетной записи пользователя</param>
+            <param name="dbMashineName">Наименование доменной учетной записи рабочей станции</param>
+            <returns>Признак результата сравнения</returns>
+        </member>
+        <member name="P:ASUTP.Helper.HUsers.MachineName">
+            <summary>
+            Наименование рабочей станции
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HUsers.UserDomainName">
+            <summary>
+            Доменные имена пользователя/компьютера
+            !!! - используется ТОЛЬКО для информации
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HUsers.messageUserIDNotFind">
+            <summary>
+            Сообщение при отсутствии пользователя в БД конфигурации
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.HUsers.ERROR_CODE">
+            <summary>
+            Перечисление - возможные ошибки ???аутентификации
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HUsers.ERROR_CODE.NOT_CONNECT_CONFIGDB">
+            <summary>
+            Нет соединения с БД конфигурации
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.registrationEnv(System.Object)">
+            <summary>
+            Запуск проверки пользователя 
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.getUsersRequest(System.String,System.String)">
+            <summary>
+            Функция получения строки запроса пользователя
+             /// <returns>Строка строку запроса</returns>
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.GetUsers(System.Data.Common.DbConnection@,System.String,System.String,System.Data.DataTable@,System.Int32@)">
+            <summary>
+            Функция запроса для поиска пользователя
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.GetRoles(System.Data.Common.DbConnection@,System.String,System.String,System.Data.DataTable@,System.Int32@)">
+            <summary>
+            Возвратить роли(группы польтзователей, объединеных по функц./признаку) из БД
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HUsers.Id">
+            <summary>
+            Возвратить ИД пользователя
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HUsers.DomainName">
+            <summary>
+            Возвратить доменное имя
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.HUsers.allTEC">
+            <summary>
+            Возвращает ИД ТЭЦ  для текущего пользователя
+             , признак прав доступа к значениям подразделений
+             (0 - разрешены все ТЭЦ)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.IsAllowed(System.Int32)">
+            <summary>
+            Возвратить значение параметра профиля для текущего пользователя, если его тип логический
+            </summary>
+            <param name="id">Идентификатор параметра профиля</param>
+            <returns>Значение параметра для текущего пользователя</returns>
+        </member>
+        <member name="P:ASUTP.Helper.HUsers.GetTableProfileUnits">
+            <summary>
+            Возвратить таблицу со описанием параметров профиля
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.GetAllowed(System.Int32)">
+            <summary>
+            Возвратить значение параметра для текущего пользователя, если его тип отличен от логического
+            </summary>
+            <param name="id">Идентификатор параметра профиля</param>
+            <returns>Значение параметра для текущего пользователя</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.GetAllowed(System.Data.Common.DbConnection@,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Возвратить значение параметра для указанного в аргументе пользователя, если его тип отличен от логического
+            </summary>
+            <param name="dbConn">Ссылка на объект соединения с БД конфигурации</param>
+            <param name="role">Идентификатор роли(группы), к которой принадлежит пользователь</param>
+            <param name="user">Идентификатор пользователя</param>
+            <param name="id">Идентификатор параметра профиля</param>
+            <returns>Значение параметра для текущего пользователя</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.GetAllowed(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Возвратить значение параметра для указанного в аргументе пользователя, если его тип отличен от логического
+            </summary>
+            <param name="iListenerId">Идентификатор подписчика объекта обращения к данным</param>
+            <param name="role">Идентификатор роли(группы), к которой принадлежит пользователь</param>
+            <param name="user">Идентификатор пользователя</param>
+            <param name="id">Идентификатор параметра профиля</param>
+            <returns>Значение параметра для текущего пользователя</returns>
+        </member>
+        <member name="M:ASUTP.Helper.HUsers.SetAllowed(System.Int32,System.Int32,System.String)">
+            <summary>
+            Установить значение для параметра профиля текущего пользователя
+            </summary>
+            <param name="iListenerId">Идентификатор подпичсика </param>
+            <param name="id">Идентификатор параметра профиля</param>
+            <param name="val">Новое значение для параметра</param>
+        </member>
+        <member name="T:ASUTP.Helper.HException">
+            <summary>
+            Класс исключения для хранения дополнительно 
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.HException.m_code">
+            <summary>
+            Целочисленное значение детализирующее исключение пользователя
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.HException.#ctor(System.Int32,System.String)">
+            <summary>
+            Конструктор - основной (с параметрами)
+            </summary>
+            <param name="code">Дополнительный код исключения</param>
+            <param name="msg">Сообщение для создания объекта базового класса</param>
+        </member>
+        <member name="T:ASUTP.Helper.Errors">
+            <summary>
+            Перечисление - идентификатор ошибки
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.BoolDelegateUnhandledExceptionEventHandler">
+            <summary>
+            Тип делегата для обработки из-вне неперехваченного исключения
+            </summary>
+            <param name="obj">Объект-инициатор события</param>
+            <param name="ev">Аргумент события</param>
+            <returns>Признак необходимости дальнейшей обработки исключения</returns>
+        </member>
+        <member name="T:ASUTP.Helper.BoolDelegateThreadExceptionEventHandler">
+            <summary>
+            Тип делегата для обработки из-вне неперехваченного исключения потока
+            </summary>
+            <param name="obj">Объект-инициатор события</param>
+            <param name="ev">Аргумент события</param>
+            <returns>Признак необходимости дальнейшей обработки исключения</returns>
+        </member>
+        <member name="T:ASUTP.Helper.ProgramBase">
+            <summary>
+            Базовый класс для класса приложения
+            </summary>
+        </member>
+        <member name="T:ASUTP.Helper.ProgramBase.ID_APP">
+            <summary>
+            Перечисление - идентификаторы приложений из состава ИС Статистика
+            </summary>
+        </member>
+        <member name="E:ASUTP.Helper.ProgramBase.PerformUnhandledException">
+            <summary>
+            Событие для передачи во-вне неперехваченного исключения
+            </summary>
+        </member>
+        <member name="E:ASUTP.Helper.ProgramBase.PerformThreadException">
+            <summary>
+            Событие для передачи во-вне неперехваченного исключения потока
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.Start(ASUTP.Logging.LOG_MODE,System.Boolean)">
+            <summary>
+            Журналирование старта приложения
+            </summary>
+            <param name="bGUI">Признак наличия графического интерфейса с пользователем</param>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.Exit">
+            <summary>
+            Журналирование завершения приложения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.Application_ThreadException(System.Object,System.Threading.ThreadExceptionEventArgs)">
+            <summary>
+            Оброботчик исключений в потоках и запись их в лог
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.CurrentDomain_UnhandledException(System.Object,System.UnhandledExceptionEventArgs)">
+            <summary>
+            Оборботчик не перехваченного исключения в текущем домене и запись их в лог
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.SeparateAppDomain_UnhandledException(System.Object,System.UnhandledExceptionEventArgs)">
+            <summary>
+            Оборботчик не перехваченного исключения в текущем домене и запись их в лог
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.fAppDomain_UnhandledException(System.Object,System.UnhandledExceptionEventArgs,System.Boolean,System.Boolean)">
+            <summary>
+            Оборботчик не перехваченного исключения в текущем домене и запись их в лог
+            </summary>
+        </member>
+        <member name="F:ASUTP.Helper.ProgramBase.Abort">
+            <summary>
+            Делегат для выполнения действий при аварийном завершении приложения
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.ProgramBase.s_AppName">
+            <summary>
+            Имя приложения без расширения
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.ProgramBase.s_AppNameSuffix">
+            <summary>
+            Дополнительная(уточняющая) часть имени приложения (при одновременном запуске нескольких экземпляров и необходимости их раздельного учета)
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.ProgramBase.AppName">
+            <summary>
+            Запись в  лог имени проложения
+            </summary>
+        </member>
+        <member name="P:ASUTP.Helper.ProgramBase.AppProductVersion">
+            <summary>
+            Возвращает версию продукта с датой
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.AppExit">
+            <summary>
+            Функция завершения приложения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.AppRestart">
+            <summary>
+            Функция перезапуска приложения
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.getCommandLineArgs">
+            <summary>
+            Формируек командную строку для запуска приложения
+              (исключая путь к образу исполняемого файла)
+            </summary>
+        </member>
+        <member name="M:ASUTP.Helper.ProgramBase.wait_allowingEvents(System.Int32)">
+            <summary>
+            Обработчик сообщений в очереди
+            </summary>
+        </member>
+    </members>
+</doc>

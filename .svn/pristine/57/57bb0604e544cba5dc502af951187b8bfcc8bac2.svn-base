@@ -1,0 +1,364 @@
+﻿using ASUTP;
+using ASUTP.Database;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace StatisticCommon
+{
+    public abstract class DbAtomInterface : ASUTP.Database.DbInterface
+    {
+        //protected abstract object OApi { get; }
+        /// <summary>
+        /// Делегат для ретрансляции событий 
+        /// </summary>
+        protected Action<object> delegateAtomApiHandler;
+
+        protected override int Timeout { get; set; }
+
+        /// <summary>
+        /// Пользовательский конструктор
+        /// </summary>
+        /// <param name="name">Наименование интерфейса</param>
+        /// <param name="atomApiHandler">Обработчик событий интерфейса</param>
+        public DbAtomInterface (string name, Action<object> atomApiHandler)
+            //Вызов конструктора из базового класса DbInterface
+            : base (name)
+        {
+            // нет соединения, соединение ни разу не устанавливалось
+            m_iConnectCounter = -1;
+
+            delegateAtomApiHandler = atomApiHandler;
+
+            atomApiEventLocked = new object ();
+        }
+
+        protected void atomApi_OnClose (object sender, EventArgs e)
+        {
+            Disconnect ();
+        }
+
+        protected abstract void create ();
+
+        protected abstract bool connect ();
+
+        protected abstract bool registerHandler ();
+
+        //public override bool EqualeConnectionSettings (AtomConnectionSettings acs)
+        //{
+        //    return (m_connectionSettings.GetType().Equals (acs.GetType ()) == true)
+        //        && (Equals (m_connectionSettings, acs));
+        //}
+
+        //public override bool EqualeConnectionSettings (ConnectionSettings cs)
+        //{
+        //    return (m_connectionSettings.GetType ().Equals (cs.GetType ()) == true)
+        //        && (Equals (m_connectionSettings, cs as ConnectionSettings));
+        //}
+
+        //public override bool IsEmptyConnectionSettings
+        //{
+        //    get
+        //    {
+        //        return string.IsNullOrWhiteSpace (m_connectionSettings.server);
+        //    }
+        //}
+
+        /// <summary>
+        /// Реализация абстрактного метода ("Задать настройки подключения") из базового класса
+        /// </summary>
+        /// <param name="connSett">Параметры соединенияс источником данных</param>
+        /// <param name="bStarted">Начато</param>
+        public override void SetConnectionSettings (AtomConnectionSettings connSett, bool bStarted)
+        {
+            lock (lockConnectionSettings) // изменение настроек подключения и выставление флага для переподключения - атомарная операция
+            {
+                //!!! обязательный вызов
+                setConnectionSettings (connSett);
+                //полю "Настройки соединения" присвоить имя хоста
+                m_connectionSettings = new AtomConnectionSettings (connSett);
+            }
+            //!!! обязательный вызов
+            setConnectionSettings ();
+        }
+
+        protected static IEnumerable<Delegate/*MethodInfo*/> getHandlerExists (object classInstanse)
+        {
+            IEnumerable<Delegate/*MethodInfo*/> listRes;
+
+            Func<EventInfo, FieldInfo> ei2fi =
+                ei => classInstanse.GetType ().GetField (ei.Name,
+                    BindingFlags.NonPublic |
+                    BindingFlags.Instance |
+                    BindingFlags.GetField);
+
+            listRes = from eventInfo in classInstanse.GetType ().GetEvents ()
+                      let eventFieldInfo = ei2fi (eventInfo)
+                      let eventFieldValue = (System.Delegate)eventFieldInfo?.GetValue (classInstanse)
+                      where (Equals (eventFieldInfo, null) == false)
+                          && (Equals (eventFieldValue, null) == false)
+                      from subscribedDelegate in eventFieldValue?.GetInvocationList ()
+                      select subscribedDelegate/*?.Method*/;
+
+            //// безопасный вариант 
+            //IEnumerable<FieldInfo> infoFields;
+            //IEnumerable<Delegate> valueFields;
+
+            //infoFields = from eventInfo in classInstanse.GetType ().GetEvents ()
+            //    select ei2fi (eventInfo);
+
+            //if (Equals (infoFields, null) == false) {
+            //    valueFields = from fieldInfo in infoFields
+            //        where Equals(fieldInfo, null) == false
+            //        select (System.Delegate)fieldInfo?.GetValue (classInstanse);
+
+            //    if (Equals (valueFields, null) == false) {
+            //        listRes = from fieldValue in valueFields
+            //            where Equals(fieldValue, null) == false
+            //            let listMethodInfo = fieldValue.GetInvocationList ()
+            //                from methodInfo in listMethodInfo
+            //                where Equals (methodInfo, null) == false
+            //                    select methodInfo.Method;
+            //    } else
+            //        listRes = new List<MethodInfo>();
+            //} else
+            //    listRes = new List<MethodInfo> ();
+
+            return listRes;
+        }
+
+        protected static IEnumerable<Delegate/*MethodInfo*/> getHandlerExists (object classInstance, string eventName)
+        {
+            IEnumerable<Delegate/*MethodInfo*/> listRes;
+
+            Type classType = classInstance.GetType ();
+
+            FieldInfo eventField = classType.GetField (eventName, BindingFlags.GetField
+                | BindingFlags.NonPublic
+                | BindingFlags.Instance);
+
+            Delegate eventDelegate = (Delegate)eventField?.GetValue (classInstance);
+
+            // eventDelegate will be null if no listeners are attached to the event
+            if (Equals (eventDelegate, null) == false) {
+                listRes = (from method in eventDelegate.GetInvocationList ()
+                           select method/*.Method*/);
+            } else
+                listRes = new List<Delegate/*MethodInfo*/> ();
+
+            return listRes;
+        }
+
+        protected abstract bool unregisterHandler ();
+
+        private CancellationTokenSource _cancelTokenSourceInitialized;
+
+        private bool IsValidateConnectionSettings
+        {
+            get
+            {
+                if (m_connectionSettings == null)
+                    return false;
+                else
+                    ;
+
+                if (m_connectionSettings.GetType ().Equals (typeof (AtomConnectionSettings)) == false)
+                    return false;
+                else
+                    ;
+
+                if (!(m_connectionSettings.Validate() == ConnectionSettingsError.NoError))
+                    return false;
+                else
+                    ;
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Ожидать установления связи: асинхронный(по событию)/синхронный
+        /// </summary>
+        /// <returns>Признак установления связи</returns>
+        protected virtual int waitConnected ()
+        {
+            return 0;
+        }
+
+        /// <summary>
+        /// ключи операций-действий при установления соединения
+        /// </summary>
+        protected enum KEY_ACTION_CONNECT
+        {
+            Create
+            , UnHandlers
+            , Handlers
+            , Connect
+        }
+
+        /// <summary>
+        /// Порядок выполнения действий при установлении соединений
+        /// </summary>
+        protected virtual IEnumerable<KEY_ACTION_CONNECT> ConnectActionOrder {
+            private get;
+
+            set;
+        }
+
+        /// <summary>
+        /// Установить соединение с Модес-Центром и подготовить объект соединения к запросам
+        /// </summary>
+        /// <returns>Результат установления соединения и инициализации</returns>
+        protected override bool Connect ()
+        {
+            string msgLog = string.Empty;
+            bool bRes = false;
+            CancellationToken cancelTokenInitialized;
+
+            #region Действия при установлении соединения
+            Dictionary<KEY_ACTION_CONNECT, Func<bool>> connectActions = new Dictionary<KEY_ACTION_CONNECT, Func<bool>> {
+                { KEY_ACTION_CONNECT.Create , () => {
+                    create();
+
+                    return true;
+                } }
+                , { KEY_ACTION_CONNECT.Connect , () => {
+                    bool bActionRes = false;
+
+                    Logging.Logg ().Debug (string.Format (@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
+
+                    _cancelTokenSourceInitialized = new CancellationTokenSource ();
+                    cancelTokenInitialized = _cancelTokenSourceInitialized.Token;
+
+                    using (Task<bool> taskInitialized = Task<bool>.Factory.StartNew (connect, cancelTokenInitialized)) {
+                        m_iConnectCounter++;
+
+                        taskInitialized.Wait (cancelTokenInitialized);
+
+                        bActionRes =
+                            taskInitialized.Status == TaskStatus.RanToCompletion ? taskInitialized.Result : false;
+                    }
+
+                    _cancelTokenSourceInitialized.Dispose ();
+                    _cancelTokenSourceInitialized = null;
+
+                    return bActionRes;
+                } }
+                , { KEY_ACTION_CONNECT.UnHandlers, () => {
+                    unregisterHandler ();
+
+                    return true;
+                } }
+                , { KEY_ACTION_CONNECT.Handlers , () => {
+                    registerHandler ();
+
+                    return true;
+                } }
+            };
+            #endregion
+
+            if (IsValidateConnectionSettings == false)
+                return false;
+            else
+                ;
+
+            bRes = false;
+
+            //??? 'bRes' не м.б. 'True'
+            try {
+                if (bRes == true)
+                    return bRes;
+                else
+                    bRes = true;
+            } catch (Exception e) {
+                //Logging.Logg().Exception(e, "DbMCInterface::Connect ()", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            lock (lockConnectionSettings) {
+                if (IsNeedReconnectNew == true) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
+                    return false;
+                else
+                    ;
+            }
+
+            msgLog = string.Format ("Соединение с <{0}>, адрес: <{1}>", m_connectionSettings.name, m_connectionSettings.server);
+
+            foreach (KEY_ACTION_CONNECT key in ConnectActionOrder) {
+                try {
+                    bRes = connectActions [key] ();
+                } catch (Exception e) {
+                    bRes = false;
+
+                    Logging.Logg ().Exception (e, $"{msgLog}...", Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+                if (bRes == false) {
+                    Logging.Logg ().Debug (string.Format (@"{0} - <{1}>: {2}...", msgLog, key, @"ОШИБКА")
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+                    // Выход из цикла операций/действий по кстановлению соединения
+                    break;
+                } else
+                    ; 
+            }
+
+            // ожидание 'waitConnected' не будет выполняться, если 'bRes' к этому моменту = 'false'
+            bRes = (bRes == true)
+                && (waitConnected () == 0);
+
+            // Сообщить о результате попытки соединения
+            lock (atomApiEventLocked) {
+                delegateAtomApiHandler?.Invoke (bRes);
+            }
+
+            return bRes;
+        }
+
+        protected object atomApiEventLocked;
+
+        private int m_iConnectCounter;
+
+        protected override bool Disconnect ()
+        {
+            bool result = true
+                , bRes = false;
+
+            bRes = !(m_iConnectCounter < 0)
+                && (m_iConnectCounter % 2 == 0);
+
+            if (bRes == true) {
+                // прервать установку соединения, если она выполняется (не 'null')
+                _cancelTokenSourceInitialized?.Cancel ();
+
+                lock (atomApiEventLocked) {
+                    delegateAtomApiHandler?.Invoke (false);
+                }
+
+                m_iConnectCounter++;
+
+                //Logging.Logg ().Error ($"DbMCInterface::Disconnect () - Host={(string)m_connectionSettings}, соединение разорвано..."
+                //    , Logging.INDEX_MESSAGE.NOT_SET);
+            } else
+                ;
+
+            return result;
+        }
+
+        public override void Disconnect (out int err)
+        {
+            err = 0;
+        }
+
+        protected virtual void getData_OnFillError (FillErrorEventArgs arg)
+        {
+            arg.Continue = false;
+
+            //TODO:
+            //getData_OnFillError (, arg);
+        }
+    }
+}

@@ -1,0 +1,110 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using StatisticCommon;
+using StatisticTransModes;
+using System.Collections.ObjectModel;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using Modes;
+using ModesApiExternal;
+
+using ASUTP;
+using System.Threading;
+using StatisticTrans.Contract.ModesCentre;
+using StatisticTrans.Contract;
+using StatisticTrans;
+
+namespace STrans.Service.GTP
+{
+    public class AdminGTP : AdminModes
+    {
+        public AdminGTP(bool[] arMarkPPBRValues)
+            : base()
+        {
+
+        }
+
+        
+
+        public override void Start()
+        {
+            base.Start();
+
+        }
+
+        public override bool Activate(bool active)
+        {
+            bool bRes = base.Activate(active);
+
+            return bRes;
+        }
+
+        public override void ClearValues()
+        {
+            base.ClearValues();
+        }
+
+        protected override INDEX_WAITHANDLE_REASON StateErrors(int /*StatesMachine*/ state, int request, int result)
+        {
+            INDEX_WAITHANDLE_REASON reasonRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+
+            return reasonRes;
+
+        }
+
+        protected override bool InitDbInterfaces()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void getPPBRDatesRequest(DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int getPPBRDatesResponse(DataTable table, DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void getPPBRValuesRequest(TEC t, IDevice comp, DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int getPPBRValuesResponse(DataTable table, DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int StateCheckResponse(int state, out bool error, out object outobj)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int StateRequest(int state)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int StateResponse(int state, object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void StateWarnings(int state, int req, int res)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

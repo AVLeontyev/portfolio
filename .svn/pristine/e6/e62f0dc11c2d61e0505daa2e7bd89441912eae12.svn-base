@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Threading;
+
+//using HClassLibrary;
+using StatisticCommon;
+using ASUTP.Database;
+using ASUTP.Forms;
+using ASUTP.Helper;
+using ASUTP.Core;
+using ASUTP;
+
+namespace StatisticTimeSync
+{
+    public partial class FormMain : StatisticCommon.FormMainStatisticClient<FormMain, PanelSourceData>
+    {
+        public FormMain ()
+            : base (HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB, "StatisticTimeSync")
+        {
+        }
+
+        protected override PanelSourceData createPanelStatistic (IEnumerable<TEC> listTEC, object appConfigValue)
+        {
+            return new PanelSourceData(SystemColors.ControlText, SystemColors.Control);
+        }
+    }
+}

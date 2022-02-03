@@ -1,0 +1,58 @@
+=================================================
+31.01.2018 08:18:31.309
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+31.01.2018 08:18:32.711
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_mc/bin/Debug/trans_mc.exe)
+=================================================
+31.01.2018 08:18:32.836
+-------------------------------------------------
+!Ошибка!: Не найден файл настроек
+=================================================
+31.01.2018 08:18:32.976
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения.
+Исключение: Ссылка на объект не указывает на экземпляр объекта.
+System.NullReferenceException: Ссылка на объект не указывает на экземпляр объекта.
+   в ASUTP.Helper.FileINI.AddSecPar(String sec_shr, String par, String val) в D:\My Project's\C.Net\ASUTP.Library\ASUTP.Helper\FileINI.cs:строка 529
+   в ASUTP.Helper.FileINI.AddMainPar(String par, String val) в D:\My Project's\C.Net\ASUTP.Library\ASUTP.Helper\FileINI.cs:строка 523
+   в ASUTP.Helper.FileINI..ctor(String nameFile, Boolean bReadAuto, String[] par, String[] val, MODE_SECTION_APPLICATION mode) в D:\My Project's\C.Net\ASUTP.Library\ASUTP.Helper\FileINI.cs:строка 515
+   в StatisticTrans.FormMainTrans..ctor(Int32 id_app, String[] par, String[] val) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 209
+   в StatisticTransModes.FormMainTransModes..ctor(Int32 id_app) в D:\My Project's\C.Net\Statistic\StatisticTransModes\FormMainTransModes.cs:строка 19
+   в trans_mc.FormMainTransMC..ctor() в D:\My Project's\C.Net\Statistic\trans_mc\FormMainTransMC.cs:строка 20
+   в trans_mc.Program.Main() в D:\My Project's\C.Net\Statistic\trans_mc\Program.cs:строка 24
+=================================================
+31.01.2018 08:18:33.007
+-------------------------------------------------
+***************Выход из приложения...***************
+=================================================
+31.01.2018 08:22:06.216
+-------------------------------------------------
+***************Старт приложения...***************
+=================================================
+31.01.2018 08:22:06.371
+-------------------------------------------------
+!Отладка!: IsOnly = True (SingleInstance::IsOnlyInstance - s_NameMutex = file:///D:/My Project's/C.Net/Statistic/trans_mc/bin/Debug/trans_mc.exe)
+=================================================
+31.01.2018 08:22:06.386
+-------------------------------------------------
+!Ошибка!: Не найден файл настроек
+=================================================
+31.01.2018 08:22:06.434
+-------------------------------------------------
+!Исключение! обработка: Ошибка запуска приложения.
+Исключение: Ссылка на объект не указывает на экземпляр объекта.
+System.NullReferenceException: Ссылка на объект не указывает на экземпляр объекта.
+   в ASUTP.Helper.FileINI.AddSecPar(String sec_shr, String par, String val) в D:\My Project's\C.Net\ASUTP.Library\ASUTP.Helper\FileINI.cs:строка 529
+   в ASUTP.Helper.FileINI.AddMainPar(String par, String val) в D:\My Project's\C.Net\ASUTP.Library\ASUTP.Helper\FileINI.cs:строка 523
+   в ASUTP.Helper.FileINI..ctor(String nameFile, Boolean bReadAuto, String[] par, String[] val, MODE_SECTION_APPLICATION mode) в D:\My Project's\C.Net\ASUTP.Library\ASUTP.Helper\FileINI.cs:строка 515
+   в StatisticTrans.FormMainTrans..ctor(Int32 id_app, String[] par, String[] val) в D:\My Project's\C.Net\Statistic\StatisticTrans\FormMainTrans.cs:строка 209
+   в StatisticTransModes.FormMainTransModes..ctor(Int32 id_app) в D:\My Project's\C.Net\Statistic\StatisticTransModes\FormMainTransModes.cs:строка 19
+   в trans_mc.FormMainTransMC..ctor() в D:\My Project's\C.Net\Statistic\trans_mc\FormMainTransMC.cs:строка 20
+   в trans_mc.Program.Main() в D:\My Project's\C.Net\Statistic\trans_mc\Program.cs:строка 24
+=================================================
+31.01.2018 08:22:06.435
+-------------------------------------------------
+***************Выход из приложения...***************

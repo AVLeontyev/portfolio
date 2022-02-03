@@ -1,0 +1,319 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+using System.Data;
+using System.Threading;
+using System.Data.Common;
+using System.Data.OleDb;
+
+using Modes;
+using ModesApiExternal;
+using ASUTP;
+using ASUTP.Core;
+using System.Collections.ObjectModel;
+using System.Reflection;
+using System.ComponentModel;
+using System.Reflection.Emit;
+using System.Threading.Tasks;
+using StatisticTrans.Contract.ModesCentre;
+using StatisticTrans;
+using ASUTP.Database;
+using StatisticCommon;
+
+namespace STrans.Service.ModesCentre
+{
+    public class DbMCInterface : DbAtomInterface
+    {
+        //protected override object OApi
+        //{
+        //    get
+        //    {
+        //        return m_MCApi;
+        //    }
+        //}
+
+        private IApiExternal m_MCApi;
+        private Modes.BusinessLogic.IModesTimeSlice m_modesTimeSlice;
+        private IList <PlanFactorItem> m_listPFI;
+
+        private List <Modes.BusinessLogic.IGenObject> m_listIGO;
+
+        private Newtonsoft.Json.Linq.JObject _jsonEventListener;
+
+        /// <summary>
+        /// Пользовательский конструктор
+        /// </summary>
+        /// <param name="name">имя</param>
+        public DbMCInterface(string name, Action<object>mcApiHandler, Newtonsoft.Json.Linq.JObject jsonEventListener)
+            //Вызов конструктора из базового класса DbInterface
+            : base(name, mcApiHandler)
+        {
+            ConnectActionOrder = new KEY_ACTION_CONNECT [] {
+                KEY_ACTION_CONNECT.Connect
+                , KEY_ACTION_CONNECT.Create
+                , KEY_ACTION_CONNECT.UnHandlers
+                , KEY_ACTION_CONNECT.Handlers
+            };
+
+            m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
+
+            _jsonEventListener = jsonEventListener;
+        }
+
+        protected override void create ()
+        {
+            m_MCApi = ModesApiFactory.GetModesApi ();
+            m_modesTimeSlice = m_MCApi.GetModesTimeSlice (DateTime.Now.Date.LocalHqToSystemEx (), SyncZone.First, TreeContent.PGObjects, true);
+            m_listPFI = m_MCApi.GetPlanFactors ();
+        }
+
+        protected override bool connect ()
+        {
+            ModesApiFactory.Initialize (m_connectionSettings.server);
+
+            return ModesApiFactory.IsInitilized;
+        }
+
+        protected override bool unregisterHandler ()
+        {
+            bool bRes = false;
+
+            IEnumerable<Delegate/*MethodInfo*/> handlers; ;
+
+            #region добавить обработчики для проверки возможности их удаления
+            //m_MCApi.OnClose += mcApi_OnClose;
+            //m_MCApi.OnData53500Modified += new EventHandler<Modes.NetAccess.EventRefreshData53500> (mcApi_OnEventHandler);
+            //m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+            //m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+            #endregion
+
+            #region Отмена регистрация неуниверсальных обработчиков
+            //List<ParameterInfo> handlerParameters;
+            //handlers = getHandlerExists (m_MCApi);
+
+            //foreach (Delegate handler in handlers.ToList ()) {
+            //    handlerParameters = handler.Method.GetParameters ().ToList();
+            //    if (handlerParameters.Count () == 2)
+            //        if (typeof (Modes.NetAccess.EventRefreshData53500).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
+            //            m_MCApi.OnData53500Modified -= (EventHandler<Modes.NetAccess.EventRefreshData53500>)handler;
+            //        else if (typeof (Modes.NetAccess.EventRefreshJournalMaket53500).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
+            //            m_MCApi.OnMaket53500Changed -= (EventHandler<Modes.NetAccess.EventRefreshJournalMaket53500>)handler;
+            //        else if (typeof (Modes.NetAccess.EventPlanDataChanged).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
+            //            m_MCApi.OnPlanDataChanged -= (EventHandler<Modes.NetAccess.EventPlanDataChanged>)handler;
+            //        else
+            //            ;
+            //    else if (handlerParameters.Count () == 0)
+            //        m_MCApi.OnClose -= (EventHandler)handler;
+            //    else
+            //        ;
+            //}
+            //// проверить
+            //handlers = getHandlerExists (m_MCApi);
+            #endregion
+
+            #region Отмена регистрации универсального обработчика
+            List<string> eventNames = new List<string> () { "OnClose"
+                , EVENT.OnData53500Modified.ToString(), EVENT.OnMaket53500Changed.ToString(), EVENT.OnPlanDataChanged.ToString()
+            };
+
+            foreach (string eventName in eventNames) {
+                foreach (Delegate handler in getHandlerExists (m_MCApi, eventName)) {
+                    switch (eventNames.IndexOf (eventName)) {
+                        case 0:
+                            m_MCApi.OnClose -= (EventHandler)handler;
+                            break;
+                        case 1:
+                            m_MCApi.OnData53500Modified -= (EventHandler<Modes.NetAccess.EventRefreshData53500>)handler;
+                            break;
+                        case 2:
+                            m_MCApi.OnMaket53500Changed -= (EventHandler<Modes.NetAccess.EventRefreshJournalMaket53500>)handler;
+                            break;
+                        case 3:
+                            m_MCApi.OnPlanDataChanged -= (EventHandler<Modes.NetAccess.EventPlanDataChanged>)handler;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            // проверить
+            handlers = getHandlerExists (m_MCApi);
+            #endregion
+
+            return handlers.Count () == 0;
+        }
+
+        protected override bool registerHandler ()
+        {
+            int counter = -1;
+            bool bEventHandler = false;
+            // на 'Close' подписываемся всегда (правило не устанавливается)
+            m_MCApi.OnClose += atomApi_OnClose;
+            counter = 1;
+
+            // добавить обработчики в соответствии с конфигурацией
+            if (_jsonEventListener.Count > 0)
+                foreach (EVENT nameEvent in Enum.GetValues (typeof (EVENT))) {
+                    if (nameEvent == EVENT.Unknown)
+                        continue;
+                    else
+                        ;
+                    // TODO: получить правило из конфигурации
+                    bEventHandler = bool.Parse (_jsonEventListener.Value<string> (nameEvent.ToString ()));
+
+                    // сообщить, что подписка на событие с именем 'nameEvent' (не) будет выполнена, в ~ с признаком 'bEventHandler'
+                    delegateAtomApiHandler (Tuple.Create<EVENT, bool> (nameEvent, bEventHandler));
+
+                    if (bEventHandler == true) {
+                        counter++;
+
+                        switch (nameEvent) {
+                            case EVENT.OnData53500Modified:
+                                m_MCApi.OnData53500Modified += mcApi_OnEventHandler;
+                                break;
+                            case EVENT.OnMaket53500Changed:
+                                m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+                                break;
+                            case EVENT.OnPlanDataChanged:
+                                m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+                                break;
+                            case EVENT.OnModesEvent:
+                                m_MCApi.OnModesEvent += mcApi_OnModesEvent;
+                                break;
+                            default:
+                                break;
+                        }
+                    } else
+                        ;
+                }
+            else
+            // нет ни одного правила для (отмены)регистрации события
+                ;
+
+            // проверить
+            return getHandlerExists (m_MCApi).Count() == counter;
+        }
+
+        private void mcApi_OnModesEvent (object sender, Modes.NetAccess.MEvent e)
+        {
+            //Logging.Logg ().Action ($"::mcApi_OnModesEvent () - Id={e.Id}, Message=[{e.Message}]{Environment.NewLine}Detail: [Host={e.Host}, Date={e.Date}, User={e.User}, UserGuid={e.UserUid}]..."
+            //    , Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        private void mcApi_OnEventHandler(object obj, EventArgs e)
+        {
+            object[] sendToTrans;
+
+            if (e.GetType().Equals(typeof(Modes.NetAccess.EventRefreshData53500)) == true) {
+                Modes.NetAccess.EventRefreshData53500 ev = e as Modes.NetAccess.EventRefreshData53500;
+
+                sendToTrans = new object[] {
+                    ID_EVENT.GENOBJECT_MODIFIED
+                    , ev
+                };
+            } else if (e.GetType().Equals(typeof(Modes.NetAccess.EventRefreshJournalMaket53500)) == true) {
+                Modes.NetAccess.EventRefreshJournalMaket53500 ev = e as Modes.NetAccess.EventRefreshJournalMaket53500;
+
+                sendToTrans = new object[] {
+                    ID_EVENT.RELOAD_PLAN_VALUES
+                    , ev
+                };
+            } else if (e.GetType().Equals(typeof(Modes.NetAccess.EventPlanDataChanged)) == true) {
+                Modes.NetAccess.EventPlanDataChanged ev = e as Modes.NetAccess.EventPlanDataChanged;
+
+                sendToTrans = new object[] {
+                    ID_EVENT.NEW_PLAN_VALUES
+                    , ev
+                };
+            } else
+                sendToTrans = new object[] { ID_EVENT.Unknown };
+
+            lock (atomApiEventLocked) {
+            // простая ретрансляция
+                delegateAtomApiHandler?.Invoke(sendToTrans);
+            }
+        }
+
+        private Modes.BusinessLogic.IGenObject addIGO (int idInner)
+        {
+            return addIGO (m_modesTimeSlice.GenTree, idInner);
+        }
+
+        private Modes.BusinessLogic.IGenObject addIGO (ReadOnlyCollection<Modes.BusinessLogic.IGenObject>tree, int idInnner)
+        {
+            foreach (Modes.BusinessLogic.IGenObject igo in tree)
+            {
+                //Console.WriteLine(igo.Description + " [" + igo.GenObjType.Description + "]");
+                //ProcessParams(IGO);
+                addIGO(igo, 1, idInnner, delegate (Modes.BusinessLogic.IGenObject newIGO) { m_listIGO.Add (newIGO); });
+            }
+
+            return findIGO(idInnner);
+        }
+
+        void addIGO (Modes.BusinessLogic.IGenObject igo, int Level, int idInner, Action<Modes.BusinessLogic.IGenObject> fAdd)
+        {
+            foreach (Modes.BusinessLogic.IGenObject child in igo.Children) {
+                if (!((ID_GEN_OBJECT_TYPE)child.GenObjType.Id == ID_GEN_OBJECT_TYPE.GOU)) 
+                {
+                    //Console.WriteLine(new System.String('-', Level) + IGOch.Description + " [" + IGOch.GenObjType.Description + "]  P:" + IGOch.VarParams.Count.ToString() + " Id:" + IGOch.Id.ToString() + " IdInner:" + IGOch.IdInner.ToString());
+                    //ProcessParams(IGOch);
+                    if (((ID_GEN_OBJECT_TYPE)child.GenObjType.Id == ID_GEN_OBJECT_TYPE.RGE)
+                        && (child.IdInner == idInner)) {
+                        fAdd(child);
+
+                        break;
+                    } else
+                    //У оборудования типа Электростанция (id = 1) нет параметров - только дочерние элементы
+                        ;
+
+                    addIGO (child, Level + 1, idInner, fAdd);
+                } else
+                //Оборудование типа ГОУ исключаем - по ним нет ни параметров, ни дочерних элементов
+                    ;
+            }
+        }
+
+        private Modes.BusinessLogic.IGenObject findIGO(int idInnner)
+        {
+            return (from igo in m_listIGO where igo.IdInner == idInnner  select igo).ElementAtOrDefault(0);
+        }
+
+        protected override bool GetData (DataTable table, object query, params SP_PARAMETER[]parameters)
+        {
+            bool result = false;
+
+            table.Reset();
+            table.Locale = System.Globalization.CultureInfo.CurrentCulture;
+
+            try {
+                using (ParseMCGetData getData = new ParseMCGetData (m_MCApi
+                        //, m_MCTimeSlice
+                        , m_listPFI
+                        , query
+                        , findIGO
+                        , addIGO
+                        , getData_OnFillError
+                    ))
+                    result = getData.Result (table);
+            } catch (Exception e) {
+                //Logging.Logg ().Exception (e, $"DbMCInterface::GetData () - query={query}...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            //Logging.Logg().Debug("DbMCInterface::GetData () - " + query + "...", Logging.INDEX_MESSAGE.NOT_SET);
+
+            return result;
+        }
+
+        protected override void GetDataCancel ()
+        {
+            //TODO: как остановить длительно выполняющийся метод 
+            // m_MCApi.GetPlanValuesActual
+        }
+
+        public override void Dispose ()
+        {
+        }
+    }
+}

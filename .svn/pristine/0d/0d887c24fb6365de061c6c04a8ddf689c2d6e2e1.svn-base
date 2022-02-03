@@ -1,0 +1,438 @@
+using System;
+using System.IO;
+using System.Data;
+using System.Collections.Generic;
+using System.Threading;
+
+using Excel = Microsoft.Office.Interop.Excel;
+using ASUTP.Helper;
+
+
+
+namespace StatisticCommon
+{
+    public abstract class AdminTS_TG : AdminTS
+    {
+        /// <summary>
+        /// Список индексов дочерних для выбранного сложного элемента (детализация сложного элемента)
+        /// </summary>
+        public List<FormChangeMode.KeyDevice> m_listKeyTECComponentDetail;
+        public List<RDGStruct[]> m_listPrevRDGValues
+            , m_listCurRDGValues;
+
+        public List <Errors>  m_listResSaveChanges;
+
+        public ManualResetEvent m_evSaveChangesComplete;
+
+        protected object m_lockSuccessGetData
+            , m_lockResSaveChanges;
+
+        public bool CompletedGetRDGValues {
+            get {
+                lock (m_lockSuccessGetData)
+                {
+                    return (! (m_listCurRDGValues.Count < m_listKeyTECComponentDetail.Count)) ? true : false;
+                }
+            }
+        }
+
+        public bool CompletedSaveChanges {
+            get {
+                bool bRes = false;
+                
+                lock (m_lockResSaveChanges)
+                {
+                    bRes = ! ((m_listResSaveChanges.Count) < m_listKeyTECComponentDetail.Count);
+                }
+
+                return bRes;
+            }
+        }
+
+        public bool SuccessSaveChanges {
+            get {
+                bool bRes = true;
+
+                lock (m_lockResSaveChanges)
+                {
+                    if ((m_listResSaveChanges.Count + 1) == m_listKeyTECComponentDetail.Count)
+                        foreach (Errors err in m_listResSaveChanges)
+                        {
+                            if (!(err == Errors.NoError)) {
+                                bRes = false;
+
+                                break;
+                            }
+                            else
+                                ;
+                        }
+                    else
+                        bRes = false;
+                }
+
+                return bRes;
+            }
+        }
+
+        public AdminTS_TG(bool[] arMarkPPBRValues, TECComponentBase.TYPE type)
+            : base(arMarkPPBRValues, type)
+        {
+            delegateImportForeignValuesRequuest = impRDGExcelValuesRequest;
+            delegateExportForeignValuesRequuest = expRDGExcelValuesRequest;
+            delegateImportForeignValuesResponse = impRDGExcelValuesResponse;
+            //delegateExportForeignValuesResponse = ExpRDGExcelValuesResponse;
+
+            m_listPrevRDGValues = new List<RDGStruct[]>();
+            m_listCurRDGValues = new List<RDGStruct[]> ();
+            m_listKeyTECComponentDetail = new List<FormChangeMode.KeyDevice> ();
+            m_listResSaveChanges = new List <Errors> ();
+
+            m_lockSuccessGetData = new object();
+            m_lockResSaveChanges = new object ();
+        }
+
+        protected override int GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
+        {
+            int iRes = base.GetAdminValuesResponse(tableAdminValuesResponse, date);
+
+            RDGStruct []curRDGValues = new RDGStruct [m_curRDGValues.Length];
+
+            m_curRDGValues.CopyTo(curRDGValues, 0);
+
+            for (int i = 0; i < m_curRDGValues.Length; i ++) {
+                curRDGValues [i].pbr += m_curRDGValues [i].recomendation;
+
+                //curRDGValues [i].plan = m_curRDGValues [i].plan;
+
+                //curRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
+                //curRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
+                //curRDGValues[i].deviation = m_curRDGValues[i].deviation;
+            }
+
+            m_listCurRDGValues.Add (curRDGValues);
+
+            return iRes;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id">Заполнить список дочерними для 'id' комопонентами</param>
+        public virtual void FillListKeyTECComponentDetail (int id)
+        {
+            lock (m_lockSuccessGetData)
+            {
+                m_listKeyTECComponentDetail.Clear();
+                //Сначала - ГТП
+                foreach (TECComponent comp in allTECComponents)
+                    if ((comp.tec.m_id == id) //Принадлежит ТЭЦ
+                        && (comp.IsGTP == true)) //Является ГТП
+                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode });
+                    else
+                        ;
+
+                //Потом - ТГ
+                foreach (TECComponent comp in allTECComponents)
+                    if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
+                        (comp.IsTG == true)) //Является ТГ
+                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode });
+                    else
+                        ;
+
+                ClearListRDGValues();
+            }
+        }
+
+        protected virtual void threadGetRDGValuesWithoutDate(object obj)
+        {
+            int indxEv = -1;
+
+            //lock (m_lockSuccessGetData)
+            //{
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
+                {
+                    indxEv = WaitHandle.WaitAny (m_waitHandleState);
+                    if (indxEv == 0)
+                        base.GetRDGValues(key);
+                    else
+                        break;
+                }
+            //}
+
+            //m_bSavePPBRValues = true;
+        }
+
+        public void BaseGetRDGValue(FormChangeMode.KeyDevice key, DateTime date)
+        {
+            if(!(date == DateTime.MinValue))
+                base.GetRDGValues(key, (DateTime)date);
+            else
+                base.GetRDGValues(key);
+        }
+
+        public override void GetRDGValues(FormChangeMode.KeyDevice key)
+        {
+            //delegateStartWait ();
+            FillListKeyTECComponentDetail(key.Id);
+
+            new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithoutDate)).Start ();
+            //threadGetRDGValuesWithoutDate (null);
+            //delegateStopWait ();
+        }
+
+        protected virtual void threadGetRDGValuesWithDate(object date)
+        {
+            int indxEv = -1;
+
+            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
+                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+
+            //lock (m_lockSuccessGetData)
+            //{
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
+                {
+                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    if (indxEv == 0)
+                        base.GetRDGValues(key, (DateTime)date);
+                    else
+                        break;
+                }
+            //}
+
+            //m_bSavePPBRValues = true;
+        }
+
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
+        {
+            //delegateStartWait ();
+            FillListKeyTECComponentDetail (key.Id);
+
+            new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithDate)).Start (date);
+            //threadGetRDGValuesWithDate (date);
+            //delegateStopWait ();
+        }
+
+        private void threadImpRDGExcelValues (object date) {
+            int indxEv = -1;
+
+            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
+                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+
+            //lock (m_lockSuccessGetData)
+            //{
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
+                {
+                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    if (indxEv == 0)
+                        if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                            base.GetRDGValues(key, (DateTime)date);
+                        else
+                            if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
+                                base.ImpRDGExcelValues(key, (DateTime)date);
+                            else
+                                ;
+                    else
+                        break;
+                }
+            //}
+
+            //m_bSavePPBRValues = true;
+        }
+
+        //public string [] GetListNameTEC()
+        //{
+        //    int indx = -1;
+        //    List<string> listRes = new List<string> ();
+        //    List<int> listIdTEC = new List<int>();
+
+        //    foreach (TECComponent comp in allTECComponents)
+        //    {
+        //        indx = comp.tec.m_id;
+        //        if (listIdTEC.IndexOf(indx) < 0) {
+        //            listIdTEC.Add (indx);
+                    
+        //            listRes.Add(comp.tec.name_shr);
+        //        }
+        //        else
+        //            ;
+        //    }
+
+        //    return listRes.ToArray ();
+        //}
+        /// <summary>
+        /// Возвратить признак выполненых пользователем изменений
+        /// </summary>
+        /// <returns>Признак изменений</returns>
+        public override bool WasChanged()
+        {//??? ТГ больше, чем один - метод не работоспособен...
+            bool bRes = false;
+
+            for (int i = 0; (i < 24) && (bRes == false); i++)
+            {
+                if ((m_prevRDGValues[i].pbr > 0)
+                    && (m_curRDGValues[i].pbr > 0)
+                    && (m_prevRDGValues[i].pbr.Equals (m_curRDGValues[i].pbr)== false))
+                    bRes = true;
+                else
+                    ;
+                if ((m_prevRDGValues[i].pmin > 0)
+                    && (m_curRDGValues[i].pmin > 0)
+                    && (m_prevRDGValues[i].pmin.Equals (m_curRDGValues[i].pmin)== false))
+                    bRes = true;
+                else
+                    ;
+                if ((m_prevRDGValues[i].pmax > 0)
+                    && (m_curRDGValues[i].pmax > 0)
+                    && (m_prevRDGValues[i].pmax.Equals (m_curRDGValues[i].pmax)== false))
+                    bRes = true;
+                else
+                    ;
+                if (m_prevRDGValues[i].recomendation.Equals (m_curRDGValues[i].recomendation) == false)
+                    bRes = true;
+                else
+                    ;
+                if (m_prevRDGValues[i].deviationPercent.Equals (m_curRDGValues[i].deviationPercent) == false)
+                    bRes = true;
+                else
+                    ;
+                if (m_prevRDGValues[i].deviation.Equals (m_curRDGValues[i].deviation) == false)
+                    bRes = true;
+                else
+                    ;
+            }
+
+            return bRes;
+        }
+
+        public override bool IsRDGExcel(FormChangeMode.KeyDevice key_tec)
+        {
+            bool bRes = false;
+
+            foreach (TECComponent comp in allTECComponents) {
+                if (comp.tec.m_id == key_tec.Id) {
+                    if (comp.tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString().Length > 0) {
+                        bRes = true;
+
+                        break;
+                    }
+                    else
+                        ;
+                }
+                else
+                    ;
+            }
+
+            return bRes;
+        }
+
+        public Errors BaseSaveChanges()
+        {
+            Errors errRes = Errors.NoError;
+
+            errRes = base.SaveChanges();
+
+            return errRes;
+        }
+
+        public override Errors SaveChanges()
+        {
+            Errors errRes = Errors.NoError,
+                    bErr = Errors.NoError;
+            int indxEv = -1;
+
+            m_evSaveChangesComplete.Reset ();
+
+            lock (m_lockResSaveChanges)
+            {
+                m_listResSaveChanges.Clear ();
+            }
+
+            FormChangeMode.KeyDevice prevKeyTECComponent = CurrentKey;
+
+            foreach (RDGStruct [] curRDGValues in m_listCurRDGValues) {
+                bErr = Errors.NoError;
+
+                for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
+                    ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+
+                if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.TG) {
+                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    if (indxEv == 0)
+                    {
+                        CurrentKey = m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
+
+                        curRDGValues.CopyTo(m_curRDGValues, 0);
+
+                        bErr = base.SaveChanges();
+                    }
+                    else
+                        break;
+                }
+                else
+                    ;
+
+                lock (m_lockResSaveChanges)
+                {
+                    m_listResSaveChanges.Add(bErr);
+
+                    if (! (bErr == Errors.NoError) && (errRes == Errors.NoError))
+                        errRes = bErr;
+                    else
+                        ;
+                }
+            }
+
+            CurrentKey = prevKeyTECComponent;
+
+            //if (indxEv == 0)
+            //if (errRes == Errors.NoError)
+                m_evSaveChangesComplete.Set();
+            //else ;
+
+            if (!(saveComplete == null)) saveComplete(); else ;
+
+            return errRes;
+        }
+
+        protected string nameFileRDGExcel (DateTime dt) {
+            //return dt.GetDateTimeFormats()[4];
+            return dt.ToString (@"yyyy-MM-dd");
+        }
+
+        protected override void InitializeSyncState()
+        {
+            m_evSaveChangesComplete = new ManualResetEvent(false);
+
+            m_waitHandleState = new WaitHandle[(int)INDEX_WAITHANDLE_REASON.ERROR + 1];
+            base.InitializeSyncState();
+            for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)(INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
+            {
+                m_waitHandleState[i] = new ManualResetEvent(false);
+            }
+        }
+
+        public override void ImpRDGExcelValues(FormChangeMode.KeyDevice key, DateTime date)
+        {
+            //delegateStartWait();
+
+            ClearListRDGValues();
+
+            new Thread(new ParameterizedThreadStart(threadImpRDGExcelValues)).Start(date);
+            //threadGetRDGExcelValues (date);
+
+            //delegateStopWait();
+        }
+
+        public void ClearListRDGValues()
+        {
+            m_listPrevRDGValues.Clear();
+            m_listCurRDGValues.Clear();
+        }
+
+        protected abstract void /*bool*/ impRDGExcelValuesRequest();
+
+        protected abstract /*override*/ int impRDGExcelValuesResponse();
+
+        protected abstract void /*bool*/ expRDGExcelValuesRequest();
+    }
+}

@@ -1,0 +1,152 @@
+﻿using ASUTP;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+
+using ASUTP.Core;
+using System.Threading.Tasks;
+using System.Threading;
+
+namespace StatisticCommon.OICDAC
+{
+    class ParseGetData : IDisposable
+    {
+        public static TimeSpan Timeout = TimeSpan.FromSeconds (1);
+
+        public static TimeSpan CurrentRearwardStart = TimeSpan.FromSeconds (6);
+
+        public static TimeSpan CurrentTimeStep = TimeSpan.FromSeconds (1);
+
+        public Operation Operation
+        {
+            get
+            {
+                return _operation;
+            }
+        }
+
+        private Operation _operation;
+
+        private AutoResetEvent _evReceivedAllData;
+
+        private List<interop.OICDAC.OIRequest> _requests;
+
+        private List<DbInterface.OIRequestResult> _results;
+
+        public ParseGetData (IEnumerable<interop.OICDAC.OIRequest> requests, object query)
+        {
+            _requests = new List<interop.OICDAC.OIRequest> (requests);
+            _results = new List<DbInterface.OIRequestResult> ();
+
+            _evReceivedAllData = new AutoResetEvent (false);
+
+            Enum.TryParse<Operation> ((string)query, out _operation);
+        }
+
+        private void fCurrent ()
+        {
+            Task taskRecieved;
+            interop.OICDAC.OIRequestItem rqi;
+            Type typeValue = null;
+
+            interop.OICDAC.IOIRequestEvents_OnReceivedAllDataEventHandler req_CurrentReceivedAllData = () => {
+                _evReceivedAllData.Set ();
+            };
+
+            interop.OICDAC.IOIRequestEvents_OnGetResultExEventHandler req_OnGetResultEx = (string signal, interop.OICDAC.KindRefreshEnum kindRefresh, DateTime stamp1, object value, int sign, DateTime stamp2, int tag) => {
+                if ((string.IsNullOrEmpty (signal) == false)
+                    && (Equals(value, null) == false)
+                    && (typeValue.IsAssignableFrom (value.GetType ()) == true)) {
+                    _results.Add (new DbInterface.OIRequestResult (
+                        signal
+                        , kindRefresh
+                        , stamp1
+                        , (float)(double)value
+                        , sign
+                        , stamp2
+                        , (DbInterface.OIKParameter)tag)
+                    );
+                } else
+                    ;
+            };
+
+            typeValue = typeof (double);
+
+            taskRecieved = Task.Factory.StartNew (() => {
+                _requests.ForEach (req => {
+                    req.Stop ();
+
+                    for (int i = 0; i < req.OIRequestItems.Count; i++) {
+                        rqi = req.OIRequestItems.Item (i);
+
+                        //rqi.IsLocalTime = true; !!! уже применено
+                        rqi.TimeStart = DateTime.Now - CurrentRearwardStart;
+                        rqi.TimeStop = DateTime.Now;
+                        rqi.TimeStep = (int)CurrentTimeStep.TotalSeconds;
+                        //rqi.KindRefresh = interop.OICDAC.KindRefreshEnum.kr_Period; !!! уже применено
+                    }
+
+                    req.OnGetResultEx += req_OnGetResultEx;
+                    req.OnReceivedAllData += req_CurrentReceivedAllData;
+
+                    req.Start ();
+                });
+
+                _evReceivedAllData.WaitOne ();
+            });
+
+            taskRecieved.Wait (Timeout);
+
+            //!!! не важно как завершилась задача - требуется останов/отмена регистрации обработчиков
+            //if (taskRecieved.Status == TaskStatus.RanToCompletion)
+                _requests.ForEach (req => {
+                    req.Stop ();
+
+                    req.OnGetResultEx -= req_OnGetResultEx;
+                    req.OnReceivedAllData -= req_CurrentReceivedAllData;
+                });
+            //else
+                Logging.Logg ().Error ($@"OICDAC.ParseGetData::fCurrent ()- завершение задачи, статус=<{taskRecieved.Status}>...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        public bool Result (DataTable table)
+        {
+            bool bRes = true;
+            Type typeValue;
+
+            switch (_operation) {
+                case Operation.Period:
+                    fCurrent ();
+
+                    //Enum.GetValues (typeof (StatisticCommon.OICDAC.Admin.FIELDS)).Cast<StatisticCommon.OICDAC.Admin.FIELDS>()
+                    //    .ToList().ForEach (field => table.Columns.Add (new DataColumn(field.ToString())));
+                    (from field in Admin.s_TableSOTIASSOValueTypes select field)
+                        .ToList().ForEach (field => table.Columns.Add (new DataColumn(field.Key.ToString(), field.Value)));
+
+                    _results.DistinctLastUpdated().ToList()
+                    .ForEach (reqRes => {
+                        table.Rows.Add (new object[] {
+                            reqRes.KeySignal.Name
+                            , Convert.ChangeType(reqRes.Value, table.Columns[(int)Admin.FIELDS.VALUE].DataType)
+                            , reqRes.Stamp1
+                            , reqRes.Stamp2
+                            , reqRes.Sign
+                            , reqRes.Tag
+                        });
+                    });
+                    break;
+                default:
+                    bRes = false;
+                    break;
+            }
+
+            return bRes;
+        }
+
+        public void Dispose ()
+        {
+        }
+    }
+}
